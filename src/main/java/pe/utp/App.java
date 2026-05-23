@@ -5,6 +5,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import pe.utp.Conexion.ConexionDB;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 public class App extends Application {
 
@@ -19,6 +22,20 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
+        // Probar conexión e insertar categoría
+        try {
+            Connection conn = ConexionDB.getConexion();
+            if (conn != null) {
+                String sql = "INSERT INTO categoria VALUES ('CAT001', 'Procesador')";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.executeUpdate();
+                System.out.println("Categoria insertada correctamente!");
+                conn.close();
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
         launch(args);
     }
 }
