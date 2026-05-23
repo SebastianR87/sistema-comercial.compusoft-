@@ -6,8 +6,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import pe.utp.Conexion.ConexionDB;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import pe.utp.dao.CategoriaDAO;
+import pe.utp.model.Categoria;
+import java.util.List;
 
 public class App extends Application {
 
@@ -22,18 +23,19 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        // Probar conexión e insertar categoría
-        try {
-            Connection conn = ConexionDB.getConexion();
-            if (conn != null) {
-                String sql = "INSERT INTO categoria VALUES ('CAT001', 'Procesador')";
-                PreparedStatement ps = conn.prepareStatement(sql);
-                ps.executeUpdate();
-                System.out.println("Categoria insertada correctamente!");
-                conn.close();
-            }
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+
+        // PROBAR CategoriaDAO
+        CategoriaDAO dao = new CategoriaDAO();
+
+        // Insertar
+        Categoria c = new Categoria("CAT010", "Monitor");
+        boolean resultado = dao.insertar(c);
+        System.out.println("Insertar: " + resultado);
+
+        // Listar
+        List<Categoria> lista = dao.Listar();
+        for (Categoria cat : lista) {
+            System.out.println(cat.getIdCategoria() + " - " + cat.getNombre());
         }
 
         launch(args);
