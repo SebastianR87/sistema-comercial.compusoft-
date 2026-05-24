@@ -61,14 +61,13 @@ public class MainController {
 
     @FXML
     private void cerrarSesion() {
-        // Por ahora solo muestra alerta
-        // Después aquí irá la lógica de volver al Login
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Desea cerrar sesión?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(resp -> {
             if (resp == ButtonType.YES) {
                 System.out.println("Cerrando sesión...");
-                // Aquí después cargamos el Login.fxml
+
             }
         });
     }
