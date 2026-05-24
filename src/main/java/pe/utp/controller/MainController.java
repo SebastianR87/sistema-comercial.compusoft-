@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -14,6 +15,8 @@ public class MainController {
     @FXML private StackPane panelContenido;
     @FXML private Label lblNombre;
     @FXML private Label lblCargo;
+    @FXML private Button btnEmpleados;
+
 
     private Empleado empleadoActual;
 
@@ -21,6 +24,14 @@ public class MainController {
         this.empleadoActual = empleado;
         lblNombre.setText(empleado.getNombre());
         lblCargo.setText(empleado.getCargo());
+
+        if (empleado.getCargo().equals("Administrador")) {
+            btnEmpleados.setVisible(true);
+            btnEmpleados.setManaged(true);
+        } else {
+            btnEmpleados.setVisible(false);
+            btnEmpleados.setManaged(false);
+        }
     }
 
     @FXML
@@ -58,6 +69,11 @@ public class MainController {
         cargarVista("/fxml/Configurador.fxml");
     }
 
+    @FXML
+    private void abrirEmpleados() {
+        cargarVista("/fxml/Empleado.fxml");
+    }
+
 
     @FXML
     private void cerrarSesion() {
@@ -83,7 +99,10 @@ public class MainController {
             Parent vista = loader.load();
             panelContenido.getChildren().setAll(vista);
         } catch (Exception e) {
-            System.out.println("Error al cargar vista: " + e.getMessage());
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR,
+                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage());
+            alert.show();
         }
     }
 

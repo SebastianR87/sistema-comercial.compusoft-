@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="pe.utp.controller.LoginController"
+           stylesheets="@../styles/style.css"
+           style="-fx-background-color: #1a1a2e;"
+           prefWidth="900" prefHeight="550">
+
+    <HBox alignment="CENTER" spacing="0">
+
+        <!-- PANEL IZQUIERDO -->
+        <VBox alignment="CENTER" spacing="20"
+              style="-fx-background-color: #e94560;
+                     -fx-padding: 50;
+                     -fx-background-radius: 12 0 0 12;"
+              prefWidth="380" prefHeight="500">
+
+            <Label text="🖥️"
+                   style="-fx-font-size: 60px;"/>
+            <Label text="COMPUSOFT"
+                   style="-fx-text-fill: white; -fx-font-size: 28px;
+                          -fx-font-weight: bold;"/>
+            <Label text="Sistema Comercial"
+                   style="-fx-text-fill: rgba(255,255,255,0.8);
+                          -fx-font-size: 14px;"/>
+            <Separator style="-fx-background-color: rgba(255,255,255,0.3);"/>
+            <Label text="Gestiona tu negocio de&#10;componentes de PC"
+                   style="-fx-text-fill: rgba(255,255,255,0.9);
+                          -fx-font-size: 13px; -fx-text-alignment: center;"
+                   textAlignment="CENTER"/>
+        </VBox>
+
+        <!-- PANEL DERECHO -->
+        <VBox alignment="CENTER" spacing="20"
+              style="-fx-background-color: white;
+                     -fx-padding: 50;
+                     -fx-background-radius: 0 12 12 0;"
+              prefWidth="380" prefHeight="500">
+
+            <Label text="Iniciar Sesión"
+                   style="-fx-font-size: 24px; -fx-font-weight: bold;
+                          -fx-text-fill: #1a1a2e;"/>
+
+            <Label text="Ingresa tus credenciales"
+                   style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa;"/>
+
+            <VBox spacing="6">
+                <Label text="Usuario" styleClass="label-field"/>
+                <TextField fx:id="txtUsuario"
+                           promptText="Ingresa tu usuario"
+                           prefWidth="280"/>
+            </VBox>
+
+            <VBox spacing="6">
+                <Label text="Contraseña" styleClass="label-field"/>
+                <PasswordField fx:id="txtPassword"
+                               promptText="Ingresa tu contraseña"
+                               prefWidth="280"/>
+            </VBox>
+
+            <Label fx:id="lblError"
+                   style="-fx-text-fill: #e94560; -fx-font-size: 12px;"
+                   text="" visible="false"/>
+
+            <Button text="Iniciar Sesión"
+                    styleClass="btn-primary"
+                    onAction="#login"
+                    prefWidth="280"/>
+        </VBox>
+    </HBox>
+</StackPane>

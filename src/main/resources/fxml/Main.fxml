@@ -77,6 +77,16 @@
                 <Button fx:id="btnConfigurador" text="  ⚙️  Configurador PC"
                         styleClass="sidebar-btn" onAction="#abrirConfigurador"/>
 
+                <Separator style="-fx-background-color: #16213e; -fx-padding: 5 0;"/>
+
+                <Label text="ADMINISTRACION"
+                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
+              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
+
+                <Button fx:id="btnEmpleados" text="  👥  Empleados"
+                        styleClass="sidebar-btn" onAction="#abrirEmpleados"
+                        visible="false" managed="false"/>
+
             </VBox>
 
             <!-- CERRAR SESION -->
