@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pe.utp.controller.MainController"
+            stylesheets="@../styles/style.css"
+            prefWidth="1100" prefHeight="680">
+
+    <!-- SIDEBAR -->
+    <left>
+        <VBox styleClass="sidebar" spacing="0">
+
+            <!-- LOGO / EMPRESA -->
+            <VBox alignment="CENTER" spacing="4"
+                  style="-fx-padding: 30 20 20 20; -fx-background-color: #16213e;">
+                <Label text="🖥️"
+                       style="-fx-font-size: 36px;"/>
+                <Label text="COMPUSOFT"
+                       style="-fx-text-fill: #ffffff; -fx-font-size: 16px;
+                              -fx-font-weight: bold; -fx-letter-spacing: 2px;"/>
+                <Label text="Sistema Comercial"
+                       style="-fx-text-fill: #a0a0b0; -fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- USUARIO (placeholder hasta el login) -->
+            <VBox alignment="CENTER_LEFT" spacing="4"
+                  style="-fx-padding: 12 20; -fx-background-color: #0f3460;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="👤"
+                           style="-fx-font-size: 18px;"/>
+                    <VBox spacing="2">
+                        <Label fx:id="lblNombre"
+                               style="-fx-text-fill: #ffffff; -fx-font-size: 12px;
+                                      -fx-font-weight: bold;"/>
+                        <Label fx:id="lblCargo"
+                               style="-fx-text-fill: #a0a0b0; -fx-font-size: 10px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <Separator style="-fx-background-color: #16213e;"/>
+
+            <!-- MENU -->
+            <VBox spacing="0" VBox.vgrow="ALWAYS" style="-fx-padding: 10 0;">
+
+                <Label text="MENÚ PRINCIPAL"
+                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
+                              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
+
+                <Button fx:id="btnCategoria" text="  📦  Categoría"
+                        styleClass="sidebar-btn" onAction="#abrirCategoria"/>
+
+                <Button fx:id="btnProducto" text="  🖥️  Producto"
+                        styleClass="sidebar-btn" onAction="#abrirProducto"/>
+
+                <Button fx:id="btnCliente" text="  👤  Cliente"
+                        styleClass="sidebar-btn" onAction="#abrirCliente"/>
+
+                <Button fx:id="btnProveedor" text="  🏭  Proveedor"
+                        styleClass="sidebar-btn" onAction="#abrirProveedor"/>
+
+                <Separator style="-fx-background-color: #16213e; -fx-padding: 5 0;"/>
+
+                <Label text="OPERACIONES"
+                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
+                              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
+
+                <Button fx:id="btnVenta" text="  🛒  Venta"
+                        styleClass="sidebar-btn" onAction="#abrirVenta"/>
+
+                <Button fx:id="btnCompra" text="  📥  Compra"
+                        styleClass="sidebar-btn" onAction="#abrirCompra"/>
+
+                <Button fx:id="btnConfigurador" text="  ⚙️  Configurador PC"
+                        styleClass="sidebar-btn" onAction="#abrirConfigurador"/>
+
+            </VBox>
+
+            <!-- CERRAR SESION -->
+            <VBox style="-fx-padding: 10 0 20 0;">
+                <Separator style="-fx-background-color: #16213e;"/>
+                <Button text="  🚪  Cerrar Sesión"
+                        styleClass="sidebar-btn"
+                        style="-fx-text-fill: #e94560;"
+                        onAction="#cerrarSesion"/>
+            </VBox>
+
+        </VBox>
+    </left>
+
+    <!-- CONTENIDO DINAMICO -->
+    <center>
+        <StackPane fx:id="panelContenido"
+                   style="-fx-background-color: #f0f2f5; -fx-padding: 20;">
+            <VBox alignment="CENTER" spacing="10">
+                <Label text="🖥️"
+                       style="-fx-font-size: 60px;"/>
+                <Label text="Bienvenido a COMPUSOFT"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;
+                              -fx-text-fill: #1a1a2e;"/>
+                <Label text="Selecciona una opción del menú para comenzar"
+                       style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+            </VBox>
+        </StackPane>
+    </center>
+
+</BorderPane>

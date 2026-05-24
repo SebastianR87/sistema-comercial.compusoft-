@@ -1,43 +1,37 @@
 package pe.utp;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import pe.utp.Conexion.ConexionDB;
-import pe.utp.dao.CategoriaDAO;
-import pe.utp.model.Categoria;
-import java.util.List;
+import pe.utp.controller.MainController;
+import pe.utp.model.Empleado;
 
 public class App extends Application {
 
     @Override
-    public void start(Stage stage) {
-        Label label = new Label("JavaFX funcionando!");
-        StackPane root = new StackPane(label);
-        Scene scene = new Scene(root, 400, 300);
-        stage.setTitle("PC Configurador");
+    public void start(Stage stage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/fxml/Main.fxml")
+        );
+        Parent root = loader.load();
+
+        // Empleado de prueba hasta que hagas el Login
+        MainController controller = loader.getController();
+        Empleado empleado = new Empleado();
+        empleado.setNombre("Sebastian Rondo");
+        empleado.setCargo("empleado");
+        controller.setEmpleado(empleado);
+
+        Scene scene = new Scene(root);
+        stage.setTitle("COMPUSOFT - Sistema Comercial");
+        stage.setMaximized(true);
         stage.setScene(scene);
         stage.show();
     }
 
     public static void main(String[] args) {
-
-        // PROBAR CategoriaDAO
-        CategoriaDAO dao = new CategoriaDAO();
-
-        // Insertar
-        Categoria c = new Categoria("CAT010", "Monitor");
-        boolean resultado = dao.insertar(c);
-        System.out.println("Insertar: " + resultado);
-
-        // Listar
-        List<Categoria> lista = dao.Listar();
-        for (Categoria cat : lista) {
-            System.out.println(cat.getIdCategoria() + " - " + cat.getNombre());
-        }
-
         launch(args);
     }
 }
