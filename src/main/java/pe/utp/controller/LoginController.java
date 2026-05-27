@@ -56,7 +56,7 @@ public class LoginController {
 
     private void mostrarError(String mensaje) {
         lblError.setText(mensaje);
-        lblError.setVisible(true); // hace visible el label
+        lblError.setVisible(true);
     }
 
 }

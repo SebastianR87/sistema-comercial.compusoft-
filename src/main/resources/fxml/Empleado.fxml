@@ -8,17 +8,17 @@
       fx:controller="pe.utp.controller.EmpleadoController"
       spacing="0" style="-fx-background-color: #f0f2f5;">
 
-    <!-- TOPBAR -->
+
     <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
         <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
         <Label text="👥 Empleados" styleClass="topbar-title"/>
     </HBox>
 
-    <!-- CONTENIDO -->
+
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
 
-        <!-- FORMULARIO -->
+
         <VBox styleClass="card" spacing="16" prefWidth="280" minWidth="280">
             <Label text="Nuevo Empleado"
                    style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>

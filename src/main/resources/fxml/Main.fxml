@@ -9,11 +9,11 @@
             stylesheets="@../styles/style.css"
             prefWidth="1100" prefHeight="680">
 
-    <!-- SIDEBAR -->
+
     <left>
         <VBox styleClass="sidebar" spacing="0">
 
-            <!-- LOGO / EMPRESA -->
+
             <VBox alignment="CENTER" spacing="4"
                   style="-fx-padding: 30 20 20 20; -fx-background-color: #16213e;">
                 <Label text="🖥️"
@@ -25,7 +25,7 @@
                        style="-fx-text-fill: #a0a0b0; -fx-font-size: 11px;"/>
             </VBox>
 
-            <!-- USUARIO (placeholder hasta el login) -->
+
             <VBox alignment="CENTER_LEFT" spacing="4"
                   style="-fx-padding: 12 20; -fx-background-color: #0f3460;">
                 <HBox spacing="10" alignment="CENTER_LEFT">
@@ -43,7 +43,7 @@
 
             <Separator style="-fx-background-color: #16213e;"/>
 
-            <!-- MENU -->
+
             <VBox spacing="0" VBox.vgrow="ALWAYS" style="-fx-padding: 10 0;">
 
                 <Label text="MENÚ PRINCIPAL"
@@ -74,7 +74,7 @@
                 <Button fx:id="btnCompra" text="  📥  Compra"
                         styleClass="sidebar-btn" onAction="#abrirCompra"/>
 
-                <Button fx:id="btnConfigurador" text="  ⚙️  Configurador PC"
+                <Button fx:id="btnConfigurador" text="  ⚙️  Cotización"
                         styleClass="sidebar-btn" onAction="#abrirConfigurador"/>
 
                 <Separator style="-fx-background-color: #16213e; -fx-padding: 5 0;"/>
@@ -89,7 +89,7 @@
 
             </VBox>
 
-            <!-- CERRAR SESION -->
+
             <VBox style="-fx-padding: 10 0 20 0;">
                 <Separator style="-fx-background-color: #16213e;"/>
                 <Button text="  🚪  Cerrar Sesión"
@@ -101,7 +101,7 @@
         </VBox>
     </left>
 
-    <!-- CONTENIDO DINAMICO -->
+
     <center>
         <StackPane fx:id="panelContenido"
                    style="-fx-background-color: #f0f2f5; -fx-padding: 20;">

@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import pe.utp.dao.CategoriaDAO;
 import pe.utp.model.Categoria;
 
@@ -16,7 +15,6 @@ public class CategoriaController {
     @FXML private TableColumn<Categoria, String> colId;
     @FXML private TableColumn<Categoria, String> colNombre;
     @FXML private TableColumn<Categoria, Void> colAcciones;
-    @FXML private VBox panelFormulario;
     @FXML private TextField txtId;
     @FXML private TextField txtNombre;
 
@@ -39,21 +37,19 @@ public class CategoriaController {
 
     private void configurarColumnaAcciones() {
         colAcciones.setCellFactory(col -> new TableCell<>() {
-            final Button btnEditar = new Button("✏️");
-            final Button btnEliminar = new Button("🗑️");
+            final Button btnEditar = new Button("Editar");
+            final Button btnEliminar = new Button("Eliminar");
 
             {
                 btnEditar.setStyle(
                         "-fx-background-color: #4361ee; -fx-text-fill: white;" +
                                 "-fx-background-radius: 6; -fx-cursor: hand;" +
                                 "-fx-font-size: 12px; -fx-min-width: 60px;");
-                btnEditar.setText("Editar");
 
                 btnEliminar.setStyle(
                         "-fx-background-color: #ef233c; -fx-text-fill: white;" +
                                 "-fx-background-radius: 6; -fx-cursor: hand;" +
                                 "-fx-font-size: 12px; -fx-min-width: 60px;");
-                btnEliminar.setText("Eliminar");
 
                 btnEditar.setOnAction(e -> {
                     Categoria c = getTableView().getItems().get(getIndex());
@@ -92,15 +88,6 @@ public class CategoriaController {
     }
 
     @FXML
-    private void abrirFormulario() {
-        categoriaSeleccionada = null;
-        txtId.clear();
-        txtId.setDisable(false);
-        txtNombre.clear();
-        mostrarFormulario(true);
-    }
-
-    @FXML
     private void guardar() {
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
@@ -119,20 +106,14 @@ public class CategoriaController {
         }
 
         cargarTabla();
-        mostrarFormulario(false);
+        cancelar();
     }
 
     @FXML
-
     private void cancelar() {
         txtId.clear();
         txtId.setDisable(false);
         txtNombre.clear();
         categoriaSeleccionada = null;
-    }
-
-    private void mostrarFormulario(boolean visible) {
-        panelFormulario.setVisible(visible);
-        panelFormulario.setManaged(visible);
     }
 }

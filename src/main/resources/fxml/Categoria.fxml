@@ -14,11 +14,11 @@
         <Label text="📦 Categorías" styleClass="topbar-title"/>
     </HBox>
 
-    <!-- CONTENIDO PRINCIPAL -->
+
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
 
-        <!-- FORMULARIO IZQUIERDA -->
+
         <VBox styleClass="card" spacing="16" prefWidth="280" minWidth="280">
             <Label text="Nueva Categoría"
                    style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>

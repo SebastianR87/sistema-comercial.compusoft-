@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.ProductoController"
+      spacing="0" style="-fx-background-color: #f0f2f5;">
+
+    <!-- TOPBAR -->
+    <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
+        <Label text="🖥️ Productos" styleClass="topbar-title"/>
+    </HBox>
+
+    <!-- CARDS DE CATEGORIAS -->
+    <VBox spacing="10" style="-fx-padding: 20 20 0 20;">
+        <Label text="Selecciona una categoría"
+               style="-fx-font-size: 13px; -fx-text-fill: #6c757d;
+                      -fx-font-weight: bold;"/>
+        <FlowPane fx:id="panelCards" hgap="10" vgap="10"/>
+    </VBox>
+
+    <!-- CONTENIDO -->
+    <HBox fx:id="panelContenido" spacing="20" VBox.vgrow="ALWAYS"
+          visible="false" managed="false">
+        <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+
+        <!-- FORMULARIO CON SCROLL -->
+        <ScrollPane fitToWidth="true" prefWidth="320" minWidth="320"
+                    style="-fx-background-color: transparent;
+                           -fx-background: transparent;">
+            <VBox styleClass="card" spacing="14">
+
+                <!-- TITULO CON BOTON VOLVER -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Button text="← Volver" onAction="#volverCards"
+                            style="-fx-background-color: transparent;
+                                   -fx-text-fill: #e94560;
+                                   -fx-font-weight: bold;
+                                   -fx-cursor: hand;
+                                   -fx-padding: 0;"/>
+                    <Label fx:id="lblTituloFormulario"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+
+                <Separator/>
+
+                <VBox spacing="6">
+                    <Label text="ID" styleClass="label-field"/>
+                    <TextField fx:id="txtId" promptText="Ej: PROD001"/>
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label text="Nombre" styleClass="label-field"/>
+                    <TextField fx:id="txtNombre" promptText="Nombre del producto"/>
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label text="Descripción" styleClass="label-field"/>
+                    <TextArea fx:id="txtDescripcion" promptText="Descripción..."
+                              prefRowCount="2"/>
+                </VBox>
+
+                <HBox spacing="10">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Precio Compra" styleClass="label-field"/>
+                        <TextField fx:id="txtPrecioCompra" promptText="0.00"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Precio Venta" styleClass="label-field"/>
+                        <TextField fx:id="txtPrecioVenta" promptText="0.00"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Stock" styleClass="label-field"/>
+                        <TextField fx:id="txtStock" promptText="0"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Estado" styleClass="label-field"/>
+                        <ComboBox fx:id="cbEstado" maxWidth="Infinity"/>
+                    </VBox>
+                </HBox>
+
+                <!-- ESPECIFICACIONES DINAMICAS -->
+                <VBox fx:id="panelEspecificaciones" spacing="10"/>
+
+                <VBox spacing="8">
+                    <Button text="💾 Guardar" styleClass="btn-primary"
+                            onAction="#guardar" maxWidth="Infinity"/>
+                    <Button text="🔄 Limpiar" onAction="#limpiar"
+                            maxWidth="Infinity"
+                            style="-fx-background-radius: 8; -fx-padding: 8 16;
+                                   -fx-cursor: hand;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- TABLA -->
+        <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="lblTituloTabla"
+                       style="-fx-font-size: 15px; -fx-font-weight: bold;
+                              -fx-text-fill: #1a1a2e;"/>
+            </HBox>
+            <Separator/>
+
+            <TableView fx:id="tablaProducto" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+                    <TableColumn fx:id="colNombre" text="Nombre" prefWidth="180"/>
+                    <TableColumn fx:id="colPrecioCompra" text="P. Compra" prefWidth="90"/>
+                    <TableColumn fx:id="colPrecioVenta" text="P. Venta" prefWidth="90"/>
+                    <TableColumn fx:id="colStock" text="Stock" prefWidth="60"/>
+                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="80"/>
+                    <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="150"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </HBox>
+</VBox>
