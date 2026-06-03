@@ -192,6 +192,7 @@ public class ProductoController {
         cargarTabla();
         panelContenido.setVisible(true);
         panelContenido.setManaged(true);
+        generarId();
     }
 
     @FXML
@@ -400,5 +401,29 @@ public class ProductoController {
         if (categoriaActual != null) {
             cargarCamposEspecificacion(categoriaActual.getNombre());
         }
+        generarId();
+    }
+
+    private void generarId() {
+        if (categoriaActual == null) return;
+
+        String ultimo = dao.obtenerUltimoId(categoriaActual.getIdCategoria());
+        String prefijo = "PROD";
+
+        if (ultimo == null) {
+            txtId.setText(prefijo + "001");
+        } else {
+            // Extrae solo los números del final
+            String numeroStr = ultimo.replaceAll("[^0-9]", "");
+
+            // Verifica que no esté vacío antes de parsear
+            if (numeroStr.isEmpty()) {
+                txtId.setText(prefijo + "001");
+            } else {
+                int numero = Integer.parseInt(numeroStr) + 1;
+                txtId.setText(String.format("%s%03d", prefijo, numero));
+            }
+        }
+        txtId.setDisable(true);
     }
 }

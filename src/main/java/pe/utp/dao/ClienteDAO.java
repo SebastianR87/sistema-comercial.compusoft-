@@ -82,7 +82,7 @@ public class ClienteDAO {
         String sql = "DELETE FROM cliente WHERE id_cliente = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, id); // Ahora sí compilará perfectamente
+            ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.out.println("Error al eliminar Cliente: " + e.getMessage());
@@ -122,6 +122,18 @@ public class ClienteDAO {
             System.out.println("Error al buscar cliente: " + e.getMessage());
         }
         return lista;
+    }
+
+    public String obtenerUltimoId() {
+        String sql = "SELECT TOP 1 id_cliente FROM cliente ORDER BY id_cliente DESC";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("id_cliente");
+        } catch (SQLException e) {
+            System.out.println("Error al obtener ultimo id: " + e.getMessage());
+        }
+        return null;
     }
 
 

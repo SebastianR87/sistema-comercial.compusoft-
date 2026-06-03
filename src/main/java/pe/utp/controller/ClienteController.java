@@ -53,6 +53,7 @@ public class ClienteController {
         cbTipoDocumento.setItems(
                 FXCollections.observableArrayList(tipoDocDAO.listar())
         );
+        generarId();
 
         configurarColumnaAcciones();
         cargarTabla();
@@ -168,5 +169,19 @@ public class ClienteController {
         txtCorreo.clear();
         txtDireccion.clear();
         clienteSeleccionado = null;
+        generarId();
+    }
+
+    private void generarId() {
+        String ultimo = dao.obtenerUltimoId();
+        if (ultimo == null) {
+            txtId.setText("CLI001");
+        } else {
+            String prefijo = ultimo.replaceAll("[0-9]", "");
+            String numeroStr = ultimo.replaceAll("[^0-9]", "");
+            int numero = Integer.parseInt(numeroStr) + 1;
+            txtId.setText(String.format("%s%03d", prefijo, numero));
+        }
+        txtId.setDisable(true);
     }
 }
