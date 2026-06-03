@@ -1,43 +1,43 @@
 package pe.utp.dao;
 
 import pe.utp.Conexion.ConexionDB;
-import pe.utp.model.TipoDocumento;
+import pe.utp.model.TipoComprobante;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TipoDocumentoDAO {
+public class TipoComprobanteDAO {
 
     private Connection conexion;
 
-    public TipoDocumentoDAO() {
+    public TipoComprobanteDAO() {
         this.conexion = ConexionDB.getConexion();
     }
 
-    public List<TipoDocumento> listar() {
-        List<TipoDocumento> lista = new ArrayList<>();
-        String sql = "SELECT * FROM tipo_documento";
+    public List<TipoComprobante> listar() {
+        List<TipoComprobante> lista = new ArrayList<>();
+        String sql = "SELECT * FROM TipoComprobante";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                TipoDocumento td = new TipoDocumento();
-                td.setIdTipoDocumento(rs.getString("id_tipo_documento"));
-                td.setDocumento(rs.getString("documento"));
-                lista.add(td);
+                TipoComprobante tc = new TipoComprobante();
+                tc.setIdTipoComprobante(rs.getString("id_tipo_comprobante"));
+                tc.setNombre(rs.getString("nombre"));
+                lista.add(tc);
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar tipo documento: " + e.getMessage());
+            System.out.println("Error al listar tipo comprobante: " + e.getMessage());
         }
         return lista;
     }
 
-    public boolean insertar(TipoDocumento td) {
-        String sql = "INSERT INTO tipo_documento VALUES (?, ?)";
+    public boolean insertar(TipoComprobante tc) {
+        String sql = "INSERT INTO TipoComprobante VALUES (?, ?)";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, td.getIdTipoDocumento());
-            ps.setString(2, td.getDocumento());
+            ps.setString(1, tc.getIdTipoComprobante());
+            ps.setString(2, tc.getNombre());
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -46,12 +46,12 @@ public class TipoDocumentoDAO {
         }
     }
 
-    public boolean actualizar(TipoDocumento td) {
-        String sql = "UPDATE tipo_documento SET documento=? WHERE id_tipo_documento=?";
+    public boolean actualizar(TipoComprobante tc) {
+        String sql = "UPDATE TipoComprobante SET nombre=? WHERE id_tipo_comprobante=?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, td.getDocumento());
-            ps.setString(2, td.getIdTipoDocumento());
+            ps.setString(1, tc.getNombre());
+            ps.setString(2, tc.getIdTipoComprobante());
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -61,7 +61,7 @@ public class TipoDocumentoDAO {
     }
 
     public boolean eliminar(String id) {
-        String sql = "DELETE FROM tipo_documento WHERE id_tipo_documento=?";
+        String sql = "DELETE FROM TipoComprobante WHERE id_tipo_comprobante=?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, id);
@@ -74,11 +74,11 @@ public class TipoDocumentoDAO {
     }
 
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_tipo_documento FROM tipo_documento ORDER BY id_tipo_documento DESC";
+        String sql = "SELECT TOP 1 id_tipo_comprobante FROM TipoComprobante ORDER BY id_tipo_comprobante DESC";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString("id_tipo_documento");
+            if (rs.next()) return rs.getString("id_tipo_comprobante");
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
