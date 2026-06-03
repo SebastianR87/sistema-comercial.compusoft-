@@ -3,11 +3,13 @@ package pe.utp.controller;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import pe.utp.model.Empleado;
 
 public class MainController {
@@ -16,7 +18,7 @@ public class MainController {
     @FXML private Label lblNombre;
     @FXML private Label lblCargo;
     @FXML private Button btnEmpleados;
-
+    @FXML private Button btnConfiguracion;
 
     private Empleado empleadoActual;
 
@@ -28,9 +30,13 @@ public class MainController {
         if (empleado.getCargo().equals("Administrador")) {
             btnEmpleados.setVisible(true);
             btnEmpleados.setManaged(true);
+            btnConfiguracion.setVisible(true);
+            btnConfiguracion.setManaged(true);
         } else {
             btnEmpleados.setVisible(false);
             btnEmpleados.setManaged(false);
+            btnConfiguracion.setVisible(false);
+            btnConfiguracion.setManaged(false);
         }
     }
 
@@ -74,16 +80,30 @@ public class MainController {
         cargarVista("/fxml/Empleado.fxml");
     }
 
+    @FXML
+    private void abrirConfiguracion() {
+        cargarVista("/fxml/Configuracion.fxml");
+    }
 
     @FXML
     private void cerrarSesion() {
-
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Desea cerrar sesión?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(resp -> {
             if (resp == ButtonType.YES) {
-                System.out.println("Cerrando sesión...");
-
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/Login.fxml")
+                    );
+                    Parent root = loader.load();
+                    Stage stage = (Stage) panelContenido.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setMaximized(false);
+                    stage.centerOnScreen();
+                    stage.show();
+                } catch (Exception e) {
+                    System.out.println("Error al cerrar sesion: " + e.getMessage());
+                }
             }
         });
     }
@@ -100,11 +120,8 @@ public class MainController {
             panelContenido.getChildren().setAll(vista);
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR,
-                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage());
-            alert.show();
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage()).show();
         }
     }
-
-
 }
