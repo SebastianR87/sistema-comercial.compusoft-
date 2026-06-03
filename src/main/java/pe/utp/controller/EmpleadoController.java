@@ -45,6 +45,7 @@ public class EmpleadoController {
         cbCargo.setItems(FXCollections.observableArrayList(
                 "Administrador", "Vendedor", "Almacenero"
         ));
+        generarId();
 
         configurarColumnaAcciones();
         cargarTabla();
@@ -158,6 +159,19 @@ public class EmpleadoController {
         limpiar();
     }
 
+    private void generarId() {
+        String ultimo = dao.obtenerUltimoId();
+        if (ultimo == null) {
+            txtId.setText("EMP001");
+        } else {
+            String prefijo = ultimo.replaceAll("[0-9]", "");
+            String numeroStr = ultimo.replaceAll("[^0-9]", "");
+            int numero = Integer.parseInt(numeroStr) + 1;
+            txtId.setText(String.format("%s%03d", prefijo, numero));
+        }
+        txtId.setDisable(true);
+    }
+
     @FXML
     private void limpiar() {
         txtId.clear();
@@ -175,5 +189,8 @@ public class EmpleadoController {
         txtPasswordVisible.setManaged(false);
         btnMostrar.setText("👁");
         empleadoSeleccionado = null;
+        generarId();
     }
+
+
 }

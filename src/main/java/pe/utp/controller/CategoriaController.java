@@ -27,6 +27,7 @@ public class CategoriaController {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         configurarColumnaAcciones();
         cargarTabla();
+        generarId();
     }
 
     private void cargarTabla() {
@@ -115,5 +116,21 @@ public class CategoriaController {
         txtId.setDisable(false);
         txtNombre.clear();
         categoriaSeleccionada = null;
+        generarId();
+    }
+
+    private void generarId() {
+        String ultimo = dao.obtenerUltimoId();
+
+        if (ultimo == null) {
+            txtId.setText("CAT001");
+        } else {
+            String prefijo = ultimo.replaceAll("[0-9]", "");
+            String numeroStr = ultimo.replaceAll("[^0-9]", "");
+            int numero = Integer.parseInt(numeroStr) + 1;
+            String nuevoId = String.format("%s%03d", prefijo, numero);
+            txtId.setText(nuevoId);
+        }
+        txtId.setDisable(true);
     }
 }

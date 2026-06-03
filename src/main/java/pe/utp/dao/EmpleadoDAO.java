@@ -121,6 +121,18 @@ public class EmpleadoDAO {
         return null;
     }
 
+    public String obtenerUltimoId() {
+        String sql = "SELECT TOP 1 id_empleado FROM empleado ORDER BY id_empleado DESC";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("id_empleado");
+        } catch (SQLException e) {
+            System.out.println("Error al obtener ultimo id: " + e.getMessage());
+        }
+        return null;
+    }
+
 
 
     private Empleado mapearEmpleado(ResultSet rs) throws SQLException {
