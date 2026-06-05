@@ -1,9 +1,8 @@
 package pe.utp.dao;
 
 import pe.utp.Conexion.ConexionDB;
-import pe.utp.Conexion.ConexionDB;
 import pe.utp.model.Categoria;
-
+import pe.utp.Conexion.QueryHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -102,7 +101,9 @@ public class CategoriaDAO {
     }
 
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_categoria FROM categoria ORDER BY id_categoria DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_categoria FROM categoria ORDER BY id_categoria DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

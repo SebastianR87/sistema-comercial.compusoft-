@@ -3,11 +3,13 @@ package pe.utp.controller;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import pe.utp.model.Empleado;
 
 public class MainController {
@@ -77,13 +79,22 @@ public class MainController {
 
     @FXML
     private void cerrarSesion() {
-
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Desea cerrar sesión?", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(resp -> {
             if (resp == ButtonType.YES) {
-                System.out.println("Cerrando sesión...");
-
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/Login.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = (Stage) panelContenido.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setMaximized(false);
+                    stage.centerOnScreen();
+                    stage.show();
+                } catch (Exception e) {
+                    System.out.println("Error al cerrar sesion: " + e.getMessage());
+                }
             }
         });
     }

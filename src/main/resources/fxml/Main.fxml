@@ -11,8 +11,7 @@
 
 
     <left>
-        <VBox styleClass="sidebar" spacing="0">
-
+        <VBox styleClass="sidebar" spacing="0" minHeight="0" prefHeight="680">
 
             <VBox alignment="CENTER" spacing="4"
                   style="-fx-padding: 30 20 20 20; -fx-background-color: #16213e;">
@@ -24,7 +23,6 @@
                 <Label text="Sistema Comercial"
                        style="-fx-text-fill: #a0a0b0; -fx-font-size: 11px;"/>
             </VBox>
-
 
             <VBox alignment="CENTER_LEFT" spacing="4"
                   style="-fx-padding: 12 20; -fx-background-color: #0f3460;">
@@ -90,11 +88,12 @@
             </VBox>
 
 
-            <VBox style="-fx-padding: 10 0 20 0;">
+            <VBox style="-fx-padding: 10 0 20 0;
+             -fx-background-color: #1a1a2e;">
                 <Separator style="-fx-background-color: #16213e;"/>
                 <Button text="  🚪  Cerrar Sesión"
                         styleClass="sidebar-btn"
-                        style="-fx-text-fill: #e94560;"
+                        style="-fx-text-fill: #e94560; -fx-font-weight: bold;"
                         onAction="#cerrarSesion"/>
             </VBox>
 
