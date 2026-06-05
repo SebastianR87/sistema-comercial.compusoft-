@@ -9,6 +9,8 @@ import javafx.scene.layout.HBox;
 import pe.utp.dao.MetodoPagoDAO;
 import pe.utp.dao.TipoComprobanteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.MetodoPago;
 import pe.utp.model.TipoComprobante;
 import pe.utp.model.TipoDocumento;
@@ -45,6 +47,7 @@ public class ConfiguracionController implements AccesoControlable {
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private TipoComprobanteDAO tipoCompDAO = new TipoComprobanteDAO();
     private MetodoPagoDAO metodoPagoDAO = new MetodoPagoDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
 
     private TipoDocumento tipoDocSeleccionado = null;
     private TipoComprobante tipoCompSeleccionado = null;
@@ -78,6 +81,11 @@ public class ConfiguracionController implements AccesoControlable {
     @Override
     public void aplicarPermisos() {
         // Solo el administrador accede a este módulo desde el menú.
+    }
+
+    private void mostrarErrorEliminacion() {
+        new Alert(Alert.AlertType.ERROR,
+                "No se pudo eliminar el registro").show();
     }
 
     private boolean verificarAcceso() {
@@ -249,16 +257,46 @@ public class ConfiguracionController implements AccesoControlable {
                         if (resp == ButtonType.YES) {
                             switch (tipo) {
                                 case "tipoDoc" -> {
-                                    tipoDocDAO.eliminar(((TipoDocumento) item).getIdTipoDocumento());
-                                    cargarTipoDoc();
+                                    TipoDocumento td = (TipoDocumento) item;
+                                    ResultadoEliminacion r = validacion.validarTipoDocumento(
+                                            td.getIdTipoDocumento(), td.getDocumento());
+                                    if (!r.isPermitido()) {
+                                        r.mostrarAlerta();
+                                        return;
+                                    }
+                                    if (tipoDocDAO.eliminar(td.getIdTipoDocumento())) {
+                                        cargarTipoDoc();
+                                    } else {
+                                        mostrarErrorEliminacion();
+                                    }
                                 }
                                 case "tipoComp" -> {
-                                    tipoCompDAO.eliminar(((TipoComprobante) item).getIdTipoComprobante());
-                                    cargarTipoComp();
+                                    TipoComprobante tc = (TipoComprobante) item;
+                                    ResultadoEliminacion r = validacion.validarTipoComprobante(
+                                            tc.getIdTipoComprobante(), tc.getNombre());
+                                    if (!r.isPermitido()) {
+                                        r.mostrarAlerta();
+                                        return;
+                                    }
+                                    if (tipoCompDAO.eliminar(tc.getIdTipoComprobante())) {
+                                        cargarTipoComp();
+                                    } else {
+                                        mostrarErrorEliminacion();
+                                    }
                                 }
                                 case "metodoPago" -> {
-                                    metodoPagoDAO.eliminar(((MetodoPago) item).getIdMetodoPago());
-                                    cargarMetodoPago();
+                                    MetodoPago mp = (MetodoPago) item;
+                                    ResultadoEliminacion r = validacion.validarMetodoPago(
+                                            mp.getIdMetodoPago(), mp.getMetodoDePago());
+                                    if (!r.isPermitido()) {
+                                        r.mostrarAlerta();
+                                        return;
+                                    }
+                                    if (metodoPagoDAO.eliminar(mp.getIdMetodoPago())) {
+                                        cargarMetodoPago();
+                                    } else {
+                                        mostrarErrorEliminacion();
+                                    }
                                 }
                             }
                         }

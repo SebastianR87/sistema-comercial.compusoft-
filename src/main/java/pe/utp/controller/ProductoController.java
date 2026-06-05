@@ -8,17 +8,15 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import pe.utp.dao.CategoriaDAO;
-import pe.utp.dao.EspecificacionDAO;
 import pe.utp.dao.ProductoDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.Categoria;
-import pe.utp.model.Especificacion;
 import pe.utp.model.Producto;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ProductoController implements AccesoControlable {
 
@@ -44,14 +42,12 @@ public class ProductoController implements AccesoControlable {
     @FXML private TextField txtPrecioVenta;
     @FXML private TextField txtStock;
     @FXML private ComboBox<String> cbEstado;
-    @FXML private VBox panelEspecificaciones;
 
     private ProductoDAO dao = new ProductoDAO();
     private CategoriaDAO categoriaDAO = new CategoriaDAO();
-    private EspecificacionDAO especificacionDAO = new EspecificacionDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private Producto productoSeleccionado = null;
     private Categoria categoriaActual = null;
-    private Map<String, TextField> camposEspecificacion = new HashMap<>();
     private boolean soloLectura = false;
 
     private String obtenerIcono(String nombreCategoria) {
@@ -83,47 +79,11 @@ public class ProductoController implements AccesoControlable {
     @FXML
     public void initialize() {
         colId.setCellValueFactory(new PropertyValueFactory<>("idProducto"));
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colPrecioCompra.setCellValueFactory(new PropertyValueFactory<>("precioCompra"));
         colPrecioVenta.setCellValueFactory(new PropertyValueFactory<>("precioVenta"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
-
-        // Columna nombre con tooltip de specs
-        colNombre.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setTooltip(null);
-                } else {
-                    setText(item);
-                    Producto p = getTableView().getItems().get(getIndex());
-                    List<Especificacion> specs = especificacionDAO
-                            .listarPorProducto(p.getIdProducto());
-
-                    if (!specs.isEmpty()) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("📋 Especificaciones:\n\n");
-                        for (Especificacion esp : specs) {
-                            sb.append("• ").append(esp.getClave())
-                                    .append(": ").append(esp.getValor()).append("\n");
-                        }
-                        Tooltip tooltip = new Tooltip(sb.toString());
-                        tooltip.setStyle(
-                                "-fx-background-color: #1a1a2e;" +
-                                        "-fx-text-fill: white;" +
-                                        "-fx-font-size: 13px;" +
-                                        "-fx-padding: 12;" +
-                                        "-fx-background-radius: 8;"
-                        );
-                        tooltip.setShowDelay(javafx.util.Duration.millis(300));
-                        setTooltip(tooltip);
-                    }
-                }
-            }
-        });
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
 
         cbEstado.setItems(FXCollections.observableArrayList("Activo", "Inactivo"));
         configurarColumnaAcciones();
@@ -207,7 +167,6 @@ public class ProductoController implements AccesoControlable {
                 ? "Consulta: " + cat.getNombre()
                 : "Nuevo " + cat.getNombre());
         lblTituloTabla.setText("Lista de " + cat.getNombre() + "s");
-        cargarCamposEspecificacion(cat.getNombre());
         cargarTabla();
         panelContenido.setVisible(true);
         panelContenido.setManaged(true);
@@ -229,62 +188,6 @@ public class ProductoController implements AccesoControlable {
                 dao.listarPorCategoria(categoriaActual.getIdCategoria())
         );
         tablaProducto.setItems(lista);
-    }
-
-    private void cargarCamposEspecificacion(String nombreCategoria) {
-        panelEspecificaciones.getChildren().clear();
-        camposEspecificacion.clear();
-
-        String upper = nombreCategoria.toUpperCase();
-        if (upper.equals("ALMACENAMIENTO") || upper.equals("GABINETE") ||
-                upper.equals("DISCO M,2") || upper.equals("DISCO SSD")) return;
-
-        Label titulo = new Label("Especificaciones Técnicas");
-        titulo.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
-        panelEspecificaciones.getChildren().add(titulo);
-        panelEspecificaciones.getChildren().add(new Separator());
-
-        switch (upper) {
-            case "PROCESADOR" -> {
-                agregarCampoSpec("socket", "Socket (Ej: LGA1700, AM5)");
-                agregarCampoSpec("nucleos", "Núcleos (Ej: 8)");
-                agregarCampoSpec("frecuencia", "Frecuencia (Ej: 3.6GHz)");
-            }
-            case "PLACA MADRE" -> {
-                agregarCampoSpec("socket", "Socket (Ej: LGA1700, AM5)");
-                agregarCampoSpec("tipo_ram", "Tipo RAM (Ej: DDR4, DDR5)");
-                agregarCampoSpec("slots_ram", "Slots RAM (Ej: 4)");
-            }
-            case "MEMORIA RAM", "RAM" -> {
-                agregarCampoSpec("tipo_ram", "Tipo RAM (Ej: DDR4, DDR5)");
-                agregarCampoSpec("capacidad", "Capacidad (Ej: 16GB)");
-                agregarCampoSpec("velocidad", "Velocidad (Ej: 3200MHz)");
-            }
-            case "TARJETA DE VIDEO", "GPU" -> {
-                agregarCampoSpec("watts", "Consumo Watts (Ej: 200)");
-                agregarCampoSpec("vram", "VRAM (Ej: 8GB)");
-                agregarCampoSpec("conector", "Conector (Ej: PCIe 4.0)");
-            }
-            case "FUENTE DE PODER", "FUENTE" -> {
-                agregarCampoSpec("watts", "Watts (Ej: 650)");
-                agregarCampoSpec("certificacion", "Certificación (Ej: 80+ Gold)");
-            }
-            case "DISIPADOR" -> {
-                agregarCampoSpec("socket", "Socket compatible (Ej: LGA1700)");
-                agregarCampoSpec("tipo", "Tipo (Ej: Aire, Liquido)");
-            }
-        }
-    }
-
-    private void agregarCampoSpec(String clave, String placeholder) {
-        VBox contenedor = new VBox(4);
-        Label label = new Label(placeholder.split(" \\(")[0]);
-        label.setStyle("-fx-font-size: 12px; -fx-text-fill: #495057; -fx-font-weight: bold;");
-        TextField campo = new TextField();
-        campo.setPromptText(placeholder);
-        contenedor.getChildren().addAll(label, campo);
-        panelEspecificaciones.getChildren().add(contenedor);
-        camposEspecificacion.put(clave, campo);
     }
 
     private void configurarColumnaAcciones() {
@@ -311,24 +214,28 @@ public class ProductoController implements AccesoControlable {
                     txtPrecioVenta.setText(String.valueOf(p.getPrecioVenta()));
                     txtStock.setText(String.valueOf(p.getStock()));
                     cbEstado.setValue(p.getEstado());
-                    especificacionDAO.listarPorProducto(p.getIdProducto())
-                            .forEach(esp -> {
-                                TextField campo = camposEspecificacion.get(esp.getClave());
-                                if (campo != null) campo.setText(esp.getValor());
-                            });
                 });
 
                 btnEliminar.setOnAction(e -> {
                     Producto p = getTableView().getItems().get(getIndex());
+                    ResultadoEliminacion validacionElim = validacion.validarProducto(
+                            p.getIdProducto(), p.getNombre());
+                    if (!validacionElim.isPermitido()) {
+                        validacionElim.mostrarAlerta();
+                        return;
+                    }
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                             "¿Eliminar " + p.getNombre() + "?",
                             ButtonType.YES, ButtonType.NO);
                     alert.showAndWait().ifPresent(resp -> {
                         if (resp == ButtonType.YES) {
-                            especificacionDAO.eliminarPorProducto(p.getIdProducto());
-                            dao.eliminar(p.getIdProducto());
-                            cargarTabla();
-                            cargarCards();
+                            if (dao.eliminar(p.getIdProducto())) {
+                                cargarTabla();
+                                cargarCards();
+                            } else {
+                                new Alert(Alert.AlertType.ERROR,
+                                        "No se pudo eliminar el producto").show();
+                            }
                         }
                     });
                 });
@@ -375,38 +282,18 @@ public class ProductoController implements AccesoControlable {
                     precioCompra, precioVenta, stock, estado);
 
             if (productoSeleccionado == null) {
-                if (dao.insertar(p)) {
-                    guardarEspecificaciones(id);
-                }
+                dao.insertar(p);
             } else {
                 dao.actualizar(p);
-                especificacionDAO.eliminarPorProducto(id);
-                guardarEspecificaciones(id);
             }
 
             cargarTabla();
+            cargarCards();
             limpiar();
 
         } catch (NumberFormatException e) {
             new Alert(Alert.AlertType.WARNING,
                     "Precio y stock deben ser números").show();
-        }
-    }
-
-    private void guardarEspecificaciones(String idProducto) {
-        long timestamp = System.currentTimeMillis();
-        int contador = 1;
-        for (Map.Entry<String, TextField> entry : camposEspecificacion.entrySet()) {
-            String valor = entry.getValue().getText().trim();
-            if (!valor.isEmpty()) {
-                Especificacion esp = new Especificacion();
-                esp.setIdEspecificacion("ESP" + timestamp + contador);
-                esp.setIdProducto(idProducto);
-                esp.setClave(entry.getKey());
-                esp.setValor(valor);
-                especificacionDAO.insertar(esp);
-                contador++;
-            }
         }
     }
 
@@ -420,13 +307,10 @@ public class ProductoController implements AccesoControlable {
         txtPrecioVenta.clear();
         txtStock.clear();
         cbEstado.setValue(null);
-        panelEspecificaciones.getChildren().clear();
-        camposEspecificacion.clear();
         productoSeleccionado = null;
-        if (categoriaActual != null) {
-            cargarCamposEspecificacion(categoriaActual.getNombre());
+        if (categoriaActual != null && !soloLectura) {
+            generarId();
         }
-        generarId();
     }
 
     private void generarId() {
@@ -438,10 +322,7 @@ public class ProductoController implements AccesoControlable {
         if (ultimo == null) {
             txtId.setText(prefijo + "001");
         } else {
-            // Extrae solo los números del final
             String numeroStr = ultimo.replaceAll("[^0-9]", "");
-
-            // Verifica que no esté vacío antes de parsear
             if (numeroStr.isEmpty()) {
                 txtId.setText(prefijo + "001");
             } else {

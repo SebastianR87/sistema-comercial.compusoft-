@@ -90,9 +90,6 @@
                     </VBox>
                 </HBox>
 
-                <!-- ESPECIFICACIONES DINAMICAS -->
-                <VBox fx:id="panelEspecificaciones" spacing="10"/>
-
                 <VBox spacing="8">
                     <Button text="💾 Guardar" styleClass="btn-primary"
                             onAction="#guardar" maxWidth="Infinity"/>
