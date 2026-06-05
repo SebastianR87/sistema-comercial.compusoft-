@@ -85,6 +85,10 @@
                         styleClass="sidebar-btn" onAction="#abrirEmpleados"
                         visible="false" managed="false"/>
 
+                <Button fx:id="btnConfiguracion" text="  ⚙️  Configuración"
+                        styleClass="sidebar-btn" onAction="#abrirConfiguracion"
+                        visible="false" managed="false"/>
+
             </VBox>
 
 

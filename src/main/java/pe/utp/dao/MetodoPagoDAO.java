@@ -1,43 +1,43 @@
 package pe.utp.dao;
 
 import pe.utp.Conexion.ConexionDB;
-import pe.utp.model.TipoDocumento;
+import pe.utp.model.MetodoPago;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TipoDocumentoDAO {
+public class MetodoPagoDAO {
 
     private Connection conexion;
 
-    public TipoDocumentoDAO() {
+    public MetodoPagoDAO() {
         this.conexion = ConexionDB.getConexion();
     }
 
-    public List<TipoDocumento> listar() {
-        List<TipoDocumento> lista = new ArrayList<>();
-        String sql = "SELECT * FROM tipo_documento";
+    public List<MetodoPago> listar() {
+        List<MetodoPago> lista = new ArrayList<>();
+        String sql = "SELECT * FROM metodopago";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                TipoDocumento td = new TipoDocumento();
-                td.setIdTipoDocumento(rs.getString("id_tipo_documento"));
-                td.setDocumento(rs.getString("documento"));
-                lista.add(td);
+                MetodoPago mp = new MetodoPago();
+                mp.setIdMetodoPago(rs.getString("id_metodopago"));
+                mp.setMetodoDePago(rs.getString("metodo_de_pago"));
+                lista.add(mp);
             }
         } catch (SQLException e) {
-            System.out.println("Error al listar tipo documento: " + e.getMessage());
+            System.out.println("Error al listar metodo pago: " + e.getMessage());
         }
         return lista;
     }
 
-    public boolean insertar(TipoDocumento td) {
-        String sql = "INSERT INTO tipo_documento VALUES (?, ?)";
+    public boolean insertar(MetodoPago mp) {
+        String sql = "INSERT INTO metodopago VALUES (?, ?)";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, td.getIdTipoDocumento());
-            ps.setString(2, td.getDocumento());
+            ps.setString(1, mp.getIdMetodoPago());
+            ps.setString(2, mp.getMetodoDePago());
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -46,12 +46,12 @@ public class TipoDocumentoDAO {
         }
     }
 
-    public boolean actualizar(TipoDocumento td) {
-        String sql = "UPDATE tipo_documento SET documento=? WHERE id_tipo_documento=?";
+    public boolean actualizar(MetodoPago mp) {
+        String sql = "UPDATE metodopago SET metodo_de_pago=? WHERE id_metodopago=?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, td.getDocumento());
-            ps.setString(2, td.getIdTipoDocumento());
+            ps.setString(1, mp.getMetodoDePago());
+            ps.setString(2, mp.getIdMetodoPago());
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -61,7 +61,7 @@ public class TipoDocumentoDAO {
     }
 
     public boolean eliminar(String id) {
-        String sql = "DELETE FROM tipo_documento WHERE id_tipo_documento=?";
+        String sql = "DELETE FROM metodopago WHERE id_metodopago=?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, id);
@@ -74,11 +74,11 @@ public class TipoDocumentoDAO {
     }
 
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_tipo_documento FROM tipo_documento ORDER BY id_tipo_documento DESC";
+        String sql = "SELECT TOP 1 id_metodopago FROM metodopago ORDER BY id_metodopago DESC";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString("id_tipo_documento");
+            if (rs.next()) return rs.getString("id_metodopago");
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }

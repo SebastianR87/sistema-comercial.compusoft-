@@ -18,7 +18,7 @@ public class MainController {
     @FXML private Label lblNombre;
     @FXML private Label lblCargo;
     @FXML private Button btnEmpleados;
-
+    @FXML private Button btnConfiguracion;
 
     private Empleado empleadoActual;
 
@@ -30,9 +30,13 @@ public class MainController {
         if (empleado.getCargo().equals("Administrador")) {
             btnEmpleados.setVisible(true);
             btnEmpleados.setManaged(true);
+            btnConfiguracion.setVisible(true);
+            btnConfiguracion.setManaged(true);
         } else {
             btnEmpleados.setVisible(false);
             btnEmpleados.setManaged(false);
+            btnConfiguracion.setVisible(false);
+            btnConfiguracion.setManaged(false);
         }
     }
 
@@ -76,6 +80,10 @@ public class MainController {
         cargarVista("/fxml/Empleado.fxml");
     }
 
+    @FXML
+    private void abrirConfiguracion() {
+        cargarVista("/fxml/Configuracion.fxml");
+    }
 
     @FXML
     private void cerrarSesion() {
@@ -111,11 +119,8 @@ public class MainController {
             panelContenido.getChildren().setAll(vista);
         } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR,
-                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage());
-            alert.show();
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage()).show();
         }
     }
-
-
 }
