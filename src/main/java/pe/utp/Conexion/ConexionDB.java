@@ -21,23 +21,31 @@ public class ConexionDB {
                     .getClassLoader()
                     .getResourceAsStream("config.properties");
 
-            Properties props = new Properties();
-            props.load(input);
-
-            motor    = props.getProperty("motor");
-            server   = props.getProperty("server");
-            database = props.getProperty("database");
-            user     = props.getProperty("user");
-            password = props.getProperty("password");
-
-            if (motor.equalsIgnoreCase("mysql")) {
-                url = "jdbc:mysql://" + server + ":3306/" + database
-                        + "?useSSL=false&serverTimezone=UTC";
+            if (input == null) {
+                System.out.println("No se encontró config.properties");
             } else {
-                url = "jdbc:sqlserver://" + server + ":1433;"
-                        + "databaseName=" + database + ";"
-                        + "encrypt=false;"
-                        + "trustServerCertificate=true;";
+                Properties props = new Properties();
+                props.load(input);
+
+                motor    = props.getProperty("motor");
+                server   = props.getProperty("server");
+                database = props.getProperty("database");
+                user     = props.getProperty("user");
+                password = props.getProperty("password");
+
+                if (motor.equalsIgnoreCase("mysql")) {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    url = "jdbc:mysql://" + server + ":3306/" + database
+                            + "?useSSL=false&serverTimezone=UTC";
+                } else {
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    url = "jdbc:sqlserver://" + server + ":1433;"
+                            + "databaseName=" + database + ";"
+                            + "encrypt=false;"
+                            + "trustServerCertificate=true;";
+                }
+
+                System.out.println("Config cargada: " + motor + " - " + database);
             }
 
         } catch (Exception e) {

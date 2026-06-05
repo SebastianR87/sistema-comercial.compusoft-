@@ -12,6 +12,10 @@
     <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
         <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
         <Label text="🖥️ Productos" styleClass="topbar-title"/>
+        <Label fx:id="lblModoConsulta" text="Solo consulta"
+               visible="false" managed="false"
+               style="-fx-text-fill: #6c757d; -fx-font-size: 12px;
+                      -fx-font-style: italic;"/>
     </HBox>
 
     <!-- CARDS DE CATEGORIAS -->
@@ -28,7 +32,7 @@
         <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
 
         <!-- FORMULARIO CON SCROLL -->
-        <ScrollPane fitToWidth="true" prefWidth="320" minWidth="320"
+        <ScrollPane fx:id="panelFormulario" fitToWidth="true" prefWidth="320" minWidth="320"
                     style="-fx-background-color: transparent;
                            -fx-background: transparent;">
             <VBox styleClass="card" spacing="14">

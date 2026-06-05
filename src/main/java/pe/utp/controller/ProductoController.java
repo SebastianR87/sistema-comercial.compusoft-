@@ -13,13 +13,17 @@ import pe.utp.dao.ProductoDAO;
 import pe.utp.model.Categoria;
 import pe.utp.model.Especificacion;
 import pe.utp.model.Producto;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ProductoController {
+public class ProductoController implements AccesoControlable {
 
+    @FXML private Label lblModoConsulta;
+    @FXML private ScrollPane panelFormulario;
     @FXML private FlowPane panelCards;
     @FXML private HBox panelContenido;
     @FXML private TableView<Producto> tablaProducto;
@@ -48,6 +52,7 @@ public class ProductoController {
     private Producto productoSeleccionado = null;
     private Categoria categoriaActual = null;
     private Map<String, TextField> camposEspecificacion = new HashMap<>();
+    private boolean soloLectura = false;
 
     private String obtenerIcono(String nombreCategoria) {
         return switch (nombreCategoria.toUpperCase()) {
@@ -123,6 +128,18 @@ public class ProductoController {
         cbEstado.setItems(FXCollections.observableArrayList("Activo", "Inactivo"));
         configurarColumnaAcciones();
         cargarCards();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        soloLectura = !PermisoService.puedeEditarProducto();
+        if (soloLectura) {
+            lblModoConsulta.setVisible(true);
+            lblModoConsulta.setManaged(true);
+            PermisoUtil.ocultar(panelFormulario);
+            PermisoUtil.ocultarColumna(colAcciones);
+        }
     }
 
     private void cargarCards() {
@@ -186,13 +203,17 @@ public class ProductoController {
 
     private void abrirCategoria(Categoria cat) {
         categoriaActual = cat;
-        lblTituloFormulario.setText("Nuevo " + cat.getNombre());
+        lblTituloFormulario.setText(soloLectura
+                ? "Consulta: " + cat.getNombre()
+                : "Nuevo " + cat.getNombre());
         lblTituloTabla.setText("Lista de " + cat.getNombre() + "s");
         cargarCamposEspecificacion(cat.getNombre());
         cargarTabla();
         panelContenido.setVisible(true);
         panelContenido.setManaged(true);
-        generarId();
+        if (!soloLectura) {
+            generarId();
+        }
     }
 
     @FXML
@@ -328,6 +349,10 @@ public class ProductoController {
 
     @FXML
     private void guardar() {
+        if (!PermisoService.puedeEditarProducto()) {
+            PermisoUtil.denegado();
+            return;
+        }
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
         String descripcion = txtDescripcion.getText().trim();

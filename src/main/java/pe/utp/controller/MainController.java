@@ -11,78 +11,95 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import pe.utp.model.Empleado;
+import pe.utp.security.Modulo;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
+import pe.utp.security.Sesion;
 
 public class MainController {
 
     @FXML private StackPane panelContenido;
     @FXML private Label lblNombre;
     @FXML private Label lblCargo;
+
+    @FXML private Button btnCategoria;
+    @FXML private Button btnProducto;
+    @FXML private Button btnCliente;
+    @FXML private Button btnProveedor;
+    @FXML private Button btnVenta;
+    @FXML private Button btnCompra;
+    @FXML private Button btnConfigurador;
     @FXML private Button btnEmpleados;
     @FXML private Button btnConfiguracion;
 
-    private Empleado empleadoActual;
-
     public void setEmpleado(Empleado empleado) {
-        this.empleadoActual = empleado;
+        Sesion.iniciar(empleado);
         lblNombre.setText(empleado.getNombre());
         lblCargo.setText(empleado.getCargo());
+        configurarMenu();
+    }
 
-        if (empleado.getCargo().equals("Administrador")) {
-            btnEmpleados.setVisible(true);
-            btnEmpleados.setManaged(true);
-            btnConfiguracion.setVisible(true);
-            btnConfiguracion.setManaged(true);
-        } else {
-            btnEmpleados.setVisible(false);
-            btnEmpleados.setManaged(false);
-            btnConfiguracion.setVisible(false);
-            btnConfiguracion.setManaged(false);
-        }
+    private void configurarMenu() {
+        configurarBoton(btnCategoria, Modulo.CATEGORIA);
+        configurarBoton(btnProducto, Modulo.PRODUCTO);
+        configurarBoton(btnCliente, Modulo.CLIENTE);
+        configurarBoton(btnProveedor, Modulo.PROVEEDOR);
+        configurarBoton(btnVenta, Modulo.VENTA);
+        configurarBoton(btnCompra, Modulo.COMPRA);
+        configurarBoton(btnConfigurador, Modulo.COTIZACION);
+        configurarBoton(btnEmpleados, Modulo.EMPLEADOS);
+        configurarBoton(btnConfiguracion, Modulo.CONFIGURACION);
+    }
+
+    private void configurarBoton(Button boton, Modulo modulo) {
+        boolean visible = PermisoService.puedeAcceder(modulo);
+        boton.setVisible(visible);
+        boton.setManaged(visible);
     }
 
     @FXML
     private void abrirCategoria() {
-        cargarVista("/fxml/Categoria.fxml");
+        cargarVista("/fxml/Categoria.fxml", Modulo.CATEGORIA);
     }
 
     @FXML
     private void abrirProducto() {
-        cargarVista("/fxml/Producto.fxml");
+        cargarVista("/fxml/Producto.fxml", Modulo.PRODUCTO);
     }
 
     @FXML
     private void abrirCliente() {
-        cargarVista("/fxml/Cliente.fxml");
+        cargarVista("/fxml/Cliente.fxml", Modulo.CLIENTE);
     }
 
     @FXML
     private void abrirProveedor() {
-        cargarVista("/fxml/Proveedor.fxml");
+        cargarVista("/fxml/Proveedor.fxml", Modulo.PROVEEDOR);
     }
 
     @FXML
     private void abrirVenta() {
-        cargarVista("/fxml/Venta.fxml");
+        cargarVista("/fxml/Venta.fxml", Modulo.VENTA);
     }
 
     @FXML
     private void abrirCompra() {
-        cargarVista("/fxml/Compra.fxml");
+        cargarVista("/fxml/Compra.fxml", Modulo.COMPRA);
     }
 
     @FXML
     private void abrirConfigurador() {
-        cargarVista("/fxml/Configurador.fxml");
+        cargarVista("/fxml/Configurador.fxml", Modulo.COTIZACION);
     }
 
     @FXML
     private void abrirEmpleados() {
-        cargarVista("/fxml/Empleado.fxml");
+        cargarVista("/fxml/Empleado.fxml", Modulo.EMPLEADOS);
     }
 
     @FXML
     private void abrirConfiguracion() {
-        cargarVista("/fxml/Configuracion.fxml");
+        cargarVista("/fxml/Configuracion.fxml", Modulo.CONFIGURACION);
     }
 
     @FXML
@@ -92,6 +109,7 @@ public class MainController {
         alert.showAndWait().ifPresent(resp -> {
             if (resp == ButtonType.YES) {
                 try {
+                    Sesion.cerrar();
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/Login.fxml"));
                     Parent root = loader.load();
@@ -107,15 +125,24 @@ public class MainController {
         });
     }
 
-    private void cargarVista(String ruta) {
+    private void cargarVista(String ruta, Modulo modulo) {
+        if (!PermisoService.puedeAcceder(modulo)) {
+            PermisoUtil.denegado();
+            return;
+        }
         try {
             var url = getClass().getResource(ruta);
             if (url == null) {
-                System.out.println("Vista no implementada aun: " + ruta);
+                new Alert(Alert.AlertType.INFORMATION,
+                        "Este módulo aún no está implementado.").show();
                 return;
             }
             FXMLLoader loader = new FXMLLoader(url);
             Parent vista = loader.load();
+            Object controller = loader.getController();
+            if (controller instanceof AccesoControlable acceso) {
+                acceso.aplicarPermisos();
+            }
             panelContenido.getChildren().setAll(vista);
         } catch (Exception e) {
             e.printStackTrace();

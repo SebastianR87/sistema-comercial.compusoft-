@@ -17,8 +17,10 @@ import pe.utp.dao.ClienteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Cliente;
 import pe.utp.model.TipoDocumento;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
 
-public class ClienteController {
+public class ClienteController implements AccesoControlable {
 
 
     @FXML private TableView<Cliente> tablaCliente;
@@ -79,6 +81,12 @@ public class ClienteController {
         generarId();
         cargarTabla();
         aplicarEstiloFiltros();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        // Vendedor y administrador tienen acceso completo a clientes.
     }
 
     /** Carga todos los clientes en listaCompleta */
@@ -302,6 +310,10 @@ public class ClienteController {
 
     @FXML
     private void guardar() {
+        if (!PermisoService.puedeEditarCliente()) {
+            PermisoUtil.denegado();
+            return;
+        }
         String id              = txtId.getText().trim();
         String nombre          = txtNombre.getText().trim();
         TipoDocumento tipoDoc  = cbTipoDocumento.getValue();

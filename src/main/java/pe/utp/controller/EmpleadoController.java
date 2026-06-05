@@ -1,5 +1,6 @@
 package pe.utp.controller;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -9,14 +10,19 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import pe.utp.dao.EmpleadoDAO;
+import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Empleado;
+import pe.utp.security.Modulo;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
+import pe.utp.model.TipoDocumento;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class EmpleadoController {
+public class EmpleadoController implements AccesoControlable {
 
     @FXML private TableView<Empleado> tablaEmpleado;
     @FXML private TableColumn<Empleado, String> colId;
@@ -31,7 +37,7 @@ public class EmpleadoController {
     @FXML private TextField     txtId;
     @FXML private TextField     txtNombre;
     @FXML private ComboBox<String> cbCargo;
-    @FXML private ComboBox<String> cbTipoDocumento;
+    @FXML private ComboBox<TipoDocumento> cbTipoDocumento;
     @FXML private TextField     txtNumeroDocumento;
     @FXML private TextField     txtTelefono;
     @FXML private TextField     txtDireccion;
@@ -49,6 +55,7 @@ public class EmpleadoController {
     private boolean passwordVisible = false;
 
     private EmpleadoDAO dao = new EmpleadoDAO();
+    private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private Empleado empleadoSeleccionado = null;
 
     private ObservableList<Empleado> listaCompleta = FXCollections.observableArrayList();
@@ -60,7 +67,12 @@ public class EmpleadoController {
         colId.setCellValueFactory(new PropertyValueFactory<>("idEmpleado"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colCargo.setCellValueFactory(new PropertyValueFactory<>("cargo"));
-        colTipoDocumento.setCellValueFactory(new PropertyValueFactory<>("tipoDocumento"));
+        colTipoDocumento.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getNombreTipoDocumento() != null
+                                ? data.getValue().getNombreTipoDocumento()
+                                : ""
+                ));
         colNumeroDocumento.setCellValueFactory(new PropertyValueFactory<>("numeroDocumento"));
 
         // Carga opciones del ComboBox
@@ -72,14 +84,20 @@ public class EmpleadoController {
         ));
         listaFiltrada = new FilteredList<>(listaCompleta, e -> true);
         tablaEmpleado.setItems(listaFiltrada);
-        cbTipoDocumento.setItems(FXCollections.observableArrayList(
-                "DNI", "Carnet de Extranjería", "Pasaporte"
-        ));
+        cbTipoDocumento.setItems(
+                FXCollections.observableArrayList(tipoDocDAO.listar())
+        );
         cbTipoDocumento.setOnAction(e -> actualizarPlaceholder());
 
         generarId();
         cargarTabla();
         aplicarEstiloFiltros();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        // Solo el administrador accede a este módulo desde el menú.
     }
 
     @FXML
@@ -395,10 +413,14 @@ public class EmpleadoController {
 
     @FXML
     private void guardar() {
+        if (!PermisoService.puedeAcceder(Modulo.EMPLEADOS)) {
+            PermisoUtil.denegado();
+            return;
+        }
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
         String cargo = cbCargo.getValue();
-        String tipoDocumento    = cbTipoDocumento.getValue();
+        TipoDocumento tipoDoc   = cbTipoDocumento.getValue();
         String numeroDocumento  = txtNumeroDocumento.getText().trim();
         String usuario = txtUsuario.getText().trim();
         String password = passwordVisible ?
@@ -409,7 +431,7 @@ public class EmpleadoController {
 
 
         if (id.isEmpty() || nombre.isEmpty() || cargo == null ||
-                tipoDocumento == null || numeroDocumento.isEmpty() ||
+                tipoDoc == null || numeroDocumento.isEmpty() ||
                 usuario.isEmpty() || password.isEmpty()) {
             new Alert(Alert.AlertType.WARNING,
                     "Completa todos los campos obligatorios").showAndWait();
@@ -440,11 +462,8 @@ public class EmpleadoController {
             return;
         }
 
-        // Validación dinámica según el tipo de documento seleccionado
-        switch (tipoDocumento) {
+        switch (tipoDoc.getDocumento()) {
             case "DNI":
-                // Exactamente 8 dígitos numéricos
-                // \\d = dígito, {8} = exactamente 8 veces
                 if (!numeroDocumento.matches("\\d{8}")) {
                     new Alert(Alert.AlertType.WARNING,
                             "El DNI debe tener exactamente 8 dígitos numéricos")
@@ -452,8 +471,15 @@ public class EmpleadoController {
                     return;
                 }
                 break;
+            case "RUC":
+                if (!numeroDocumento.matches("\\d{11}")) {
+                    new Alert(Alert.AlertType.WARNING,
+                            "El RUC debe tener exactamente 11 dígitos numéricos")
+                            .showAndWait();
+                    return;
+                }
+                break;
             case "Carnet de Extranjería":
-                // Exactamente 9 dígitos numéricos
                 if (!numeroDocumento.matches("\\d{9}")) {
                     new Alert(Alert.AlertType.WARNING,
                             "El Carnet de Extranjería debe tener exactamente 9 dígitos")
@@ -462,9 +488,6 @@ public class EmpleadoController {
                 }
                 break;
             case "Pasaporte":
-                // Entre 6 y 12 caracteres alfanuméricos
-                // [a-zA-Z0-9] = letras o números
-                // {6,12} = entre 6 y 12 veces
                 if (!numeroDocumento.matches("[a-zA-Z0-9]{6,12}")) {
                     new Alert(Alert.AlertType.WARNING,
                             "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos")
@@ -487,7 +510,7 @@ public class EmpleadoController {
         }
 
         Empleado e = new Empleado(id, nombre, cargo, usuario,
-                password, tipoDocumento, numeroDocumento,
+                password, tipoDoc.getIdTipoDocumento(), numeroDocumento,
                 telefono, direccion, "ACTIVO");
 
         boolean exito = dao.insertar(e);
@@ -518,21 +541,24 @@ public class EmpleadoController {
 
     @FXML
     private void actualizarPlaceholder() {
-        String tipo = cbTipoDocumento.getValue();
+        TipoDocumento tipo = cbTipoDocumento.getValue();
         if (tipo == null) return;
 
-        switch (tipo) {
+        switch (tipo.getDocumento()) {
             case "DNI":
-                // DNI peruano: exactamente 8 dígitos numéricos
                 txtNumeroDocumento.setPromptText("8 dígitos numéricos");
                 break;
+            case "RUC":
+                txtNumeroDocumento.setPromptText("11 dígitos numéricos");
+                break;
             case "Carnet de Extranjería":
-                // Carnet de extranjería: exactamente 9 dígitos numéricos
                 txtNumeroDocumento.setPromptText("9 dígitos numéricos");
                 break;
             case "Pasaporte":
-                // Pasaporte: entre 6 y 12 caracteres alfanuméricos
                 txtNumeroDocumento.setPromptText("6 a 12 caracteres alfanuméricos");
+                break;
+            default:
+                txtNumeroDocumento.setPromptText("Número de documento");
                 break;
         }
     }

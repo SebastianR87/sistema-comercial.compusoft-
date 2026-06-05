@@ -12,8 +12,11 @@ import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.MetodoPago;
 import pe.utp.model.TipoComprobante;
 import pe.utp.model.TipoDocumento;
+import pe.utp.security.Modulo;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
 
-public class ConfiguracionController {
+public class ConfiguracionController implements AccesoControlable {
 
     // ===== TIPO DOCUMENTO =====
     @FXML private TableView<TipoDocumento> tablaTipoDoc;
@@ -69,6 +72,20 @@ public class ConfiguracionController {
         configurarAcciones(colAccMetodoPago, "metodoPago");
         cargarMetodoPago();
         generarIdMetodoPago();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        // Solo el administrador accede a este módulo desde el menú.
+    }
+
+    private boolean verificarAcceso() {
+        if (!PermisoService.puedeAcceder(Modulo.CONFIGURACION)) {
+            PermisoUtil.denegado();
+            return false;
+        }
+        return true;
     }
 
     // ===== GENERAR IDs =====
@@ -115,6 +132,7 @@ public class ConfiguracionController {
     // ===== GUARDAR =====
     @FXML
     private void guardarTipoDoc() {
+        if (!verificarAcceso()) return;
         String id = txtIdTipoDoc.getText().trim();
         String documento = txtDocumento.getText().trim();
         if (id.isEmpty() || documento.isEmpty()) {
@@ -130,6 +148,7 @@ public class ConfiguracionController {
 
     @FXML
     private void guardarTipoComp() {
+        if (!verificarAcceso()) return;
         String id = txtIdTipoComp.getText().trim();
         String nombre = txtNombreComp.getText().trim();
         if (id.isEmpty() || nombre.isEmpty()) {
@@ -145,6 +164,7 @@ public class ConfiguracionController {
 
     @FXML
     private void guardarMetodoPago() {
+        if (!verificarAcceso()) return;
         String id = txtIdMetodoPago.getText().trim();
         String metodo = txtMetodoPago.getText().trim();
         if (id.isEmpty() || metodo.isEmpty()) {
