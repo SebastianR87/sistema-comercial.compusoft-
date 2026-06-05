@@ -10,6 +10,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import pe.utp.dao.EmpleadoDAO;
 import pe.utp.model.Empleado;
+import pe.utp.security.Rol;
+import pe.utp.security.Sesion;
 
 public class LoginController {
     @FXML
@@ -33,6 +35,10 @@ public class LoginController {
         Empleado empleado = dao.login(usuario, password);
 
         if (empleado != null) {
+            if (Rol.desdeCargo(empleado.getCargo()) == null) {
+                mostrarError("Cargo no reconocido. Contacta al administrador.");
+                return;
+            }
             try {
                 FXMLLoader loader = new FXMLLoader(
                         getClass().getResource("/fxml/Main.fxml"));

@@ -6,7 +6,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import pe.utp.dao.EmpleadoDAO;
+import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Empleado;
+import pe.utp.model.TipoDocumento;
 
 public class EmpleadoModalController {
 
@@ -24,7 +26,7 @@ public class EmpleadoModalController {
     @FXML private TextField        txtId;
     @FXML private TextField        txtNombre;
     @FXML private ComboBox<String> cbCargo;
-    @FXML private ComboBox<String> cbTipoDocumento;
+    @FXML private ComboBox<TipoDocumento> cbTipoDocumento;
     @FXML private TextField        txtNumeroDocumento;
     @FXML private TextField        txtTelefono;
     @FXML private TextField        txtDireccion;
@@ -41,6 +43,7 @@ public class EmpleadoModalController {
     // Estado interno
     private boolean     passwordVisible = false;
     private EmpleadoDAO dao             = new EmpleadoDAO();
+    private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private Empleado    empleado;
 
     @FXML
@@ -49,9 +52,10 @@ public class EmpleadoModalController {
                 "Administrador", "Vendedor", "Almacenero"
         ));
 
-        cbTipoDocumento.setItems(FXCollections.observableArrayList(
-                "DNI", "Carnet de Extranjería", "Pasaporte"
-        ));
+        cbTipoDocumento.setItems(
+                FXCollections.observableArrayList(tipoDocDAO.listar())
+        );
+        cbTipoDocumento.setOnAction(e -> actualizarPlaceholder());
     }
 
     public void setModo(String modo, Empleado emp) {
@@ -71,7 +75,13 @@ public class EmpleadoModalController {
         txtId.setText(emp.getIdEmpleado());
         txtNombre.setText(emp.getNombre());
         cbCargo.setValue(emp.getCargo());
-        cbTipoDocumento.setValue(emp.getTipoDocumento());
+        if (emp.getIdTipoDocumento() != null) {
+            cbTipoDocumento.getItems().stream()
+                    .filter(td -> td.getIdTipoDocumento()
+                            .equals(emp.getIdTipoDocumento()))
+                    .findFirst()
+                    .ifPresent(td -> cbTipoDocumento.setValue(td));
+        }
         txtNumeroDocumento.setText(emp.getNumeroDocumento() != null
                 ? emp.getNumeroDocumento() : "");
         actualizarPlaceholder();
@@ -134,17 +144,23 @@ public class EmpleadoModalController {
 
     @FXML
     private void actualizarPlaceholder() {
-        String tipo = cbTipoDocumento.getValue();
+        TipoDocumento tipo = cbTipoDocumento.getValue();
         if (tipo == null) return;
-        switch (tipo) {
+        switch (tipo.getDocumento()) {
             case "DNI":
                 txtNumeroDocumento.setPromptText("8 dígitos numéricos");
+                break;
+            case "RUC":
+                txtNumeroDocumento.setPromptText("11 dígitos numéricos");
                 break;
             case "Carnet de Extranjería":
                 txtNumeroDocumento.setPromptText("9 dígitos numéricos");
                 break;
             case "Pasaporte":
                 txtNumeroDocumento.setPromptText("6 a 12 caracteres alfanuméricos");
+                break;
+            default:
+                txtNumeroDocumento.setPromptText("Número de documento");
                 break;
         }
     }
@@ -174,7 +190,7 @@ public class EmpleadoModalController {
     private void guardar() {
         String nombre    = txtNombre.getText().trim();
         String cargo     = cbCargo.getValue();
-        String tipoDocumento   = cbTipoDocumento.getValue();
+        TipoDocumento tipoDoc  = cbTipoDocumento.getValue();
         String numeroDocumento = txtNumeroDocumento.getText().trim();
         String usuario   = txtUsuario.getText().trim();
         String password  = passwordVisible
@@ -185,7 +201,7 @@ public class EmpleadoModalController {
 
         // Validación 1: campos obligatorios
         if (nombre.isEmpty() || cargo == null ||
-                tipoDocumento == null || numeroDocumento.isEmpty() ||
+                tipoDoc == null || numeroDocumento.isEmpty() ||
                 usuario.isEmpty() || password.isEmpty()) {
             new Alert(Alert.AlertType.WARNING,
                     "Completa todos los campos obligatorios").showAndWait();
@@ -220,12 +236,19 @@ public class EmpleadoModalController {
             return;
         }
 
-        // Validación 3: formato del documento según tipo
-        switch (tipoDocumento) {
+        switch (tipoDoc.getDocumento()) {
             case "DNI":
                 if (!numeroDocumento.matches("\\d{8}")) {
                     new Alert(Alert.AlertType.WARNING,
                             "El DNI debe tener exactamente 8 dígitos numéricos")
+                            .showAndWait();
+                    return;
+                }
+                break;
+            case "RUC":
+                if (!numeroDocumento.matches("\\d{11}")) {
+                    new Alert(Alert.AlertType.WARNING,
+                            "El RUC debe tener exactamente 11 dígitos numéricos")
                             .showAndWait();
                     return;
                 }
@@ -259,7 +282,7 @@ public class EmpleadoModalController {
         // Actualiza el objeto con los nuevos valores
         empleado.setNombre(nombre);
         empleado.setCargo(cargo);
-        empleado.setTipoDocumento(tipoDocumento);
+        empleado.setIdTipoDocumento(tipoDoc.getIdTipoDocumento());
         empleado.setNumeroDocumento(numeroDocumento);
         empleado.setUsuario(usuario);
         empleado.setPassword(password);

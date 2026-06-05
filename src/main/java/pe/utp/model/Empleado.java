@@ -1,4 +1,3 @@
-
 package pe.utp.model;
 
 public class Empleado {
@@ -7,7 +6,8 @@ public class Empleado {
     private String cargo;
     private String usuario;
     private String password;
-    private String tipoDocumento;
+    private String idTipoDocumento;
+    private String nombreTipoDocumento;
     private String numeroDocumento;
     private String telefono;
     private String direccion;
@@ -17,18 +17,18 @@ public class Empleado {
 
     public Empleado(String idEmpleado, String nombre, String cargo,
                     String usuario, String password,
-                    String tipoDocumento, String numeroDocumento,
+                    String idTipoDocumento, String numeroDocumento,
                     String telefono, String direccion, String estado) {
-        this.idEmpleado      = idEmpleado;
-        this.nombre          = nombre;
-        this.cargo           = cargo;
-        this.usuario         = usuario;
-        this.password        = password;
-        this.tipoDocumento   = tipoDocumento;
+        this.idEmpleado = idEmpleado;
+        this.nombre = nombre;
+        this.cargo = cargo;
+        this.usuario = usuario;
+        this.password = password;
+        this.idTipoDocumento = idTipoDocumento;
         this.numeroDocumento = numeroDocumento;
-        this.telefono        = telefono;
-        this.direccion       = direccion;
-        this.estado          = estado != null ? estado : "ACTIVO";
+        this.telefono = telefono;
+        this.direccion = direccion;
+        this.estado = estado != null ? estado : "ACTIVO";
     }
 
     public String getIdEmpleado() { return idEmpleado; }
@@ -46,14 +46,14 @@ public class Empleado {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getTipoDocumento() { return tipoDocumento; }
-    public void setTipoDocumento(String tipoDocumento) {
-        this.tipoDocumento = tipoDocumento;
-    }
+    public String getIdTipoDocumento() { return idTipoDocumento; }
+    public void setIdTipoDocumento(String idTipoDocumento) { this.idTipoDocumento = idTipoDocumento; }
+
+    public String getNombreTipoDocumento() { return nombreTipoDocumento; }
+    public void setNombreTipoDocumento(String nombreTipoDocumento) { this.nombreTipoDocumento = nombreTipoDocumento; }
+
     public String getNumeroDocumento() { return numeroDocumento; }
-    public void setNumeroDocumento(String numeroDocumento) {
-        this.numeroDocumento = numeroDocumento;
-    }
+    public void setNumeroDocumento(String numeroDocumento) { this.numeroDocumento = numeroDocumento; }
 
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }

@@ -6,11 +6,16 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import pe.utp.dao.CategoriaDAO;
 import pe.utp.model.Categoria;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
 
-public class CategoriaController {
+public class CategoriaController implements AccesoControlable {
 
+    @FXML private Label lblModoConsulta;
+    @FXML private VBox panelFormulario;
     @FXML private TableView<Categoria> tablaCategoria;
     @FXML private TableColumn<Categoria, String> colId;
     @FXML private TableColumn<Categoria, String> colNombre;
@@ -28,6 +33,17 @@ public class CategoriaController {
         configurarColumnaAcciones();
         cargarTabla();
         generarId();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        if (!PermisoService.puedeEditarCategoria()) {
+            lblModoConsulta.setVisible(true);
+            lblModoConsulta.setManaged(true);
+            PermisoUtil.ocultar(panelFormulario);
+            PermisoUtil.ocultarColumna(colAcciones);
+        }
     }
 
     private void cargarTabla() {
@@ -90,6 +106,10 @@ public class CategoriaController {
 
     @FXML
     private void guardar() {
+        if (!PermisoService.puedeEditarCategoria()) {
+            PermisoUtil.denegado();
+            return;
+        }
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
 

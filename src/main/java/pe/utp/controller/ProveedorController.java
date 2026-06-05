@@ -8,8 +8,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import pe.utp.dao.ProveedorDAO;
 import pe.utp.model.Proveedor;
+import pe.utp.security.PermisoService;
+import pe.utp.security.PermisoUtil;
 
-public class ProveedorController {
+public class ProveedorController implements AccesoControlable {
 
     @FXML private TableView<Proveedor> tablaProveedor;
     @FXML private TableColumn<Proveedor, String> colId;
@@ -40,6 +42,12 @@ public class ProveedorController {
         configurarColumnaAcciones();
         cargarTabla();
         generarId();
+        aplicarPermisos();
+    }
+
+    @Override
+    public void aplicarPermisos() {
+        // Almacenero y administrador tienen acceso completo a proveedores.
     }
 
     private void generarId() {
@@ -130,6 +138,10 @@ public class ProveedorController {
 
     @FXML
     private void guardar() {
+        if (!PermisoService.puedeEditarProveedor()) {
+            PermisoUtil.denegado();
+            return;
+        }
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
         String ruc = txtRuc.getText().trim();
