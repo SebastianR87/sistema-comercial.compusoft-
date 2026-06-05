@@ -10,6 +10,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import pe.utp.dao.EmpleadoDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Empleado;
 import pe.utp.security.Modulo;
@@ -56,6 +58,7 @@ public class EmpleadoController implements AccesoControlable {
 
     private EmpleadoDAO dao = new EmpleadoDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private Empleado empleadoSeleccionado = null;
 
     private ObservableList<Empleado> listaCompleta = FXCollections.observableArrayList();
@@ -295,21 +298,14 @@ public class EmpleadoController implements AccesoControlable {
                 btnEliminar.setOnAction(e -> {
                     Empleado emp = getTableView().getItems().get(getIndex());
 
-                    // Verifica si tiene movimientos en ventas, compras o cotizaciones, de lo contrario no deja eliminar
-                    if (dao.tieneMovimientos(emp.getIdEmpleado())) {
-                        Alert advertencia = new Alert(Alert.AlertType.WARNING);
-                        advertencia.setTitle("No se puede eliminar");
-                        advertencia.setHeaderText("El empleado tiene movimientos registrados");
-                        advertencia.setContentText(
-                                emp.getNombre() + " tiene ventas, compras o cotizaciones\n" +
-                                        "asociadas a su cuenta.\n\n" +
-                                        "Si ya no trabaja aquí, usa 'Desactivar' en su lugar."
-                        );
-                        advertencia.showAndWait();
+                    ResultadoEliminacion validacionElim = validacion.validarEmpleado(
+                            emp.getIdEmpleado(), emp.getNombre());
+                    if (!validacionElim.isPermitido()) {
+                        validacionElim.mostrarAlerta();
                         return;
                     }
 
-                    // Paso 2: si no tiene movimientos, pide confirmación antes de eliminar
+                    // Sin movimientos: pide confirmación antes de eliminar
                     Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
                     confirm.setTitle("Eliminar empleado");
                     confirm.setHeaderText("¿Eliminar a " + emp.getNombre() + "?");

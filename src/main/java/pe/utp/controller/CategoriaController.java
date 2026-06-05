@@ -8,7 +8,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pe.utp.dao.CategoriaDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
 import pe.utp.model.Categoria;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 
@@ -24,6 +26,7 @@ public class CategoriaController implements AccesoControlable {
     @FXML private TextField txtNombre;
 
     private CategoriaDAO dao = new CategoriaDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private Categoria categoriaSeleccionada = null;
 
     @FXML
@@ -78,13 +81,23 @@ public class CategoriaController implements AccesoControlable {
 
                 btnEliminar.setOnAction(e -> {
                     Categoria c = getTableView().getItems().get(getIndex());
+                    ResultadoEliminacion validacionElim = validacion.validarCategoria(
+                            c.getIdCategoria(), c.getNombre());
+                    if (!validacionElim.isPermitido()) {
+                        validacionElim.mostrarAlerta();
+                        return;
+                    }
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                             "¿Eliminar " + c.getNombre() + "?",
                             ButtonType.YES, ButtonType.NO);
                     alert.showAndWait().ifPresent(resp -> {
                         if (resp == ButtonType.YES) {
-                            dao.eliminar(c.getIdCategoria());
-                            cargarTabla();
+                            if (dao.eliminar(c.getIdCategoria())) {
+                                cargarTabla();
+                            } else {
+                                new Alert(Alert.AlertType.ERROR,
+                                        "No se pudo eliminar la categoría").show();
+                            }
                         }
                     });
                 });

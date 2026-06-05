@@ -1,7 +1,5 @@
 package pe.utp.model;
 
-import java.util.List;
-
 public class Producto {
     private String idProducto;
     private Categoria categoria;
@@ -11,7 +9,6 @@ public class Producto {
     private double precioVenta;
     private int stock;
     private String estado;
-    private List<Especificacion> especificaciones;
 
     public Producto() {}
 
@@ -51,9 +48,6 @@ public class Producto {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
-
-    public List<Especificacion> getEspecificaciones() { return especificaciones; }
-    public void setEspecificaciones(List<Especificacion> especificaciones) { this.especificaciones = especificaciones; }
 
     @Override
     public String toString() { return nombre; }

@@ -15,6 +15,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.ClienteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.Cliente;
 import pe.utp.model.TipoDocumento;
 import pe.utp.security.PermisoService;
@@ -49,6 +51,7 @@ public class ClienteController implements AccesoControlable {
 
     private ClienteDAO       dao        = new ClienteDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
 
     private ObservableList<Cliente> listaCompleta = FXCollections.observableArrayList();
     private FilteredList<Cliente>   listaFiltrada;
@@ -192,18 +195,10 @@ public class ClienteController implements AccesoControlable {
                 btnEliminar.setOnAction(e -> {
                     Cliente c = getTableView().getItems().get(getIndex());
 
-                    // Si tiene ventas o cotizaciones no se puede eliminar
-                    if (dao.tieneMovimientos(c.getIdCliente())) {
-                        Alert aviso = new Alert(Alert.AlertType.WARNING);
-                        aviso.setTitle("No se puede eliminar");
-                        aviso.setHeaderText("El cliente tiene movimientos registrados");
-                        aviso.setContentText(
-                                c.getNombre() + " tiene ventas o cotizaciones\n" +
-                                        "registradas en el sistema.\n\n" +
-                                        "No es posible eliminarlo para preservar\n" +
-                                        "el historial de transacciones."
-                        );
-                        aviso.showAndWait();
+                    ResultadoEliminacion validacionElim = validacion.validarCliente(
+                            c.getIdCliente(), c.getNombre());
+                    if (!validacionElim.isPermitido()) {
+                        validacionElim.mostrarAlerta();
                         return;
                     }
 

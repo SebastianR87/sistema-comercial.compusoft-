@@ -7,7 +7,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import pe.utp.dao.ProveedorDAO;
+import pe.utp.dao.ValidacionEliminacionDAO;
 import pe.utp.model.Proveedor;
+import pe.utp.util.ResultadoEliminacion;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 
@@ -29,6 +31,7 @@ public class ProveedorController implements AccesoControlable {
     @FXML private TextField txtBuscar;
 
     private ProveedorDAO dao = new ProveedorDAO();
+    private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private Proveedor proveedorSeleccionado = null;
 
     @FXML
@@ -111,13 +114,23 @@ public class ProveedorController implements AccesoControlable {
 
                 btnEliminar.setOnAction(e -> {
                     Proveedor p = getTableView().getItems().get(getIndex());
+                    ResultadoEliminacion validacionElim = validacion.validarProveedor(
+                            p.getIdProveedor(), p.getNombre());
+                    if (!validacionElim.isPermitido()) {
+                        validacionElim.mostrarAlerta();
+                        return;
+                    }
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                             "¿Eliminar proveedor " + p.getNombre() + "?",
                             ButtonType.YES, ButtonType.NO);
                     alert.showAndWait().ifPresent(resp -> {
                         if (resp == ButtonType.YES) {
-                            dao.eliminar(p.getIdProveedor());
-                            cargarTabla();
+                            if (dao.eliminar(p.getIdProveedor())) {
+                                cargarTabla();
+                            } else {
+                                new Alert(Alert.AlertType.ERROR,
+                                        "No se pudo eliminar el proveedor").show();
+                            }
                         }
                     });
                 });
