@@ -6,21 +6,21 @@ public class Cliente {
     private String telefono;
     private String correo;
     private String direccion;
-    private String numeroDocumento;
     private TipoDocumento tipoDocumento;
+    private String numeroDocumento;
 
     public Cliente() {}
 
     public Cliente(String idCliente, String nombre, String telefono,
-                   String correo, String direccion, String numeroDocumento,
-                   TipoDocumento tipoDocumento) {
-        this.idCliente = idCliente;
-        this.nombre = nombre;
-        this.telefono = telefono;
-        this.correo = correo;
-        this.direccion = direccion;
+                   String correo, String direccion,
+                   TipoDocumento tipoDocumento, String numeroDocumento) {
+        this.idCliente       = idCliente;
+        this.nombre          = nombre;
+        this.telefono        = telefono;
+        this.correo          = correo;
+        this.direccion       = direccion;
+        this.tipoDocumento   = tipoDocumento;
         this.numeroDocumento = numeroDocumento;
-        this.tipoDocumento = tipoDocumento;
     }
 
     public String getIdCliente() { return idCliente; }

@@ -6,6 +6,7 @@ import pe.utp.model.Producto;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import pe.utp.Conexion.QueryHelper;
 
 public class ProductoDAO {
 
@@ -145,8 +146,9 @@ public class ProductoDAO {
 
     public String obtenerUltimoId(String idCategoria) {
         // El ID del producto incluye la categoría: PROC001, RAM001, etc.
-        String sql = "SELECT TOP 1 id_producto FROM producto " +
-                "WHERE id_categoria = ? ORDER BY id_producto DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_producto FROM producto WHERE id_categoria = ? ORDER BY id_producto DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, idCategoria);

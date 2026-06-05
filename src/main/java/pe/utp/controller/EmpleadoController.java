@@ -2,12 +2,19 @@ package pe.utp.controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import pe.utp.dao.EmpleadoDAO;
 import pe.utp.model.Empleado;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class EmpleadoController {
 
@@ -15,22 +22,37 @@ public class EmpleadoController {
     @FXML private TableColumn<Empleado, String> colId;
     @FXML private TableColumn<Empleado, String> colNombre;
     @FXML private TableColumn<Empleado, String> colCargo;
-    @FXML private TableColumn<Empleado, String> colUsuario;
-    @FXML private TableColumn<Empleado, String> colDni;
+    @FXML private TableColumn<Empleado, String> colTipoDocumento;
+    @FXML private TableColumn<Empleado, String> colNumeroDocumento;
+    @FXML private TableColumn<Empleado, String>  colEstado;
     @FXML private TableColumn<Empleado, Void> colAcciones;
 
-    @FXML private TextField txtId;
-    @FXML private TextField txtNombre;
+    // Formulario nuevo empleado
+    @FXML private TextField     txtId;
+    @FXML private TextField     txtNombre;
     @FXML private ComboBox<String> cbCargo;
-    @FXML private TextField txtDni;
-    @FXML private TextField txtUsuario;
+    @FXML private ComboBox<String> cbTipoDocumento;
+    @FXML private TextField     txtNumeroDocumento;
+    @FXML private TextField     txtTelefono;
+    @FXML private TextField     txtDireccion;
+    @FXML private TextField     txtUsuario;
     @FXML private PasswordField txtPassword;
-    @FXML private TextField txtPasswordVisible;
-    @FXML private Button btnMostrar;
+    @FXML private TextField     txtPasswordVisible;
+    @FXML private Button        btnMostrar;
+
+    // Buscador y filtros
+    @FXML private TextField     txtBuscar;
+    @FXML private ToggleButton  btnTodos;
+    @FXML private ToggleButton  btnActivos;
+    @FXML private ToggleButton  btnInactivos;
+
     private boolean passwordVisible = false;
 
     private EmpleadoDAO dao = new EmpleadoDAO();
     private Empleado empleadoSeleccionado = null;
+
+    private ObservableList<Empleado> listaCompleta = FXCollections.observableArrayList();
+    private FilteredList<Empleado>   listaFiltrada;
 
     @FXML
     public void initialize() {
@@ -38,17 +60,26 @@ public class EmpleadoController {
         colId.setCellValueFactory(new PropertyValueFactory<>("idEmpleado"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colCargo.setCellValueFactory(new PropertyValueFactory<>("cargo"));
-        colUsuario.setCellValueFactory(new PropertyValueFactory<>("usuario"));
-        colDni.setCellValueFactory(new PropertyValueFactory<>("dni"));
+        colTipoDocumento.setCellValueFactory(new PropertyValueFactory<>("tipoDocumento"));
+        colNumeroDocumento.setCellValueFactory(new PropertyValueFactory<>("numeroDocumento"));
 
         // Carga opciones del ComboBox
+        configurarColumnaEstado();
+        configurarColumnaAcciones();
+
         cbCargo.setItems(FXCollections.observableArrayList(
                 "Administrador", "Vendedor", "Almacenero"
         ));
-        generarId();
+        listaFiltrada = new FilteredList<>(listaCompleta, e -> true);
+        tablaEmpleado.setItems(listaFiltrada);
+        cbTipoDocumento.setItems(FXCollections.observableArrayList(
+                "DNI", "Carnet de Extranjería", "Pasaporte"
+        ));
+        cbTipoDocumento.setOnAction(e -> actualizarPlaceholder());
 
-        configurarColumnaAcciones();
+        generarId();
         cargarTabla();
+        aplicarEstiloFiltros();
     }
 
     @FXML
@@ -72,17 +103,122 @@ public class EmpleadoController {
     }
 
     private void cargarTabla() {
-        ObservableList<Empleado> lista =
-                FXCollections.observableArrayList(dao.listar());
-        tablaEmpleado.setItems(lista);
+        listaCompleta.setAll(dao.listar());
     }
+
+    /**
+     * Configura la columna Estado en colores. Un badge verde para ACTIVO y rojo para INACTIVO.
+     */
+    private void configurarColumnaEstado() {
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String estado, boolean empty) {
+                super.updateItem(estado, empty);
+                if (empty || estado == null) {
+                    setGraphic(null);
+                    return;
+                }
+                // Crea un Label estilizado como badge
+                Label badge = new Label(estado);
+                if (estado.equals("ACTIVO")) {
+                    badge.setStyle(
+                            "-fx-background-color: #eaf3de;" +
+                                    "-fx-text-fill: #3b6d11;" +
+                                    "-fx-background-radius: 99;" +
+                                    "-fx-padding: 2 10;" +
+                                    "-fx-font-size: 11px;" +
+                                    "-fx-font-weight: bold;"
+                    );
+                } else {
+                    badge.setStyle(
+                            "-fx-background-color: #fcebeb;" +
+                                    "-fx-text-fill: #a32d2d;" +
+                                    "-fx-background-radius: 99;" +
+                                    "-fx-padding: 2 10;" +
+                                    "-fx-font-size: 11px;" +
+                                    "-fx-font-weight: bold;"
+                    );
+                }
+                // Centra el badge en la celda
+                setGraphic(badge);
+                setStyle("-fx-alignment: CENTER-LEFT;");
+            }
+        });
+        // Conecta colEstado con el atributo estado del modelo
+        colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
+    }
+
+
+    @FXML
+    private void filtrar() {
+        String texto = txtBuscar.getText().trim().toLowerCase();
+
+        // Determina qué filtro de estado está activo
+        String filtroEstado = "TODOS";
+        if (btnActivos.isSelected())   filtroEstado = "ACTIVO";
+        if (btnInactivos.isSelected()) filtroEstado = "INACTIVO";
+
+        // Copia local para usar dentro del lambda
+        // (las variables en lambdas deben ser effectively final)
+        final String estadoFinal = filtroEstado;
+
+        listaFiltrada.setPredicate(emp -> {
+            // Filtro por texto: busca en nombre, DNI y usuario simultáneamente
+            boolean coincideTexto = texto.isEmpty()
+                    || emp.getNombre().toLowerCase().contains(texto)
+                    || emp.getNumeroDocumento().toLowerCase().contains(texto)
+                    || emp.getUsuario().toLowerCase().contains(texto);
+
+            // Filtro por estado: si es TODOS acepta cualquier estado
+            boolean coincideEstado = estadoFinal.equals("TODOS")
+                    || emp.getEstado().equals(estadoFinal);
+
+            // El empleado aparece solo si cumple AMBAS condiciones
+            return coincideTexto && coincideEstado;
+        });
+
+        // Actualiza el estilo visual de los botones según cuál está activo
+        aplicarEstiloFiltros();
+    }
+
+    /** Aplica estilos visuales a los botones de filtro */
+    private void aplicarEstiloFiltros() {
+        String base = "-fx-background-radius: 6; -fx-cursor: hand; " +
+                "-fx-font-size: 12px; -fx-padding: 6 12;";
+
+        // Estilo inactivo: fondo gris claro
+        String estiloNormal = base +
+                "-fx-background-color: #f0f2f5; -fx-text-fill: #495057;";
+
+        // Estilos activos: cada botón tiene su propio color
+        String estiloTodos     = base + "-fx-background-color: #1a1a2e; -fx-text-fill: white;";
+        String estiloActivos   = base + "-fx-background-color: #eaf3de; -fx-text-fill: #3b6d11;";
+        String estiloInactivos = base + "-fx-background-color: #fcebeb; -fx-text-fill: #a32d2d;";
+
+        // Resetea todos primero, luego resalta el seleccionado
+        btnTodos.setStyle(estiloNormal);
+        btnActivos.setStyle(estiloNormal);
+        btnInactivos.setStyle(estiloNormal);
+
+        if (btnTodos.isSelected())     btnTodos.setStyle(estiloTodos);
+        if (btnActivos.isSelected())   btnActivos.setStyle(estiloActivos);
+        if (btnInactivos.isSelected()) btnInactivos.setStyle(estiloInactivos);
+    }
+
 
     private void configurarColumnaAcciones() {
         colAcciones.setCellFactory(col -> new TableCell<>() {
-            final Button btnEditar = new Button("Editar");
+            final Button btnVer      = new Button("Ver");
+            final Button btnEditar   = new Button("Editar");
+            final Button btnEstado   = new Button();
+            // Botón de eliminación física, solo habilitado si no tiene movimientos
             final Button btnEliminar = new Button("Eliminar");
 
             {
+                btnVer.setStyle(
+                        "-fx-background-color: #2dc653; -fx-text-fill: white;" +
+                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
+                );
                 btnEditar.setStyle(
                         "-fx-background-color: #4361ee; -fx-text-fill: white;" +
                                 "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
@@ -91,27 +227,92 @@ public class EmpleadoController {
                         "-fx-background-color: #ef233c; -fx-text-fill: white;" +
                                 "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
 
+                btnVer.setOnAction(e -> {
+                    Empleado emp = getTableView().getItems().get(getIndex());
+                    abrirModal(emp, EmpleadoModalController.MODO_VER);
+                });
+                // Botón Editar: abre el modal en modo EDITAR
+                // Solo habilitado si el empleado está ACTIVO
                 btnEditar.setOnAction(e -> {
                     Empleado emp = getTableView().getItems().get(getIndex());
-                    empleadoSeleccionado = emp;
-                    txtId.setText(emp.getIdEmpleado());
-                    txtId.setDisable(true);
-                    txtNombre.setText(emp.getNombre());
-                    cbCargo.setValue(emp.getCargo());
-                    txtDni.setText(emp.getDni());
-                    txtUsuario.setText(emp.getUsuario());
-                    txtPassword.setText(emp.getPassword());
+                    abrirModal(emp, EmpleadoModalController.MODO_EDITAR);
                 });
+
+                // Botón dinámico: Desactivar o Reactivar según estado
+                btnEstado.setOnAction(e -> {
+                    Empleado emp = getTableView().getItems().get(getIndex());
+                    boolean estaActivo = emp.getEstado().equals("ACTIVO");
+
+                    // Mensaje de confirmación descriptivo según la acción
+                    String accion  = estaActivo ? "desactivar" : "reactivar";
+                    String mensaje = estaActivo
+                            ? "¿Desactivar a " + emp.getNombre() + "?\n" +
+                              "Ya no podrá ingresar al sistema."
+                            : "¿Reactivar a " + emp.getNombre() + "?\n" +
+                              "Podrá volver a ingresar al sistema.";
+
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                            mensaje, ButtonType.YES, ButtonType.NO);
+                    confirm.setTitle(accion.substring(0,1).toUpperCase()
+                            + accion.substring(1) + " empleado");
+                    confirm.showAndWait().ifPresent(resp -> {
+                        if (resp == ButtonType.YES) {
+                            // Cambia al estado opuesto del actual
+                            String nuevoEstado = estaActivo ? "INACTIVO" : "ACTIVO";
+                            boolean exito = dao.cambiarEstado(
+                                    emp.getIdEmpleado(), nuevoEstado);
+                            if (exito) {
+                                // Recarga la tabla para reflejar el cambio
+                                cargarTabla();
+                                filtrar();
+                            } else {
+                                new Alert(Alert.AlertType.ERROR,
+                                        "No se pudo cambiar el estado").show();
+                            }
+                        }
+                    });
+                });
+
 
                 btnEliminar.setOnAction(e -> {
                     Empleado emp = getTableView().getItems().get(getIndex());
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                            "¿Eliminar empleado " + emp.getNombre() + "?",
-                            ButtonType.YES, ButtonType.NO);
-                    alert.showAndWait().ifPresent(resp -> {
+
+                    // Verifica si tiene movimientos en ventas, compras o cotizaciones, de lo contrario no deja eliminar
+                    if (dao.tieneMovimientos(emp.getIdEmpleado())) {
+                        Alert advertencia = new Alert(Alert.AlertType.WARNING);
+                        advertencia.setTitle("No se puede eliminar");
+                        advertencia.setHeaderText("El empleado tiene movimientos registrados");
+                        advertencia.setContentText(
+                                emp.getNombre() + " tiene ventas, compras o cotizaciones\n" +
+                                        "asociadas a su cuenta.\n\n" +
+                                        "Si ya no trabaja aquí, usa 'Desactivar' en su lugar."
+                        );
+                        advertencia.showAndWait();
+                        return;
+                    }
+
+                    // Paso 2: si no tiene movimientos, pide confirmación antes de eliminar
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirm.setTitle("Eliminar empleado");
+                    confirm.setHeaderText("¿Eliminar a " + emp.getNombre() + "?");
+                    confirm.setContentText(
+                            "Esta acción eliminará al empleado permanentemente\n" +
+                                    "y no se puede deshacer."
+                    );
+                    confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+                    confirm.showAndWait().ifPresent(resp -> {
                         if (resp == ButtonType.YES) {
-                            dao.eliminar(emp.getIdEmpleado());
-                            cargarTabla();
+                            boolean exito = dao.eliminar(emp.getIdEmpleado());
+                            if (exito) {
+                                new Alert(Alert.AlertType.INFORMATION,
+                                        "Empleado eliminado correctamente").showAndWait();
+                                cargarTabla();
+                                filtrar();
+                            } else {
+                                new Alert(Alert.AlertType.ERROR,
+                                        "No se pudo eliminar el empleado").showAndWait();
+                            }
                         }
                     });
                 });
@@ -120,14 +321,76 @@ public class EmpleadoController {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+
+                // Si la fila está vacía no mostramos nada
+                // Todo el código dinámico va dentro del else
+                // para evitar IndexOutOfBoundsException en filas vacías
+                if (empty || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
-                } else {
-                    HBox hbox = new HBox(6, btnEditar, btnEliminar);
-                    setGraphic(hbox);
+                    return;
                 }
+
+                Empleado emp = getTableView().getItems().get(getIndex());
+                boolean activo = emp.getEstado().equals("ACTIVO");
+
+                // Editar solo habilitado para empleados ACTIVOS
+                btnEditar.setDisable(!activo);
+                btnEditar.setOpacity(activo ? 1.0 : 0.4);
+
+                // Botón dinámico cambia texto y color según estado
+                if (activo) {
+                    btnEstado.setText("Desactivar");
+                    btnEstado.setStyle(
+                            "-fx-background-color: #343a40; -fx-text-fill: white;" +
+                                    "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
+                    );
+                } else {
+                    btnEstado.setText("Reactivar");
+                    btnEstado.setStyle(
+                            "-fx-background-color: #dcfce7; -fx-text-fill: #166534;"+
+                                    "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
+                    );
+                }
+
+                // Verifica movimientos para habilitar o deshabilitar Eliminar
+                boolean tieneMov = dao.tieneMovimientos(emp.getIdEmpleado());
+                btnEliminar.setDisable(tieneMov);
+                btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
+
+                HBox hbox = new HBox(5, btnVer, btnEditar, btnEstado, btnEliminar);
+                hbox.setStyle("-fx-alignment: CENTER-LEFT;");
+                setGraphic(hbox);
             }
         });
+    }
+
+    private void abrirModal(Empleado emp, String modo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/EmpleadoModal.fxml")
+            );
+            Parent root = loader.load();
+
+            EmpleadoModalController ctrl = loader.getController();
+            ctrl.setModo(modo, emp);
+
+            Stage modal = new Stage();
+            modal.setTitle(modo.equals(EmpleadoModalController.MODO_VER)
+                    ? "Detalle del Empleado"
+                    : "Editar Empleado");
+            modal.setScene(new Scene(root));
+            modal.initModality(Modality.APPLICATION_MODAL);
+            modal.setResizable(false);
+            modal.showAndWait();
+
+            // Recarga y mantiene el filtro activo después de cerrar el modal
+            cargarTabla();
+            filtrar();
+
+        } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo abrir la ventana: " + ex.getMessage()).show();
+        }
     }
 
     @FXML
@@ -135,28 +398,109 @@ public class EmpleadoController {
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
         String cargo = cbCargo.getValue();
-        String dni = txtDni.getText().trim();
+        String tipoDocumento    = cbTipoDocumento.getValue();
+        String numeroDocumento  = txtNumeroDocumento.getText().trim();
         String usuario = txtUsuario.getText().trim();
         String password = passwordVisible ?
                 txtPasswordVisible.getText().trim() :
                 txtPassword.getText().trim();
+        String telefono  = txtTelefono.getText().trim();
+        String direccion = txtDireccion.getText().trim();
+
 
         if (id.isEmpty() || nombre.isEmpty() || cargo == null ||
-                dni.isEmpty() || usuario.isEmpty() || password.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Completa todos los campos").show();
+                tipoDocumento == null || numeroDocumento.isEmpty() ||
+                usuario.isEmpty() || password.isEmpty()) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Completa todos los campos obligatorios").showAndWait();
             return;
         }
 
-        Empleado e = new Empleado(id, nombre, cargo, usuario, password, dni);
-
-        if (empleadoSeleccionado == null) {
-            dao.insertar(e);
-        } else {
-            dao.actualizar(e);
+        // Valida que el nombre solo tenga letras y espacios
+        // [a-zA-ZáéíóúÁÉÍÓÚñÑ]+ = una o más letras incluyendo tildes y ñ
+        // (\\s[a-zA-Z...]+)* = seguido de cero o más grupos (espacio + letras)
+        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(\\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El nombre solo debe contener letras").showAndWait();
+            return;
         }
 
-        cargarTabla();
-        limpiar();
+        if (usuario.contains(" ")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El usuario no debe contener espacios").showAndWait();
+            return;
+        }
+
+        // Solo letras, números y guiones bajos
+        // \\w = [a-zA-Z0-9_], {4,20} = entre 4 y 20 caracteres
+        if (!usuario.matches("\\w{4,20}")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El usuario debe tener entre 4 y 20 caracteres " +
+                            "y solo letras, números o guión bajo").showAndWait();
+            return;
+        }
+
+        // Validación dinámica según el tipo de documento seleccionado
+        switch (tipoDocumento) {
+            case "DNI":
+                // Exactamente 8 dígitos numéricos
+                // \\d = dígito, {8} = exactamente 8 veces
+                if (!numeroDocumento.matches("\\d{8}")) {
+                    new Alert(Alert.AlertType.WARNING,
+                            "El DNI debe tener exactamente 8 dígitos numéricos")
+                            .showAndWait();
+                    return;
+                }
+                break;
+            case "Carnet de Extranjería":
+                // Exactamente 9 dígitos numéricos
+                if (!numeroDocumento.matches("\\d{9}")) {
+                    new Alert(Alert.AlertType.WARNING,
+                            "El Carnet de Extranjería debe tener exactamente 9 dígitos")
+                            .showAndWait();
+                    return;
+                }
+                break;
+            case "Pasaporte":
+                // Entre 6 y 12 caracteres alfanuméricos
+                // [a-zA-Z0-9] = letras o números
+                // {6,12} = entre 6 y 12 veces
+                if (!numeroDocumento.matches("[a-zA-Z0-9]{6,12}")) {
+                    new Alert(Alert.AlertType.WARNING,
+                            "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos")
+                            .showAndWait();
+                    return;
+                }
+                break;
+        }
+
+        if (dao.existeNumeroDocumento(numeroDocumento, null)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Ya existe un empleado con ese número de documento").showAndWait();
+            return;
+        }
+
+        if (!telefono.isEmpty() && !telefono.matches("\\d{9}")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El teléfono debe tener exactamente 9 dígitos").showAndWait();
+            return;
+        }
+
+        Empleado e = new Empleado(id, nombre, cargo, usuario,
+                password, tipoDocumento, numeroDocumento,
+                telefono, direccion, "ACTIVO");
+
+        boolean exito = dao.insertar(e);
+        if (exito) {
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Empleado registrado correctamente").showAndWait();
+            cargarTabla();
+            filtrar();
+            limpiar();
+        } else {
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo registrar el empleado").showAndWait();
+        }
     }
 
     private void generarId() {
@@ -173,12 +517,35 @@ public class EmpleadoController {
     }
 
     @FXML
+    private void actualizarPlaceholder() {
+        String tipo = cbTipoDocumento.getValue();
+        if (tipo == null) return;
+
+        switch (tipo) {
+            case "DNI":
+                // DNI peruano: exactamente 8 dígitos numéricos
+                txtNumeroDocumento.setPromptText("8 dígitos numéricos");
+                break;
+            case "Carnet de Extranjería":
+                // Carnet de extranjería: exactamente 9 dígitos numéricos
+                txtNumeroDocumento.setPromptText("9 dígitos numéricos");
+                break;
+            case "Pasaporte":
+                // Pasaporte: entre 6 y 12 caracteres alfanuméricos
+                txtNumeroDocumento.setPromptText("6 a 12 caracteres alfanuméricos");
+                break;
+        }
+    }
+
+    @FXML
     private void limpiar() {
         txtId.clear();
         txtId.setDisable(false);
         txtNombre.clear();
         cbCargo.setValue(null);
-        txtDni.clear();
+        cbTipoDocumento.setValue(null);
+        txtNumeroDocumento.clear();
+        txtNumeroDocumento.setPromptText("Selecciona un tipo primero");
         txtUsuario.clear();
         txtPassword.clear();
         txtPasswordVisible.clear();
@@ -189,8 +556,9 @@ public class EmpleadoController {
         txtPasswordVisible.setManaged(false);
         btnMostrar.setText("👁");
         empleadoSeleccionado = null;
+        txtTelefono.clear();
+        txtDireccion.clear();
         generarId();
     }
-
 
 }

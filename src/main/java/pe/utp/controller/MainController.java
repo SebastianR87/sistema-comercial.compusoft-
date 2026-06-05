@@ -93,8 +93,7 @@ public class MainController {
             if (resp == ButtonType.YES) {
                 try {
                     FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/fxml/Login.fxml")
-                    );
+                            getClass().getResource("/fxml/Login.fxml"));
                     Parent root = loader.load();
                     Stage stage = (Stage) panelContenido.getScene().getWindow();
                     stage.setScene(new Scene(root));

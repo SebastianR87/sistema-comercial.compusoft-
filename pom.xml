@@ -27,11 +27,11 @@
             <version>21</version>
         </dependency>
 
-        <!-- SQL Server -->
+        <!-- MYSQL -->
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>12.4.2.jre11</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.4.0</version>
         </dependency>
     </dependencies>
 
@@ -43,6 +43,7 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>pe.utp.App</mainClass>
+                    <launcher>app</launcher>
                 </configuration>
             </plugin>
         </plugins>

@@ -5,6 +5,7 @@ import pe.utp.model.Proveedor;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import pe.utp.Conexion.QueryHelper;
 
 public class ProveedorDAO {
 
@@ -91,7 +92,9 @@ public class ProveedorDAO {
     }
 
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_proveedor FROM proveedor ORDER BY id_proveedor DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_proveedor FROM proveedor ORDER BY id_proveedor DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
