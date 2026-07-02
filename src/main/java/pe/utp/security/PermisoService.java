@@ -42,6 +42,13 @@ public final class PermisoService {
         return rol == Rol.ADMINISTRADOR || rol == Rol.VENDEDOR;
     }
 
+    public static boolean puedeAnularVenta() {
+        return Sesion.getRol() == Rol.ADMINISTRADOR;
+    }
+
+    public static boolean puedeAnularCompra() {
+        return Sesion.getRol() == Rol.ADMINISTRADOR;
+    }
 
     private static Set<Modulo> permisosDe(Rol rol) {
         return switch (rol) {

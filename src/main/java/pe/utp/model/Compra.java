@@ -9,6 +9,7 @@ public class Compra {
     private String numeroComprobante;
     private LocalDateTime fecha;
     private double total;
+    private String estado;
 
     public Compra() {}
 
@@ -39,6 +40,9 @@ public class Compra {
 
     public double getTotal() { return total; }
     public void setTotal(double total) { this.total = total; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
     @Override
     public String toString() { return numeroComprobante; }

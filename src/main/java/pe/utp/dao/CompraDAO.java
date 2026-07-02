@@ -58,8 +58,8 @@ public class CompraDAO {
             // Paso 2 y 3: para cada producto en el detalle
             String sqlDetalle = "INSERT INTO detallecompra " +
                     "(id_detallecompra, id_compra, " +
-                    "id_producto, cantidad, precio) " +
-                    "VALUES (?,?,?,?,?)";
+                    "id_producto, cantidad, precio, costo_anterior) " +
+                    "VALUES (?,?,?,?,?,?)";
 
             // Antes de actualizar necesitamos leer stock y precio_compra
             // actuales del producto para calcular el Costo Promedio Ponderado
@@ -79,15 +79,8 @@ public class CompraDAO {
                     conexion.prepareStatement(sqlActualizarProducto);
 
             for (DetalleCompra detalle : detalles) {
-                // Inserta la línea del detalle
-                psDetalle.setString(1, detalle.getIdDetalleCompra());
-                psDetalle.setString(2, compra.getIdCompra());
-                psDetalle.setString(3, detalle.getProducto().getIdProducto());
-                psDetalle.setInt(4, detalle.getCantidad());
-                psDetalle.setDouble(5, detalle.getPrecio());
-                psDetalle.executeUpdate();
-
                 // Lee el stock y precio_compra actuales del producto
+                // ANTES de insertar el detalle, para guardar el costo previo
                 psLeer.setString(1, detalle.getProducto().getIdProducto());
                 ResultSet rsProd = psLeer.executeQuery();
 
@@ -103,9 +96,19 @@ public class CompraDAO {
                 }
                 rsProd.close();
 
+                // Inserta la línea del detalle, guardando el costo previo
+                // como "foto" para poder revertir el CPP si se anula la compra
+                psDetalle.setString(1, detalle.getIdDetalleCompra());
+                psDetalle.setString(2, compra.getIdCompra());
+                psDetalle.setString(3, detalle.getProducto().getIdProducto());
+                psDetalle.setInt(4, detalle.getCantidad());
+                psDetalle.setDouble(5, detalle.getPrecio());
+                psDetalle.setDouble(6, precioActual);
+                psDetalle.executeUpdate();
+
                 int cantidadNueva  = detalle.getCantidad();
                 double precioNuevo = detalle.getPrecio();
-                int stockTotal     = stockActual + cantidadNueva;
+                int stockTotal = stockActual + cantidadNueva;
 
                 // Costo Promedio Ponderado (CPP):
                 // promedia el costo de lo que ya tenías con lo que
@@ -122,9 +125,6 @@ public class CompraDAO {
                 psActualizar.executeUpdate();
 
                 // Verifica si el nuevo stock supera el máximo definido.
-                // stockMaximo = 0 significa que no se definió un límite,
-                // así que solo alerta si hay un máximo definido (> 0).
-                // La compra NO se cancela, solo se registra el aviso.
                 if (stockMaximo > 0 && stockTotal > stockMaximo) {
                     avisos.add("📦 \"" + nombreProd + "\": " +
                             "stock actual " + stockTotal +
@@ -155,6 +155,138 @@ public class CompraDAO {
                         e.getMessage());
             }
         }
+    }
+
+    /**
+     * Anula una compra ya registrada: revierte el stock y el costo
+     * promedio (CPP) de cada producto a su valor anterior a la compra,
+     * y marca la compra como ANULADA. No borra ningún registro.
+     *
+     * Solo se permite anular si el stock actual de cada producto
+     * alcanza para revertir la cantidad comprada (es decir, que no
+     * se haya vendido ya parte de ese stock).
+     *
+     * Flujo:
+     * 1. Verifica que la compra exista y no esté ya anulada
+     * 2. Trae el detalle (cantidades y costo_anterior guardado)
+     * 3. Valida que el stock actual alcance para revertir cada línea
+     * 4. Revierte stock y precio_compra de cada producto
+     * 5. Marca la compra como ANULADA
+     * 6. COMMIT si todo salió bien, ROLLBACK si algo falló
+     */
+    public String anularCompra(String idCompra) {
+        try {
+            conexion.setAutoCommit(false);
+
+            // Paso 1: verifica estado actual
+            String sqlEstado = "SELECT estado FROM compra WHERE id_compra = ?";
+            PreparedStatement psEstado = conexion.prepareStatement(sqlEstado);
+            psEstado.setString(1, idCompra);
+            ResultSet rsEstado = psEstado.executeQuery();
+
+            if (!rsEstado.next()) {
+                conexion.rollback();
+                conexion.setAutoCommit(true);
+                return "NO_EXISTE";
+            }
+            String estadoActual = rsEstado.getString("estado");
+            rsEstado.close();
+
+            if ("ANULADA".equalsIgnoreCase(estadoActual)) {
+                conexion.rollback();
+                conexion.setAutoCommit(true);
+                return "YA_ANULADA";
+            }
+
+            // Paso 2: trae el detalle con el costo_anterior guardado
+            List<DetalleCompra> detalles = listarDetalleConCosto(idCompra);
+
+            // Paso 3: valida que el stock actual alcance para revertir
+            String sqlStockActual = "SELECT stock, nombre FROM producto WHERE id_producto = ?";
+            PreparedStatement psStock = conexion.prepareStatement(sqlStockActual);
+
+            for (DetalleCompra d : detalles) {
+                psStock.setString(1, d.getProducto().getIdProducto());
+                ResultSet rs = psStock.executeQuery();
+                int stockActual = 0;
+                String nombre = "";
+                if (rs.next()) {
+                    stockActual = rs.getInt("stock");
+                    nombre = rs.getString("nombre");
+                }
+                rs.close();
+
+                if (stockActual < d.getCantidad()) {
+                    conexion.rollback();
+                    conexion.setAutoCommit(true);
+                    return "STOCK_INSUFICIENTE:" + nombre + ":" + stockActual;
+                }
+            }
+
+            // Paso 4: revierte stock y precio_compra de cada producto
+            String sqlRevertir = "UPDATE producto " +
+                    "SET stock = stock - ?, precio_compra = ? " +
+                    "WHERE id_producto = ?";
+            PreparedStatement psRevertir = conexion.prepareStatement(sqlRevertir);
+
+            for (DetalleCompra d : detalles) {
+                psRevertir.setInt(1, d.getCantidad());
+                psRevertir.setDouble(2, d.getCostoAnterior());
+                psRevertir.setString(3, d.getProducto().getIdProducto());
+                psRevertir.executeUpdate();
+            }
+
+            // Paso 5: marca la compra como anulada
+            String sqlAnular = "UPDATE compra SET estado = 'ANULADA' WHERE id_compra = ?";
+            PreparedStatement psAnular = conexion.prepareStatement(sqlAnular);
+            psAnular.setString(1, idCompra);
+            psAnular.executeUpdate();
+
+            conexion.commit();
+            return "OK";
+
+        } catch (SQLException e) {
+            try { conexion.rollback(); } catch (SQLException ex) {
+                System.out.println("Error en rollback: " + ex.getMessage());
+            }
+            System.out.println("Error al anular compra: " + e.getMessage());
+            return "ERROR:" + e.getMessage();
+        } finally {
+            try { conexion.setAutoCommit(true); }
+            catch (SQLException e) {
+                System.out.println("Error al restaurar autocommit: " + e.getMessage());
+            }
+        }
+    }
+
+    /** Igual que listarDetalle, pero además trae costo_anterior (necesario para anular). */
+    private List<DetalleCompra> listarDetalleConCosto(String idCompra) {
+        List<DetalleCompra> lista = new ArrayList<>();
+        String sql = "SELECT dc.*, pr.nombre as nombre_producto " +
+                "FROM detallecompra dc " +
+                "INNER JOIN producto pr ON dc.id_producto = pr.id_producto " +
+                "WHERE dc.id_compra = ?";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, idCompra);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                DetalleCompra d = new DetalleCompra();
+                d.setIdDetalleCompra(rs.getString("id_detallecompra"));
+                d.setCantidad(rs.getInt("cantidad"));
+                d.setPrecio(rs.getDouble("precio"));
+                d.setCostoAnterior(rs.getDouble("costo_anterior"));
+
+                pe.utp.model.Producto prod = new pe.utp.model.Producto();
+                prod.setIdProducto(rs.getString("id_producto"));
+                prod.setNombre(rs.getString("nombre_producto"));
+                d.setProducto(prod);
+                lista.add(d);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al listar detalle con costo: " + e.getMessage());
+        }
+        return lista;
     }
 
     /** Lista todas las compras con JOIN a proveedor y empleado para mostrar sus nombres en la tabla. */
@@ -278,6 +410,7 @@ public class CompraDAO {
         Empleado e = new Empleado();
         e.setIdEmpleado(rs.getString("id_empleado"));
         e.setNombre(rs.getString("nombre_empleado"));
+        c.setEstado(rs.getString("estado"));
         c.setEmpleado(e);
 
         return c;

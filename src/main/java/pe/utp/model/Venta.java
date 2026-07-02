@@ -13,6 +13,7 @@ public class Venta {
     private double descuento;
     private double total;
     private double montoPagado;
+    private String estado;
     private double vuelto;
 
     public Venta() {}
@@ -61,6 +62,9 @@ public class Venta {
 
     public double getMontoPagado() { return montoPagado; }
     public void setMontoPagado(double montoPagado) { this.montoPagado = montoPagado; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
     public double getVuelto() { return vuelto; }
     public void setVuelto(double vuelto) { this.vuelto = vuelto; }

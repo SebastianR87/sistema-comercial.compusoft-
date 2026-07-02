@@ -6,6 +6,7 @@ public class DetalleCompra {
     private Producto producto;
     private int cantidad;
     private double precio;
+    private double costoAnterior;
 
     public DetalleCompra() {}
 
@@ -34,6 +35,9 @@ public class DetalleCompra {
     public void setPrecio(double precio) { this.precio = precio; }
 
     public double getSubtotal() { return cantidad * precio; }
+
+    public double getCostoAnterior() { return costoAnterior; }
+    public void setCostoAnterior(double costoAnterior) { this.costoAnterior = costoAnterior; }
 
     @Override
     public String toString() { return producto.getNombre() + " x" + cantidad; }

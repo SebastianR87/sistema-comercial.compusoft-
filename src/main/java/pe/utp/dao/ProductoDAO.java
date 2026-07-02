@@ -35,8 +35,9 @@ public class ProductoDAO {
 
     public boolean insertar(Producto p) {
         String sql = "INSERT INTO producto (id_producto, id_categoria, nombre, " +
-                "descripcion, precio_compra, precio_venta, stock, estado) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                "descripcion, precio_compra, precio_venta, stock, " +
+                "stock_minimo, stock_maximo, estado) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, p.getIdProducto());
@@ -46,7 +47,9 @@ public class ProductoDAO {
             ps.setDouble(5, p.getPrecioCompra());
             ps.setDouble(6, p.getPrecioVenta());
             ps.setInt(7, p.getStock());
-            ps.setString(8, p.getEstado());
+            ps.setInt(8, p.getStockMinimo());
+            ps.setInt(9, p.getStockMaximo());
+            ps.setString(10, p.getEstado());
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {

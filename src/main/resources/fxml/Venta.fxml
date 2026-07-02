@@ -277,7 +277,8 @@
                         <TableColumn fx:id="colMetodoPago" text="Método Pago" prefWidth="110"/>
                         <TableColumn fx:id="colFecha" text="Fecha" prefWidth="120"/>
                         <TableColumn fx:id="colTotal" text="Total" prefWidth="90"/>
-                        <TableColumn fx:id="colAccionesHist" text="Acciones" prefWidth="100"/>
+                        <TableColumn fx:id="colEstado" text="Estado" prefWidth="90"/>
+                        <TableColumn fx:id="colAccionesHist" text="Acciones" prefWidth="170"/>
                     </columns>
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

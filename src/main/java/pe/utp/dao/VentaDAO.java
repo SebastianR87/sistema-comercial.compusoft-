@@ -55,8 +55,9 @@ public class VentaDAO {
             // Paso 2: inserta la cabecera de la venta
             String sqlVenta = "INSERT INTO venta " +
                     "(id_venta, id_cliente, id_empleado, id_tipo_comprobante, " +
-                    "id_metodopago, numero_comprobante, fecha, descuento, total) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?)";
+                    "id_metodopago, numero_comprobante, fecha, descuento, total, " +
+                    "monto_pagado, vuelto) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement psVenta = conexion.prepareStatement(sqlVenta);
             psVenta.setString(1, venta.getIdVenta());
             psVenta.setString(2, venta.getCliente().getIdCliente());
@@ -67,6 +68,8 @@ public class VentaDAO {
             psVenta.setTimestamp(7, Timestamp.valueOf(venta.getFecha()));
             psVenta.setDouble(8, venta.getDescuento());
             psVenta.setDouble(9, venta.getTotal());
+            psVenta.setDouble(10, venta.getMontoPagado());
+            psVenta.setDouble(11, venta.getVuelto());
             psVenta.executeUpdate();
 
             // Paso 3 y 4: inserta detalle y resta stock
@@ -108,6 +111,79 @@ public class VentaDAO {
             }
         }
     }
+
+    /**
+     * Anula una venta ya registrada: revierte el stock de cada producto
+     * vendido y marca la venta como ANULADA. No borra ningún registro, para mantener consistencia
+     *
+     * Flujo:
+     * 1. Verifica que la venta exista y no esté ya anulada
+     * 2. Trae el detalle de la venta (para saber qué stock revertir)
+     * 3. Devuelve el stock de cada producto
+     * 4. Actualiza el estado de la venta a 'ANULADA'
+     * 5. COMMIT si todo salió bien, ROLLBACK si algo falló
+     */
+    public String anularVenta(String idVenta) {
+        try {
+            conexion.setAutoCommit(false);
+
+            // Paso 1: verifica estado actual de la venta
+            String sqlEstado = "SELECT estado FROM venta WHERE id_venta = ?";
+            PreparedStatement psEstado = conexion.prepareStatement(sqlEstado);
+            psEstado.setString(1, idVenta);
+            ResultSet rsEstado = psEstado.executeQuery();
+
+            if (!rsEstado.next()) {
+                conexion.rollback();
+                conexion.setAutoCommit(true);
+                return "NO_EXISTE";
+            }
+            String estadoActual = rsEstado.getString("estado");
+            rsEstado.close();
+
+            if ("ANULADA".equalsIgnoreCase(estadoActual)) {
+                conexion.rollback();
+                conexion.setAutoCommit(true);
+                return "YA_ANULADA";
+            }
+
+            // Paso 2: trae el detalle para saber qué stock revertir
+            List<DetalleVenta> detalles = listarDetalle(idVenta);
+
+            // Paso 3: devuelve el stock de cada producto
+            String sqlDevolverStock = "UPDATE producto " +
+                    "SET stock = stock + ? WHERE id_producto = ?";
+            PreparedStatement psDevolver = conexion.prepareStatement(sqlDevolverStock);
+
+            for (DetalleVenta d : detalles) {
+                psDevolver.setInt(1, d.getCantidad());
+                psDevolver.setString(2, d.getProducto().getIdProducto());
+                psDevolver.executeUpdate();
+            }
+
+            // Paso 4: marca la venta como anulada
+            String sqlAnular = "UPDATE venta SET estado = 'ANULADA' WHERE id_venta = ?";
+            PreparedStatement psAnular = conexion.prepareStatement(sqlAnular);
+            psAnular.setString(1, idVenta);
+            psAnular.executeUpdate();
+
+            conexion.commit();
+            return "OK";
+
+        } catch (SQLException e) {
+            try { conexion.rollback(); } catch (SQLException ex) {
+                System.out.println("Error en rollback: " + ex.getMessage());
+            }
+            System.out.println("Error al anular venta: " + e.getMessage());
+            return "ERROR:" + e.getMessage();
+        } finally {
+            try { conexion.setAutoCommit(true); }
+            catch (SQLException e) {
+                System.out.println("Error al restaurar autocommit: " + e.getMessage());
+            }
+        }
+    }
+
 
     /**
      * Lista todas las ventas con JOIN a cliente, empleado,
@@ -234,6 +310,10 @@ public class VentaDAO {
         mp.setIdMetodoPago(rs.getString("id_metodopago"));
         mp.setMetodoDePago(rs.getString("nombre_metodo_pago"));
         v.setMetodoPago(mp);
+
+        v.setMontoPagado(rs.getDouble("monto_pagado"));
+        v.setVuelto(rs.getDouble("vuelto"));
+        v.setEstado(rs.getString("estado"));
 
         return v;
     }

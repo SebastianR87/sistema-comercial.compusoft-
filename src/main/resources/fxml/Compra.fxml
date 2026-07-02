@@ -179,9 +179,7 @@
             </HBox>
         </Tab>
 
-        <!-- ═══════════════════════════════════
-             PESTAÑA 2: HISTORIAL DE COMPRAS
-        ════════════════════════════════════ -->
+        <!-- PESTAÑA 2: HISTORIAL DE COMPRAS-->
         <Tab text="📋 Historial">
             <VBox spacing="12" style="-fx-padding: 16;">
 
@@ -197,27 +195,14 @@
                 <TableView fx:id="tablaHistorial"
                            VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colIdCompra"
-                                     text="ID"
-                                     prefWidth="90"/>
-                        <TableColumn fx:id="colComprobante"
-                                     text="N° Comprobante"
-                                     prefWidth="140"/>
-                        <TableColumn fx:id="colProveedor"
-                                     text="Proveedor"
-                                     prefWidth="180"/>
-                        <TableColumn fx:id="colEmpleado"
-                                     text="Empleado"
-                                     prefWidth="140"/>
-                        <TableColumn fx:id="colFecha"
-                                     text="Fecha"
-                                     prefWidth="130"/>
-                        <TableColumn fx:id="colTotal"
-                                     text="Total"
-                                     prefWidth="100"/>
-                        <TableColumn fx:id="colAccionesHist"
-                                     text="Acciones"
-                                     prefWidth="100"/>
+                        <TableColumn fx:id="colIdCompra" text="ID" prefWidth="90"/>
+                        <TableColumn fx:id="colComprobante" text="N° Comprobante" prefWidth="140"/>
+                        <TableColumn fx:id="colProveedor" text="Proveedor" prefWidth="180"/>
+                        <TableColumn fx:id="colEmpleado" text="Empleado" prefWidth="140"/>
+                        <TableColumn fx:id="colFecha" text="Fecha" prefWidth="130"/>
+                        <TableColumn fx:id="colTotal" text="Total" prefWidth="100"/>
+                        <TableColumn fx:id="colEstado" text="Estado" prefWidth="90"/>
+                        <TableColumn fx:id="colAccionesHist" text="Acciones" prefWidth="170"/>
                     </columns>
                     <columnResizePolicy>
                         <TableView fx:constant=

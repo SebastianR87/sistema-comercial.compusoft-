@@ -106,16 +106,12 @@ public class VentaDetalleModalController {
 
         //Efectivo: muestra redondeo, total y texto
         if (metodo.equals("EFECTIVO") && venta.getMontoPagado() > 0) {
-            addMonto("REDONDEO S/", "",
-                    String.format("%.2f", 0.00));
-            addMonto("TOTAL S/", "",
-                    String.format("%.2f", total));
+            addMontoLinea("REDONDEO", "0.00", false);
             addCentrado(
                     "EFECTIVO S/: " +
                             String.format("%.2f", venta.getMontoPagado()) + " SOLES",
                     11, false);
-            addMontoBold("Vuelto", "S/",
-                    String.format("%.2f", venta.getVuelto()));
+            addMontoLinea("VUELTO", String.format("%.2f", venta.getVuelto()), true);
         } else {
             //Tarjeta/Yape/Transferencia: formato "ONLINE VISA S/: X.XX SOLES"
             String cancelo = metodo.contains("TARJETA")
@@ -208,64 +204,10 @@ public class VentaDetalleModalController {
         panelImprimible.getChildren().add(f);
     }
 
-    /** Fila de monto: texto izq, "S/" centro-izq, valor a la derecha.
-    Replica exactamente el formato de la imagen de referencia. */
-    private void addMonto(String texto, String moneda, String valor) {
-        Label lbl = new Label(texto);
-        lbl.setStyle(F);
-        HBox.setHgrow(lbl, Priority.ALWAYS);
-
-        Label mon = new Label(moneda);
-        mon.setStyle(F);
-        mon.setPrefWidth(20);
-        mon.setAlignment(Pos.CENTER_RIGHT);
-
-        Label val = new Label(valor);
-        val.setStyle(F);
-        val.setPrefWidth(70);
-        val.setAlignment(Pos.CENTER_RIGHT);
-
-        HBox f = new HBox(4, lbl, mon, val);
-        f.setAlignment(Pos.CENTER_LEFT);
-        panelImprimible.getChildren().add(f);
-    }
-
-    /** Igual que addMonto pero en negrita. */
-    private void addMontoBold(String texto, String moneda, String valor) {
-        Label lbl = new Label(texto);
-        lbl.setStyle(FB12);
-        HBox.setHgrow(lbl, Priority.ALWAYS);
-
-        Label mon = new Label(moneda);
-        mon.setStyle(FB12);
-        mon.setPrefWidth(20);
-        mon.setAlignment(Pos.CENTER_RIGHT);
-
-        Label val = new Label(valor);
-        val.setStyle(FB12);
-        val.setPrefWidth(70);
-        val.setAlignment(Pos.CENTER_RIGHT);
-
-        HBox f = new HBox(4, lbl, mon, val);
-        f.setAlignment(Pos.CENTER_LEFT);
-        panelImprimible.getChildren().add(f);
-    }
-
     /** Fila de monto con línea de puntos entre el texto y el valor */
     private void addMontoLinea(String texto, String valor, boolean bold) {
-        // Construye el relleno de puntos dinámicamente
-        // El ancho total aproximado en caracteres monoespaciados es 42
-
         Label lbl = new Label(texto);
         lbl.setStyle(bold ? FB12 : F);
-
-        //Relleno de puntos entre etiqueta y valor
-        Label puntos = new Label();
-        puntos.setStyle(F);
-        HBox.setHgrow(puntos, Priority.ALWAYS);
-        // Alineación del relleno: genera una línea punteada visual
-        puntos.setMaxWidth(Double.MAX_VALUE);
-        puntos.setText(" "); // espacio base, los puntos se ven por el separator
 
         Label mon = new Label("S/");
         mon.setStyle(bold ? FB12 : F);
@@ -277,16 +219,14 @@ public class VentaDetalleModalController {
         val.setPrefWidth(70);
         val.setAlignment(Pos.CENTER_RIGHT);
 
-        //Separador punteado que se estira
         Region relleno = new Region();
-        relleno.setStyle("-fx-background-color: transparent;");
         HBox.setHgrow(relleno, Priority.ALWAYS);
 
         HBox f = new HBox(4, lbl, relleno, mon, val);
         f.setAlignment(Pos.BOTTOM_LEFT);
+        f.setMaxWidth(Double.MAX_VALUE);
         panelImprimible.getChildren().add(f);
     }
-
     /** Columna con ancho fijo, alineada a la derecha. */
     private Label col(String texto, double ancho, boolean bold) {
         Label lbl = new Label(texto);

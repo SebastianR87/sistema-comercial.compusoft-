@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.scene.layout.HBox;
 
 public class CompraController implements AccesoControlable {
 
@@ -58,6 +59,7 @@ public class CompraController implements AccesoControlable {
     @FXML private TableColumn<Compra, String> colFecha;
     @FXML private TableColumn<Compra, Double> colTotal;
     @FXML private TableColumn<Compra, Void> colAccionesHist;
+    @FXML private TableColumn<Compra, String> colEstado;
 
     private CompraDAO compraDAO = new CompraDAO();
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
@@ -330,7 +332,6 @@ public class CompraController implements AccesoControlable {
         colComprobante.setCellValueFactory(
                 new PropertyValueFactory<>("numeroComprobante"));
 
-        // Nombre del proveedor via lambda
         colProveedor.setCellValueFactory(data ->
                 new SimpleStringProperty(
                         data.getValue().getProveedor() != null
@@ -339,7 +340,6 @@ public class CompraController implements AccesoControlable {
                 )
         );
 
-        // Nombre del empleado via lambda
         colEmpleado.setCellValueFactory(data ->
                 new SimpleStringProperty(
                         data.getValue().getEmpleado() != null
@@ -348,7 +348,6 @@ public class CompraController implements AccesoControlable {
                 )
         );
 
-        // Fecha formateada para mostrar en la tabla
         colFecha.setCellValueFactory(data ->
                 new SimpleStringProperty(
                         data.getValue().getFecha() != null
@@ -361,9 +360,35 @@ public class CompraController implements AccesoControlable {
         colTotal.setCellValueFactory(
                 new PropertyValueFactory<>("total"));
 
-        // Columna Ver: abre el detalle de la compra seleccionada
+        // Columna de estado, pintada según el valor
+        colEstado.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getEstado() != null
+                                ? data.getValue().getEstado() : "ACTIVA"
+                )
+        );
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String estado, boolean empty) {
+                super.updateItem(estado, empty);
+                if (empty || estado == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(estado);
+                if ("ANULADA".equalsIgnoreCase(estado)) {
+                    setStyle("-fx-text-fill: #a32d2d; -fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-text-fill: #2d8a3e; -fx-font-weight: bold;");
+                }
+            }
+        });
+
         colAccionesHist.setCellFactory(col -> new TableCell<>() {
-            final Button btnVer = new Button("Ver detalle");
+            final Button btnVer = new Button("Ver");
+            final Button btnAnular = new Button("Anular");
+            final HBox contenedor = new HBox(6, btnVer, btnAnular);
             {
                 btnVer.setStyle(
                         "-fx-background-color: #4361ee;" +
@@ -377,15 +402,35 @@ public class CompraController implements AccesoControlable {
                             .getItems().get(getIndex());
                     mostrarDetalleCompra(c);
                 });
+
+                btnAnular.setStyle(
+                        "-fx-background-color: #fcebeb; -fx-text-fill: #a32d2d;" +
+                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
+                );
+                btnAnular.setOnAction(e -> {
+                    Compra c = getTableView().getItems().get(getIndex());
+                    confirmarYAnular(c);
+                });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btnVer);
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+                Compra c = getTableView().getItems().get(getIndex());
+                boolean yaAnulada = "ANULADA".equalsIgnoreCase(c.getEstado());
+                boolean puedeAnular = PermisoService.puedeAnularCompra();
+
+                btnAnular.setVisible(puedeAnular);
+                btnAnular.setManaged(puedeAnular);
+                btnAnular.setDisable(yaAnulada);
+
+                setGraphic(contenedor);
             }
         });
 
-        // Inicializa el FilteredList igual que en los demás módulos
         listaFiltrada = new FilteredList<>(listaHistorial,
                 c -> true);
         tablaHistorial.setItems(listaFiltrada);
@@ -602,6 +647,61 @@ public class CompraController implements AccesoControlable {
         } catch (Exception ex) {
             new Alert(Alert.AlertType.ERROR,
                     "No se pudo abrir el detalle: " + ex.getMessage()).show();
+        }
+    }
+
+    private void confirmarYAnular(Compra c) {
+        if (!PermisoService.puedeAnularCompra()) {
+            PermisoUtil.denegado();
+            return;
+        }
+
+        if ("ANULADA".equalsIgnoreCase(c.getEstado())) {
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Esta compra ya está anulada.").showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "¿Anular la compra " + c.getNumeroComprobante() + "?\n\n" +
+                        "Esta acción revertirá el stock y el costo promedio (CPP)\n" +
+                        "de los productos comprados a su valor anterior.\n" +
+                        "La compra quedará marcada como ANULADA y no se eliminará del historial.",
+                ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Confirmar anulación");
+        confirm.showAndWait();
+
+        if (confirm.getResult() != ButtonType.YES) return;
+
+        String resultado = compraDAO.anularCompra(c.getIdCompra());
+
+        switch (resultado) {
+            case "OK" -> {
+                new Alert(Alert.AlertType.INFORMATION,
+                        "Compra " + c.getNumeroComprobante() + " anulada correctamente.\n" +
+                                "El stock y el costo promedio han sido revertidos.").showAndWait();
+                cargarHistorial();
+            }
+            case "YA_ANULADA" -> new Alert(Alert.AlertType.WARNING,
+                    "Esta compra ya estaba anulada.").showAndWait();
+            case "NO_EXISTE" -> new Alert(Alert.AlertType.ERROR,
+                    "No se encontró la compra.").showAndWait();
+            default -> {
+                if (resultado.startsWith("STOCK_INSUFICIENTE:")) {
+                    String[] partes = resultado.split(":");
+                    new Alert(Alert.AlertType.WARNING,
+                            "No se puede anular esta compra.\n\n" +
+                                    "El producto \"" + partes[1] + "\" ya no tiene stock suficiente\n" +
+                                    "(disponible: " + partes[2] + " unidades) porque parte de esa\n" +
+                                    "mercadería ya fue vendida.\n\n" +
+                                    "No es posible revertir esta compra sin dejar el stock inconsistente.")
+                            .showAndWait();
+                } else {
+                    new Alert(Alert.AlertType.ERROR,
+                            "No se pudo anular la compra.\nRevisa la consola para más detalles.")
+                            .showAndWait();
+                }
+            }
         }
     }
 

@@ -141,12 +141,25 @@
                         <Label text="Stock" styleClass="label-field"/>
                         <TextField fx:id="txtStock" text="0" disable="true"
                                    style="-fx-background-color: #f0f0f0;
-                          -fx-alignment: CENTER;"/>
+                      -fx-alignment: CENTER;"/>
                     </VBox>
                     <!-- Estado: toma el resto del espacio disponible -->
                     <VBox spacing="5" HBox.hgrow="ALWAYS">
                         <Label text="Estado" styleClass="label-field"/>
                         <ComboBox fx:id="cbEstado" maxWidth="Infinity"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Stock mínimo y máximo: definidos por Administrador/Almacenero
+                     desde el registro, sirven como referencia para alertas de Kardex -->
+                <HBox spacing="10">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Stock Mínimo" styleClass="label-field"/>
+                        <TextField fx:id="txtStockMinimo" promptText="0"/>
+                    </VBox>
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Stock Máximo" styleClass="label-field"/>
+                        <TextField fx:id="txtStockMaximo" promptText="0"/>
                     </VBox>
                 </HBox>
 

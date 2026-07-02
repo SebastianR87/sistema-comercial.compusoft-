@@ -79,8 +79,7 @@ public class CompatibilidadController implements AccesoControlable {
         // Se maneja desde el FXML con visible/managed
     }
 
-    // ── COMBOS ───────────────────────────────────────────
-
+    // COMBOS
     private void configurarCombosEstado() {
         ObservableList<String> estados = FXCollections.observableArrayList(
                 Compatibilidad.COMPATIBLE,
@@ -214,7 +213,7 @@ public class CompatibilidadController implements AccesoControlable {
         }
     }
 
-    // ── VERIFICADOR RÁPIDO ────────────────────────────────
+    // ── VERIFICADOR RÁPIDO
     @FXML
     private void verificarCompatibilidad() {
         Object va = cbVerificarA.getValue();

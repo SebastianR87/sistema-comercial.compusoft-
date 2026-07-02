@@ -39,7 +39,7 @@ public class ProductoController implements AccesoControlable {
     @FXML private TableColumn<Producto, Double> colPrecioVenta;
     @FXML private TableColumn<Producto, Integer> colStock;
     @FXML private TableColumn<Producto, String> colEstado;
-    @FXML private TableColumn<Producto, Void>   colAcciones;
+    @FXML private TableColumn<Producto, Void> colAcciones;
     @FXML private Label lblTituloFormulario;
     @FXML private Label lblTituloTabla;
     @FXML private Label lblContadorProductos;
@@ -49,6 +49,8 @@ public class ProductoController implements AccesoControlable {
     @FXML private TextArea txtDescripcion;
     @FXML private TextField txtPrecioVenta;
     @FXML private TextField txtStock;
+    @FXML private TextField txtStockMinimo;
+    @FXML private TextField txtStockMaximo;
     @FXML private ComboBox<String> cbEstado;
     @FXML private TextField txtBuscarProducto;
 
@@ -409,6 +411,34 @@ public class ProductoController implements AccesoControlable {
                 return;
             }
 
+            // Stock mínimo y máximo: valores de referencia para alertas
+            // de reposición (Compra) y sobre-stock (Kardex más adelante)
+            int stockMinimo;
+            int stockMaximo;
+            try {
+                stockMinimo = Integer.parseInt(txtStockMinimo.getText().trim());
+                stockMaximo = Integer.parseInt(txtStockMaximo.getText().trim());
+            } catch (NumberFormatException ex) {
+                new Alert(Alert.AlertType.WARNING,
+                        "Stock mínimo y máximo deben ser números válidos.\n" +
+                                "Ejemplo: 5 y 50").showAndWait();
+                return;
+            }
+
+            if (stockMinimo < 0 || stockMaximo < 0) {
+                new Alert(Alert.AlertType.WARNING,
+                        "El stock mínimo y máximo no pueden ser negativos")
+                        .showAndWait();
+                return;
+            }
+
+            if (stockMaximo > 0 && stockMinimo > stockMaximo) {
+                new Alert(Alert.AlertType.WARNING,
+                        "El stock mínimo no puede ser mayor al máximo.")
+                        .showAndWait();
+                return;
+            }
+
             // Verifica que el ID no exista antes de insertar
             if (dao.buscarPorId(id) != null) {
                 new Alert(Alert.AlertType.WARNING,
@@ -420,7 +450,8 @@ public class ProductoController implements AccesoControlable {
             // El stock SIEMPRE inicia en 0 al crear un producto.
             Producto p = new Producto(id, categoriaActual, nombre,
                     descripcion, precioCompra, precioVenta, 0, estado);
-
+            p.setStockMinimo(stockMinimo);
+            p.setStockMaximo(stockMaximo);
 
             boolean exito = dao.insertar(p);
             if (exito) {
@@ -448,6 +479,8 @@ public class ProductoController implements AccesoControlable {
         txtNombre.clear();
         txtDescripcion.clear();
         txtPrecioVenta.clear();
+        txtStockMinimo.clear();
+        txtStockMaximo.clear();
         cbEstado.setValue(null);
         if (categoriaActual != null && !soloLectura) generarId();
     }

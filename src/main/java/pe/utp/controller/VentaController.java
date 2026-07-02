@@ -17,6 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.*;
 import pe.utp.model.*;
+import javafx.scene.layout.HBox;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 import pe.utp.security.Sesion;
@@ -69,6 +70,7 @@ public class VentaController implements AccesoControlable {
     @FXML private TableColumn<Venta, String> colMetodoPago;
     @FXML private TableColumn<Venta, String> colFecha;
     @FXML private TableColumn<Venta, Double> colTotal;
+    @FXML private TableColumn<Venta, String> colEstado;
     @FXML private TableColumn<Venta, Void> colAccionesHist;
     @FXML private TableColumn<DetalleVenta, String> colCodigo;
 
@@ -684,8 +686,35 @@ public class VentaController implements AccesoControlable {
         );
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 
+        // Columna de estado, pintada según el valor
+        colEstado.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getEstado() != null
+                                ? data.getValue().getEstado() : "ACTIVA"
+                )
+        );
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String estado, boolean empty) {
+                super.updateItem(estado, empty);
+                if (empty || estado == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(estado);
+                if ("ANULADA".equalsIgnoreCase(estado)) {
+                    setStyle("-fx-text-fill: #a32d2d; -fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-text-fill: #2d8a3e; -fx-font-weight: bold;");
+                }
+            }
+        });
+
         colAccionesHist.setCellFactory(col -> new TableCell<>() {
-            final Button btnVer = new Button("Ver detalle");
+            final Button btnVer = new Button("Ver");
+            final Button btnAnular = new Button("Anular");
+            final HBox contenedor = new HBox(6, btnVer, btnAnular);
             {
                 btnVer.setStyle(
                         "-fx-background-color: #4361ee; -fx-text-fill: white;" +
@@ -695,11 +724,32 @@ public class VentaController implements AccesoControlable {
                     Venta v = getTableView().getItems().get(getIndex());
                     mostrarDetalleVenta(v);
                 });
+
+                btnAnular.setStyle(
+                        "-fx-background-color: #fcebeb; -fx-text-fill: #a32d2d;" +
+                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
+                );
+                btnAnular.setOnAction(e -> {
+                    Venta v = getTableView().getItems().get(getIndex());
+                    confirmarYAnular(v);
+                });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btnVer);
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+                Venta v = getTableView().getItems().get(getIndex());
+                boolean yaAnulada = "ANULADA".equalsIgnoreCase(v.getEstado());
+                boolean puedeAnular = PermisoService.puedeAnularVenta();
+
+                btnAnular.setVisible(puedeAnular);
+                btnAnular.setManaged(puedeAnular);
+                btnAnular.setDisable(yaAnulada);
+
+                setGraphic(contenedor);
             }
         });
 
@@ -732,6 +782,47 @@ public class VentaController implements AccesoControlable {
         }
     }
 
+    private void confirmarYAnular(Venta v) {
+        if (!PermisoService.puedeAnularVenta()) {
+            PermisoUtil.denegado();
+            return;
+        }
+
+        if ("ANULADA".equalsIgnoreCase(v.getEstado())) {
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Esta venta ya está anulada.").showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "¿Anular la venta " + v.getNumeroComprobante() + "?\n\n" +
+                        "Esta acción devolverá el stock de los productos vendidos.\n" +
+                        "La venta quedará marcada como ANULADA y no se eliminará del historial.",
+                ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Confirmar anulación");
+        confirm.showAndWait();
+
+        if (confirm.getResult() != ButtonType.YES) return;
+
+        String resultado = ventaDAO.anularVenta(v.getIdVenta());
+
+        switch (resultado) {
+            case "OK" -> {
+                new Alert(Alert.AlertType.INFORMATION,
+                        "Venta " + v.getNumeroComprobante() + " anulada correctamente.\n" +
+                                "El stock ha sido devuelto.").showAndWait();
+                cargarHistorial();
+            }
+            case "YA_ANULADA" -> new Alert(Alert.AlertType.WARNING,
+                    "Esta venta ya estaba anulada.").showAndWait();
+            case "NO_EXISTE" -> new Alert(Alert.AlertType.ERROR,
+                    "No se encontró la venta.").showAndWait();
+            default -> new Alert(Alert.AlertType.ERROR,
+                    "No se pudo anular la venta.\nRevisa la consola para más detalles.")
+                    .showAndWait();
+        }
+    }
+
     @FXML
     private void filtrarHistorial() {
         String texto = txtBuscarHistorial.getText().trim().toLowerCase();
@@ -748,7 +839,7 @@ public class VentaController implements AccesoControlable {
         listaHistorial.setAll(ventaDAO.listar());
     }
 
-    // UTILIDADES
+    // Generación del ID
     private String generarId() {
         String ultimo = ventaDAO.obtenerUltimoId();
         if (ultimo == null) return "VEN001";
