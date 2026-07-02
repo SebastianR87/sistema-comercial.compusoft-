@@ -5,6 +5,8 @@ import pe.utp.model.TipoDocumento;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import pe.utp.Conexion.QueryHelper;
+
 
 public class TipoDocumentoDAO {
 
@@ -73,8 +75,31 @@ public class TipoDocumentoDAO {
         }
     }
 
+    public boolean existeDocumento(String documento, String idExcluir) {
+        String sql;
+        if (idExcluir != null) {
+            sql = "SELECT COUNT(*) FROM tipo_documento " +
+                    "WHERE documento = ? AND id_tipo_documento != ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM tipo_documento WHERE documento = ?";
+        }
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, documento);
+            if (idExcluir != null) ps.setString(2, idExcluir);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al verificar documento: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_tipo_documento FROM tipo_documento ORDER BY id_tipo_documento DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_tipo_documento FROM tipo_documento " +
+                        "ORDER BY id_tipo_documento DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

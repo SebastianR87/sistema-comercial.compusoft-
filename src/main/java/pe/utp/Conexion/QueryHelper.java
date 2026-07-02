@@ -39,4 +39,21 @@ public class QueryHelper {
             );
         }
     }
+
+    /**
+     * Devuelve la expresión SQL para restar días a la fecha actual.
+     * Se usa para calcular vencimientos sin necesidad de columna extra.
+     * MySQL: DATE_SUB(NOW(), INTERVAL 30 DAY)
+     * SQL Server: DATEADD(DAY, -30, GETDATE())
+     * Ejemplo de uso:
+     * "WHERE fecha < " + QueryHelper.restarDias(30)
+     */
+    public static String restarDias(int dias) {
+        if (motor.equalsIgnoreCase("mysql")) {
+            return "DATE_SUB(NOW(), INTERVAL " + dias + " DAY)";
+        } else {
+            return "DATEADD(DAY, -" + dias + ", GETDATE())";
+        }
+    }
+
 }

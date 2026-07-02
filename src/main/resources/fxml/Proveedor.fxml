@@ -8,80 +8,109 @@
       fx:controller="pe.utp.controller.ProveedorController"
       spacing="0" style="-fx-background-color: #f0f2f5;">
 
-    <!-- TOPBAR -->
     <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
         <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
         <Label text="🏭 Proveedores" styleClass="topbar-title"/>
     </HBox>
 
-    <!-- CONTENIDO -->
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
 
-        <!-- FORMULARIO -->
-        <VBox styleClass="card" spacing="14" prefWidth="300" minWidth="300">
-            <Label text="Nuevo Proveedor"
+        <!-- FORMULARIO NUEVO PROVEEDOR -->
+        <VBox styleClass="card" spacing="0"
+              prefWidth="300" minWidth="300">
+
+            <Label text="➕ Nuevo Proveedor"
                    style="-fx-font-size: 15px; -fx-font-weight: bold;
-                          -fx-text-fill: #1a1a2e;"/>
+                          -fx-text-fill: #1a1a2e; -fx-padding: 0 0 10 0;"/>
             <Separator/>
 
-            <VBox spacing="6">
-                <Label text="ID" styleClass="label-field"/>
-                <TextField fx:id="txtId" promptText="Ej: PROV001"/>
-            </VBox>
+            <!-- ScrollPane para pantallas pequeñas -->
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent;
+                               -fx-background: transparent;
+                               -fx-border-color: transparent;
+                               -fx-padding: 0;">
+                <VBox spacing="12" style="-fx-padding: 10 4 10 4;">
 
-            <VBox spacing="6">
-                <Label text="Nombre" styleClass="label-field"/>
-                <TextField fx:id="txtNombre" promptText="Nombre del proveedor"/>
-            </VBox>
+                    <VBox spacing="5">
+                        <Label text="ID" styleClass="label-field"/>
+                        <TextField fx:id="txtId" promptText="Ej: PROV001"
+                                   style="-fx-background-color: #f0f0f0;"/>
+                    </VBox>
 
-            <VBox spacing="6">
-                <Label text="RUC" styleClass="label-field"/>
-                <TextField fx:id="txtRuc" promptText="Ej: 20123456789"/>
-            </VBox>
+                    <VBox spacing="5">
+                        <Label text="Nombre empresa" styleClass="label-field"/>
+                        <TextField fx:id="txtNombre"
+                                   promptText="Ej: Tech Solutions S.A.C."/>
+                    </VBox>
 
-            <VBox spacing="6">
-                <Label text="Teléfono" styleClass="label-field"/>
-                <TextField fx:id="txtTelefono" promptText="Ej: 999999999"/>
-            </VBox>
+                    <VBox spacing="5">
+                        <Label text="RUC" styleClass="label-field"/>
+                        <TextField fx:id="txtRuc"
+                                   promptText="11 dígitos numéricos"/>
+                    </VBox>
 
-            <VBox spacing="6">
-                <Label text="Dirección" styleClass="label-field"/>
-                <TextField fx:id="txtDireccion" promptText="Dirección"/>
-            </VBox>
+                    <VBox spacing="5">
+                        <Label text="Teléfono" styleClass="label-field"/>
+                        <TextField fx:id="txtTelefono"
+                                   promptText="Ej: 987654321"/>
+                    </VBox>
 
-            <VBox spacing="8">
+                    <VBox spacing="5">
+                        <Label text="Dirección" styleClass="label-field"/>
+                        <TextField fx:id="txtDireccion"
+                                   promptText="Ej: Av. Industrial 456"/>
+                    </VBox>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- Botones fuera del scroll siempre visibles -->
+            <Separator/>
+            <VBox spacing="8" style="-fx-padding: 10 0 0 0;">
                 <Button text="💾 Guardar" styleClass="btn-primary"
                         onAction="#guardar" maxWidth="Infinity"/>
                 <Button text="🔄 Limpiar" onAction="#limpiar"
                         maxWidth="Infinity"
-                        style="-fx-background-radius: 8; -fx-padding: 8 16;
-                               -fx-cursor: hand;"/>
+                        style="-fx-background-color: #6c757d;
+                               -fx-text-fill: white;
+                               -fx-background-radius: 8;
+                               -fx-padding: 8 16; -fx-cursor: hand;"/>
             </VBox>
         </VBox>
 
-        <!-- TABLA -->
+        <!-- TABLA DE PROVEEDORES -->
         <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
 
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="Lista de Proveedores"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold;
-                              -fx-text-fill: #1a1a2e;"/>
-                <HBox HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="txtBuscar" promptText="🔍 Buscar proveedor..."
-                           prefWidth="200" onKeyReleased="#buscar"/>
-            </HBox>
-
+            <Label text="📋 Lista de Proveedores"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold;
+                          -fx-text-fill: #1a1a2e;"/>
             <Separator/>
+
+            <!-- onKeyReleased llama a filtrar() no a buscar()
+                 porque usamos FilteredList en vez de ir a la BD -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="txtBuscar"
+                           promptText="🔍  Buscar por nombre o RUC..."
+                           HBox.hgrow="ALWAYS"
+                           onKeyReleased="#filtrar"/>
+            </HBox>
 
             <TableView fx:id="tablaProveedor" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
-                    <TableColumn fx:id="colNombre" text="Nombre" prefWidth="180"/>
-                    <TableColumn fx:id="colRuc" text="RUC" prefWidth="120"/>
-                    <TableColumn fx:id="colTelefono" text="Teléfono" prefWidth="100"/>
-                    <TableColumn fx:id="colDireccion" text="Dirección" prefWidth="180"/>
-                    <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="150"/>
+                    <TableColumn fx:id="colId"
+                                 text="ID" prefWidth="80"/>
+                    <TableColumn fx:id="colNombre"
+                                 text="Nombre" prefWidth="200"/>
+                    <TableColumn fx:id="colRuc"
+                                 text="RUC" prefWidth="120"/>
+                    <TableColumn fx:id="colTelefono"
+                                 text="Teléfono"  prefWidth="100"/>
+                    <TableColumn fx:id="colDireccion"
+                                 text="Dirección" prefWidth="180"/>
+                    <TableColumn fx:id="colAcciones"
+                                 text="Acciones"  prefWidth="220"/>
                 </columns>
                 <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import pe.utp.dao.EmpleadoDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
 import pe.utp.util.ResultadoEliminacion;
@@ -36,30 +35,29 @@ public class EmpleadoController implements AccesoControlable {
     @FXML private TableColumn<Empleado, Void> colAcciones;
 
     // Formulario nuevo empleado
-    @FXML private TextField     txtId;
-    @FXML private TextField     txtNombre;
+    @FXML private TextField txtId;
+    @FXML private TextField txtNombre;
     @FXML private ComboBox<String> cbCargo;
     @FXML private ComboBox<TipoDocumento> cbTipoDocumento;
-    @FXML private TextField     txtNumeroDocumento;
-    @FXML private TextField     txtTelefono;
-    @FXML private TextField     txtDireccion;
-    @FXML private TextField     txtUsuario;
+    @FXML private TextField txtNumeroDocumento;
+    @FXML private TextField txtTelefono;
+    @FXML private TextField txtDireccion;
+    @FXML private TextField txtUsuario;
     @FXML private PasswordField txtPassword;
-    @FXML private TextField     txtPasswordVisible;
-    @FXML private Button        btnMostrar;
+    @FXML private TextField txtPasswordVisible;
+    @FXML private Button btnMostrar;
 
     // Buscador y filtros
-    @FXML private TextField     txtBuscar;
-    @FXML private ToggleButton  btnTodos;
-    @FXML private ToggleButton  btnActivos;
-    @FXML private ToggleButton  btnInactivos;
+    @FXML private TextField txtBuscar;
+    @FXML private ToggleButton btnTodos;
+    @FXML private ToggleButton btnActivos;
+    @FXML private ToggleButton btnInactivos;
 
     private boolean passwordVisible = false;
 
     private EmpleadoDAO dao = new EmpleadoDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
-    private Empleado empleadoSeleccionado = null;
 
     private ObservableList<Empleado> listaCompleta = FXCollections.observableArrayList();
     private FilteredList<Empleado>   listaFiltrada;
@@ -127,9 +125,7 @@ public class EmpleadoController implements AccesoControlable {
         listaCompleta.setAll(dao.listar());
     }
 
-    /**
-     * Configura la columna Estado en colores. Un badge verde para ACTIVO y rojo para INACTIVO.
-     */
+    /** Configura la columna Estado en colores. Un badge verde para ACTIVO y rojo para INACTIVO.*/
     private void configurarColumnaEstado() {
         colEstado.setCellFactory(col -> new TableCell<>() {
             @Override
@@ -176,11 +172,9 @@ public class EmpleadoController implements AccesoControlable {
 
         // Determina qué filtro de estado está activo
         String filtroEstado = "TODOS";
-        if (btnActivos.isSelected())   filtroEstado = "ACTIVO";
+        if (btnActivos.isSelected()) filtroEstado = "ACTIVO";
         if (btnInactivos.isSelected()) filtroEstado = "INACTIVO";
 
-        // Copia local para usar dentro del lambda
-        // (las variables en lambdas deben ser effectively final)
         final String estadoFinal = filtroEstado;
 
         listaFiltrada.setPredicate(emp -> {
@@ -221,17 +215,17 @@ public class EmpleadoController implements AccesoControlable {
         btnActivos.setStyle(estiloNormal);
         btnInactivos.setStyle(estiloNormal);
 
-        if (btnTodos.isSelected())     btnTodos.setStyle(estiloTodos);
-        if (btnActivos.isSelected())   btnActivos.setStyle(estiloActivos);
+        if (btnTodos.isSelected()) btnTodos.setStyle(estiloTodos);
+        if (btnActivos.isSelected()) btnActivos.setStyle(estiloActivos);
         if (btnInactivos.isSelected()) btnInactivos.setStyle(estiloInactivos);
     }
 
 
     private void configurarColumnaAcciones() {
         colAcciones.setCellFactory(col -> new TableCell<>() {
-            final Button btnVer      = new Button("Ver");
-            final Button btnEditar   = new Button("Editar");
-            final Button btnEstado   = new Button();
+            final Button btnVer = new Button("Ver");
+            final Button btnEditar = new Button("Editar");
+            final Button btnEstado = new Button();
             // Botón de eliminación física, solo habilitado si no tiene movimientos
             final Button btnEliminar = new Button("Eliminar");
 
@@ -336,9 +330,7 @@ public class EmpleadoController implements AccesoControlable {
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
 
-                // Si la fila está vacía no mostramos nada
-                // Todo el código dinámico va dentro del else
-                // para evitar IndexOutOfBoundsException en filas vacías
+
                 if (empty || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
                     return;
@@ -367,10 +359,12 @@ public class EmpleadoController implements AccesoControlable {
                 }
 
                 // Verifica movimientos para habilitar o deshabilitar Eliminar
-                boolean tieneMov = dao.tieneMovimientos(emp.getIdEmpleado());
+                ResultadoEliminacion res = validacion.validarEmpleado(
+                        emp.getIdEmpleado(), emp.getNombre()
+                );
+                boolean tieneMov = !res.isPermitido();
                 btnEliminar.setDisable(tieneMov);
                 btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
-
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEstado, btnEliminar);
                 hbox.setStyle("-fx-alignment: CENTER-LEFT;");
                 setGraphic(hbox);
@@ -409,15 +403,15 @@ public class EmpleadoController implements AccesoControlable {
 
     @FXML
     private void guardar() {
-        if (!PermisoService.puedeAcceder(Modulo.EMPLEADOS)) {
+        if (!PermisoService.puedeAcceder(pe.utp.security.Modulo.EMPLEADOS)) {
             PermisoUtil.denegado();
             return;
         }
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
         String cargo = cbCargo.getValue();
-        TipoDocumento tipoDoc   = cbTipoDocumento.getValue();
-        String numeroDocumento  = txtNumeroDocumento.getText().trim();
+        TipoDocumento tipoDoc = cbTipoDocumento.getValue();
+        String numeroDocumento = txtNumeroDocumento.getText().trim();
         String usuario = txtUsuario.getText().trim();
         String password = passwordVisible ?
                 txtPasswordVisible.getText().trim() :
@@ -434,8 +428,8 @@ public class EmpleadoController implements AccesoControlable {
             return;
         }
 
-        // Valida que el nombre solo tenga letras y espacios
-        // [a-zA-ZáéíóúÁÉÍÓÚñÑ]+ = una o más letras incluyendo tildes y ñ
+        // Ve que el nombre solo tenga letras y espacios
+        // [a-zA-ZáéíóúÁÉÍÓÚñÑ]+ = es un formato una o más letras incluyendo tildes y ñ
         // (\\s[a-zA-Z...]+)* = seguido de cero o más grupos (espacio + letras)
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(\\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*")) {
             new Alert(Alert.AlertType.WARNING,
@@ -468,7 +462,7 @@ public class EmpleadoController implements AccesoControlable {
                 }
                 break;
             case "RUC":
-                if (!numeroDocumento.matches("\\d{11}")) {
+                if (!numeroDocumento.matches("\\d{9}")) {
                     new Alert(Alert.AlertType.WARNING,
                             "El RUC debe tener exactamente 11 dígitos numéricos")
                             .showAndWait();
@@ -499,9 +493,10 @@ public class EmpleadoController implements AccesoControlable {
             return;
         }
 
-        if (!telefono.isEmpty() && !telefono.matches("\\d{9}")) {
+        if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
             new Alert(Alert.AlertType.WARNING,
-                    "El teléfono debe tener exactamente 9 dígitos").showAndWait();
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).")
+                    .showAndWait();
             return;
         }
 
@@ -577,7 +572,6 @@ public class EmpleadoController implements AccesoControlable {
         txtPasswordVisible.setVisible(false);
         txtPasswordVisible.setManaged(false);
         btnMostrar.setText("👁");
-        empleadoSeleccionado = null;
         txtTelefono.clear();
         txtDireccion.clear();
         generarId();

@@ -11,7 +11,7 @@
     <!-- TOPBAR -->
     <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
         <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
-        <Label text="⚙️ Configuración" styleClass="topbar-title"/>
+        <Label text="Configuración" styleClass="topbar-title"/>
     </HBox>
 
     <!-- PESTAÑAS -->
@@ -23,9 +23,8 @@
             <HBox spacing="20" style="-fx-padding: 20;">
 
                 <VBox styleClass="card" spacing="14" prefWidth="280">
-                    <Label text="Nuevo Tipo Documento"
-                           style="-fx-font-size: 15px; -fx-font-weight: bold;
-                                  -fx-text-fill: #1a1a2e;"/>
+                    <Label fx:id="lblTituloTipoDoc" text="➕ Nuevo Tipo Documento"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
                     <Separator/>
                     <VBox spacing="6">
                         <Label text="ID" styleClass="label-field"/>
@@ -65,13 +64,12 @@
         </Tab>
 
         <!-- PESTAÑA TIPO COMPROBANTE -->
-        <Tab text="🧾 Tipo Comprobante" closable="false">
+        <Tab text="📄 Tipo Comprobante" closable="false">
             <HBox spacing="20" style="-fx-padding: 20;">
 
                 <VBox styleClass="card" spacing="14" prefWidth="280">
-                    <Label text="Nuevo Tipo Comprobante"
-                           style="-fx-font-size: 15px; -fx-font-weight: bold;
-                                  -fx-text-fill: #1a1a2e;"/>
+                    <Label fx:id="lblTituloTipoComp" text="➕ Nuevo Tipo Comprobante"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
                     <Separator/>
                     <VBox spacing="6">
                         <Label text="ID" styleClass="label-field"/>
@@ -115,9 +113,8 @@
             <HBox spacing="20" style="-fx-padding: 20;">
 
                 <VBox styleClass="card" spacing="14" prefWidth="280">
-                    <Label text="Nuevo Método de Pago"
-                           style="-fx-font-size: 15px; -fx-font-weight: bold;
-                                  -fx-text-fill: #1a1a2e;"/>
+                    <Label fx:id="lblTituloMetodoPago" text="➕ Nuevo Método de Pago"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
                     <Separator/>
                     <VBox spacing="6">
                         <Label text="ID" styleClass="label-field"/>

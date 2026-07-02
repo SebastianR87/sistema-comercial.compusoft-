@@ -5,6 +5,7 @@ import pe.utp.model.MetodoPago;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import pe.utp.Conexion.QueryHelper;
 
 public class MetodoPagoDAO {
 
@@ -73,8 +74,31 @@ public class MetodoPagoDAO {
         }
     }
 
+    public boolean existeMetodo(String metodo, String idExcluir) {
+        String sql;
+        if (idExcluir != null) {
+            sql = "SELECT COUNT(*) FROM metodopago " +
+                    "WHERE metodo_de_pago = ? AND id_metodopago != ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM metodopago WHERE metodo_de_pago = ?";
+        }
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, metodo);
+            if (idExcluir != null) ps.setString(2, idExcluir);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al verificar metodo: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_metodopago FROM metodopago ORDER BY id_metodopago DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_metodopago FROM metodopago " +
+                        "ORDER BY id_metodopago DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

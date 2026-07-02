@@ -31,13 +31,15 @@ public class ProveedorDAO {
     }
 
     public boolean insertar(Proveedor p) {
-        String sql = "INSERT INTO proveedor VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO proveedor " +
+                "(id_proveedor, nombre, RUC, telefono, direccion) " +
+                "VALUES (?, ?, ?, ?, ?)";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, p.getIdProveedor());
             ps.setString(2, p.getNombre());
-            ps.setString(3, p.getTelefono());
-            ps.setString(4, p.getRuc());
+            ps.setString(3, p.getRuc());
+            ps.setString(4, p.getTelefono());
             ps.setString(5, p.getDireccion());
             ps.executeUpdate();
             return true;
@@ -48,13 +50,14 @@ public class ProveedorDAO {
     }
 
     public boolean actualizar(Proveedor p) {
-        String sql = "UPDATE proveedor SET nombre=?, telefono=?, RUC=?, direccion=? " +
+        String sql = "UPDATE proveedor SET nombre=?, RUC=?, " +
+                "telefono=?, direccion=? " +
                 "WHERE id_proveedor=?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ps.setString(1, p.getNombre());
-            ps.setString(2, p.getTelefono());
-            ps.setString(3, p.getRuc());
+            ps.setString(2, p.getRuc());
+            ps.setString(3, p.getTelefono());
             ps.setString(4, p.getDireccion());
             ps.setString(5, p.getIdProveedor());
             ps.executeUpdate();
@@ -91,6 +94,27 @@ public class ProveedorDAO {
         return null;
     }
 
+    public boolean existeRuc(String ruc, String idExcluir) {
+        String sql;
+        if (idExcluir != null) {
+            sql = "SELECT COUNT(*) FROM proveedor " +
+                    "WHERE RUC = ? AND id_proveedor != ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM proveedor WHERE RUC = ?";
+        }
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, ruc);
+            if (idExcluir != null) ps.setString(2, idExcluir);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al verificar RUC: " + e.getMessage());
+        }
+        return false;
+    }
+
+
     public String obtenerUltimoId() {
         String sql = QueryHelper.limitar(
                 "SELECT id_proveedor FROM proveedor ORDER BY id_proveedor DESC", 1
@@ -123,8 +147,8 @@ public class ProveedorDAO {
         Proveedor p = new Proveedor();
         p.setIdProveedor(rs.getString("id_proveedor"));
         p.setNombre(rs.getString("nombre"));
-        p.setTelefono(rs.getString("telefono"));
         p.setRuc(rs.getString("RUC"));
+        p.setTelefono(rs.getString("telefono"));
         p.setDireccion(rs.getString("direccion"));
         return p;
     }

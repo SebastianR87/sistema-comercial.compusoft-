@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import pe.utp.dao.EmpleadoDAO;
 import pe.utp.dao.TipoDocumentoDAO;
@@ -18,7 +19,7 @@ public class EmpleadoModalController {
 
     // Cabecera dinámica
     @FXML private VBox  panelCabecera;
-    @FXML private Label lblIconoCabecera;
+    @FXML private Label lblTituloCabecera;
     @FXML private Label lblNombreCabecera;
     @FXML private Label lblCargoCabecera;
 
@@ -41,10 +42,10 @@ public class EmpleadoModalController {
     @FXML private Button btnCancelar;
 
     // Estado interno
-    private boolean     passwordVisible = false;
-    private EmpleadoDAO dao             = new EmpleadoDAO();
+    private boolean passwordVisible = false;
+    private EmpleadoDAO dao = new EmpleadoDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
-    private Empleado    empleado;
+    private Empleado empleado;
 
     @FXML
     public void initialize() {
@@ -96,7 +97,7 @@ public class EmpleadoModalController {
         panelCabecera.setStyle(
                 "-fx-background-color: #4361ee; -fx-padding: 24 20 18 20;"
         );
-        lblIconoCabecera.setText("👁");
+        lblTituloCabecera.setText("DETALLE DE EMPLEADO");
 
         // Deshabilita todos los campos para solo lectura
         txtNombre.setEditable(false);
@@ -122,7 +123,7 @@ public class EmpleadoModalController {
         panelCabecera.setStyle(
                 "-fx-background-color: #2dc653; -fx-padding: 24 20 18 20;"
         );
-        lblIconoCabecera.setText("✏️");
+        lblTituloCabecera.setText("EDITAR EMPLEADO");
 
         // Habilita todos los campos para edición
         txtNombre.setEditable(true);
@@ -188,11 +189,11 @@ public class EmpleadoModalController {
     /** Valida y guarda los cambios del empleado en BD. */
     @FXML
     private void guardar() {
-        String nombre    = txtNombre.getText().trim();
-        String cargo     = cbCargo.getValue();
-        TipoDocumento tipoDoc  = cbTipoDocumento.getValue();
+        String nombre = txtNombre.getText().trim();
+        String cargo = cbCargo.getValue();
+        TipoDocumento tipoDoc = cbTipoDocumento.getValue();
         String numeroDocumento = txtNumeroDocumento.getText().trim();
-        String usuario   = txtUsuario.getText().trim();
+        String usuario = txtUsuario.getText().trim();
         String password  = passwordVisible
                 ? txtPasswordVisible.getText().trim()
                 : txtPassword.getText().trim();
@@ -272,7 +273,6 @@ public class EmpleadoModalController {
         }
 
         // Validación 4: número de documento duplicado
-        // Excluye el propio ID para que al editar no detecte su propio número como duplicado
         if (dao.existeNumeroDocumento(numeroDocumento, empleado.getIdEmpleado())) {
             new Alert(Alert.AlertType.WARNING,
                     "Ya existe otro empleado con ese número de documento").showAndWait();
@@ -305,10 +305,6 @@ public class EmpleadoModalController {
         cerrarModal();
     }
 
-    /**
-     * Cierra la ventana modal obteniendo la referencia
-     * a la ventana actual desde cualquier campo del formulario.
-     */
     private void cerrarModal() {
         Stage stage = (Stage) txtId.getScene().getWindow();
         stage.close();

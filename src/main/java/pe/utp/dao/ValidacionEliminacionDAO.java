@@ -34,19 +34,21 @@ public class ValidacionEliminacionDAO {
     public ResultadoEliminacion validarProducto(String id, String nombre) {
         List<String> conflictos = new ArrayList<>();
 
-        int enVentas = contar("detalle_venta", "id_producto", id);
+        int enVentas = contar("detalleventa", "id_producto", id);
         if (enVentas > 0) {
             conflictos.add("• " + enVentas + " registro(s) en ventas");
         }
 
-        int enCompras = contar("detalle_compra", "id_producto", id);
+        // Antes era "detalle_compra" → ahora es "detallecompra"
+        int enCompras = contar("detallecompra", "id_producto", id);
         if (enCompras > 0) {
             conflictos.add("• " + enCompras + " registro(s) en compras");
         }
 
-        int enCotizaciones = contar("detalle_cotizacion", "id_producto", id);
+        int enCotizaciones = contar("detallecotizacion", "id_producto", id);
         if (enCotizaciones > 0) {
-            conflictos.add("• " + enCotizaciones + " registro(s) en cotizaciones");
+            conflictos.add("• " + enCotizaciones +
+                    " registro(s) en cotizaciones");
         }
 
         if (!conflictos.isEmpty()) {

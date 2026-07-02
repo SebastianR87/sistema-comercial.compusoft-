@@ -5,93 +5,69 @@
 <?import javafx.geometry.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="pe.utp.controller.ClienteModalController"
+      fx:controller="pe.utp.controller.ProveedorModalController"
       spacing="0"
       style="-fx-background-color: white;"
       prefWidth="440">
 
     <!-- CABECERA DINÁMICA
-         Azul en modo VER, verde en modo EDITAR
-         fx:id para cambiar color y texto desde Java -->
+         Azul para VER, verde para EDITAR -->
     <VBox fx:id="panelCabecera" spacing="4" alignment="CENTER_LEFT"
           style="-fx-background-color: #4361ee; -fx-padding: 20 24;">
 
-        <Label fx:id="lblTituloCabecera" text="DETALLE DE CLIENTE"
+        <Label fx:id="lblTituloCabecera" text="DETALLE DE PROVEEDOR"
                style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: rgba(255,255,255,0.7);
-                  -fx-letter-spacing: 1px;"/>
+                      -fx-text-fill: rgba(255,255,255,0.7);
+                      -fx-letter-spacing: 1px;"/>
 
-        <!-- Agrega estos dos labels nuevos -->
         <Label fx:id="lblNombreCabecera"
                style="-fx-font-size: 20px; -fx-font-weight: bold;
-                  -fx-text-fill: white;"/>
-
-        <Label fx:id="lblSubtituloCabecera"
-               style="-fx-font-size: 12px;
-                  -fx-text-fill: rgba(255,255,255,0.75);"/>
+                      -fx-text-fill: white;"/>
     </VBox>
 
-    <!-- CUERPO CON LOS CAMPOS
-         ScrollPane para pantallas pequeñas -->
+    <!-- CUERPO CON LOS CAMPOS -->
     <ScrollPane fitToWidth="true"
                 style="-fx-background-color: white; -fx-background: white;
                        -fx-border-color: transparent;"
                 VBox.vgrow="ALWAYS">
         <VBox spacing="12" style="-fx-padding: 20;">
 
-            <!-- ID: siempre deshabilitado -->
             <VBox spacing="4">
-                <Label text="ID Cliente" styleClass="label-field"/>
+                <Label text="ID Proveedor" styleClass="label-field"/>
                 <TextField fx:id="txtId" disable="true"
                            style="-fx-background-color: #f0f0f0;
                                   -fx-text-fill: #6c757d;"/>
             </VBox>
 
-            <!-- Nombre completo -->
             <VBox spacing="4">
-                <Label text="Nombre completo" styleClass="label-field"/>
-                <TextField fx:id="txtNombre" promptText="Nombre completo"/>
+                <Label text="Nombre empresa" styleClass="label-field"/>
+                <TextField fx:id="txtNombre"
+                           promptText="Ej: Tech Solutions S.A.C."/>
             </VBox>
 
             <VBox spacing="4">
-                <Label text="Tipo de documento" styleClass="label-field"/>
-                <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity"
-                          promptText="Selecciona tipo"
-                          onAction="#actualizarPlaceholder"/>
+                <Label text="RUC" styleClass="label-field"/>
+                <TextField fx:id="txtRuc"
+                           promptText="11 dígitos numéricos"/>
             </VBox>
 
-            <!-- Número de documento: su hint cambia según el tipo -->
-            <VBox spacing="4">
-                <Label text="Número de documento" styleClass="label-field"/>
-                <TextField fx:id="txtNumeroDocumento"
-                           promptText="Selecciona un tipo primero"/>
-            </VBox>
-
-            <!-- Teléfono -->
             <VBox spacing="4">
                 <Label text="Teléfono" styleClass="label-field"/>
-                <TextField fx:id="txtTelefono" promptText="Ej: 987654321"/>
+                <TextField fx:id="txtTelefono"
+                           promptText="Ej: 987654321"/>
             </VBox>
 
-            <!-- Correo electrónico -->
-            <VBox spacing="4">
-                <Label text="Correo electrónico" styleClass="label-field"/>
-                <TextField fx:id="txtCorreo" promptText="correo@email.com"/>
-            </VBox>
-
-            <!-- Dirección -->
             <VBox spacing="4">
                 <Label text="Dirección" styleClass="label-field"/>
-                <TextField fx:id="txtDireccion" promptText="Ej: Av. Lima 123"/>
+                <TextField fx:id="txtDireccion"
+                           promptText="Ej: Av. Industrial 456"/>
             </VBox>
 
         </VBox>
     </ScrollPane>
 
-    <!-- PIE DEL MODAL
-         btnGuardar se oculta en modo VER
-         btnCancelar cambia texto según el modo -->
-    <HBox fx:id="panelBotones" spacing="10" alignment="CENTER_RIGHT"
+    <!-- PIE DEL MODAL -->
+    <HBox spacing="10" alignment="CENTER_RIGHT"
           style="-fx-padding: 14 20;
                  -fx-background-color: #f8f9fa;
                  -fx-border-color: #e0e0e0 transparent transparent transparent;

@@ -50,9 +50,36 @@
 
         <!-- TABLA DERECHA -->
         <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
-            <HBox alignment="CENTER_LEFT">
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
                 <Label text="Lista de Categorías"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                       style="-fx-font-size: 15px; -fx-font-weight: bold;
+                      -fx-text-fill: #1a1a2e;"
+                       HBox.hgrow="ALWAYS"/>
+                <!-- Contador dinámico -->
+                <Label fx:id="lblContador"
+                       style="-fx-font-size: 12px; -fx-text-fill: #6c757d;"/>
+            </HBox>
+
+            <!-- Buscador minimalista con ícono integrado -->
+            <HBox spacing="0" alignment="CENTER_LEFT"
+                  style="-fx-background-color: #f8f9fa;
+                 -fx-border-color: #e0e0e0;
+                 -fx-border-radius: 8;
+                 -fx-background-radius: 8;
+                 -fx-border-width: 1;
+                 -fx-padding: 0 10;">
+                <Label text="🔍"
+                       style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa;
+                      -fx-padding: 0 6 0 0;"/>
+                <TextField fx:id="txtBuscar"
+                           promptText="Buscar categoría..."
+                           HBox.hgrow="ALWAYS"
+                           onKeyReleased="#filtrar"
+                           style="-fx-background-color: transparent;
+                          -fx-border-color: transparent;
+                          -fx-font-size: 13px;
+                          -fx-padding: 7 0;"/>
             </HBox>
 
             <Separator/>
@@ -60,8 +87,8 @@
             <TableView fx:id="tablaCategoria" VBox.vgrow="ALWAYS"
                        style="-fx-background-color: transparent;">
                 <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="100"/>
-                    <TableColumn fx:id="colNombre" text="Nombre" prefWidth="300"/>
+                    <TableColumn fx:id="colId"    text="ID"       prefWidth="100"/>
+                    <TableColumn fx:id="colNombre" text="Nombre"  prefWidth="300"/>
                     <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="180"/>
                 </columns>
                 <columnResizePolicy>
@@ -69,6 +96,5 @@
                 </columnResizePolicy>
             </TableView>
         </VBox>
-
     </HBox>
 </VBox>

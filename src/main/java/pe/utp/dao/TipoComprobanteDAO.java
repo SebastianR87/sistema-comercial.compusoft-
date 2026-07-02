@@ -5,6 +5,7 @@ import pe.utp.model.TipoComprobante;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import pe.utp.Conexion.QueryHelper;
 
 public class TipoComprobanteDAO {
 
@@ -73,8 +74,31 @@ public class TipoComprobanteDAO {
         }
     }
 
+    public boolean existeNombre(String nombre, String idExcluir) {
+        String sql;
+        if (idExcluir != null) {
+            sql = "SELECT COUNT(*) FROM TipoComprobante " +
+                    "WHERE nombre = ? AND id_tipo_comprobante != ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM TipoComprobante WHERE nombre = ?";
+        }
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, nombre);
+            if (idExcluir != null) ps.setString(2, idExcluir);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al verificar nombre: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_tipo_comprobante FROM TipoComprobante ORDER BY id_tipo_comprobante DESC";
+        String sql = QueryHelper.limitar(
+                "SELECT id_tipo_comprobante FROM TipoComprobante " +
+                        "ORDER BY id_tipo_comprobante DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

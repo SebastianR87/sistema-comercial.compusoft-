@@ -56,21 +56,24 @@ public class ProductoDAO {
     }
 
     public boolean actualizar(Producto p) {
-        String sql = "UPDATE producto SET id_categoria=?, nombre=?, descripcion=?, " +
-                "precio_compra=?, precio_venta=?, stock=?, estado=? " +
-                "WHERE id_producto=?";
+        String sql = "UPDATE producto SET " +
+                "nombre = ?, " +
+                "descripcion = ?, " +
+                "precio_venta = ?, " +
+                "stock_minimo = ?, " +
+                "stock_maximo = ?, " +
+                "estado = ? " +
+                "WHERE id_producto = ?";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, p.getCategoria().getIdCategoria());
-            ps.setString(2, p.getNombre());
-            ps.setString(3, p.getDescripcion());
-            ps.setDouble(4, p.getPrecioCompra());
-            ps.setDouble(5, p.getPrecioVenta());
-            ps.setInt(6, p.getStock());
-            ps.setString(7, p.getEstado());
-            ps.setString(8, p.getIdProducto());
-            ps.executeUpdate();
-            return true;
+            ps.setString(1, p.getNombre());
+            ps.setString(2, p.getDescripcion());
+            ps.setDouble(3, p.getPrecioVenta());
+            ps.setInt(4, p.getStockMinimo());
+            ps.setInt(5, p.getStockMaximo());
+            ps.setString(6, p.getEstado());
+            ps.setString(7, p.getIdProducto());
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.out.println("Error al actualizar producto: " + e.getMessage());
             return false;
@@ -140,6 +143,8 @@ public class ProductoDAO {
         p.setPrecioCompra(rs.getDouble("precio_compra"));
         p.setPrecioVenta(rs.getDouble("precio_venta"));
         p.setStock(rs.getInt("stock"));
+        p.setStockMinimo(rs.getInt("stock_minimo"));
+        p.setStockMaximo(rs.getInt("stock_maximo"));
         p.setEstado(rs.getString("estado"));
         return p;
     }

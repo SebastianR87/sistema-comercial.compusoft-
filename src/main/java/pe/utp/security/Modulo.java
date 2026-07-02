@@ -8,6 +8,8 @@ public enum Modulo {
     VENTA,
     COMPRA,
     COTIZACION,
+    COMPATIBILIDAD,
     EMPLEADOS,
+    KARDEX,
     CONFIGURACION
 }

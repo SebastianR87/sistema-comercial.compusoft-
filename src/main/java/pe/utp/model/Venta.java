@@ -10,12 +10,17 @@ public class Venta {
     private MetodoPago metodoPago;
     private String numeroComprobante;
     private LocalDateTime fecha;
+    private double descuento;
+    private double total;
+    private double montoPagado;
+    private double vuelto;
 
     public Venta() {}
 
     public Venta(String idVenta, Cliente cliente, Empleado empleado,
                  TipoComprobante tipoComprobante, MetodoPago metodoPago,
-                 String numeroComprobante, LocalDateTime fecha) {
+                 String numeroComprobante, LocalDateTime fecha,
+                 double descuento, double total) {
         this.idVenta = idVenta;
         this.cliente = cliente;
         this.empleado = empleado;
@@ -23,6 +28,8 @@ public class Venta {
         this.metodoPago = metodoPago;
         this.numeroComprobante = numeroComprobante;
         this.fecha = fecha;
+        this.descuento = descuento;
+        this.total = total;
     }
 
     public String getIdVenta() { return idVenta; }
@@ -45,6 +52,18 @@ public class Venta {
 
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+
+    public double getDescuento() { return descuento; }
+    public void setDescuento(double descuento) { this.descuento = descuento; }
+
+    public double getTotal() { return total; }
+    public void setTotal(double total) { this.total = total; }
+
+    public double getMontoPagado() { return montoPagado; }
+    public void setMontoPagado(double montoPagado) { this.montoPagado = montoPagado; }
+
+    public double getVuelto() { return vuelto; }
+    public void setVuelto(double vuelto) { this.vuelto = vuelto; }
 
     @Override
     public String toString() { return numeroComprobante; }

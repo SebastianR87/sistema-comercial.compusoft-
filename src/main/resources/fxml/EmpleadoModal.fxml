@@ -14,22 +14,22 @@
     <!-- CABECERA DINÁMICA
          fx:id="panelCabecera" permite cambiar su color desde Java.
          Azul en modo VER, verde en modo EDITAR -->
-    <VBox fx:id="panelCabecera" spacing="6" alignment="CENTER"
-          style="-fx-background-color: #4361ee; -fx-padding: 24 20 18 20;">
+    <VBox fx:id="panelCabecera" spacing="4" alignment="CENTER_LEFT"
+          style="-fx-background-color: #4361ee; -fx-padding: 20 24;">
 
-        <!-- Ícono que cambia según el modo: 👁 VER, ✏️ EDITAR -->
-        <Label fx:id="lblIconoCabecera" text="👤"
-               style="-fx-font-size: 44px;"/>
+        <Label fx:id="lblTituloCabecera" text="DETALLE DE EMPLEADO"
+               style="-fx-font-size: 11px; -fx-font-weight: bold;
+                  -fx-text-fill: rgba(255,255,255,0.7);
+                  -fx-letter-spacing: 1px;"/>
 
-        <!-- Nombre del empleado en la cabecera -->
+        <!-- Agrega estos dos labels nuevos -->
         <Label fx:id="lblNombreCabecera"
-               style="-fx-font-size: 18px; -fx-font-weight: bold;
-                      -fx-text-fill: white;"/>
+               style="-fx-font-size: 20px; -fx-font-weight: bold;
+                  -fx-text-fill: white;"/>
 
-        <!-- Cargo como subtítulo -->
         <Label fx:id="lblCargoCabecera"
                style="-fx-font-size: 12px;
-                      -fx-text-fill: rgba(255,255,255,0.8);"/>
+                  -fx-text-fill: rgba(255,255,255,0.75);"/>
     </VBox>
 
     <!-- CUERPO CON LOS CAMPOS

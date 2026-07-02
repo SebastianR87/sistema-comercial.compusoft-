@@ -49,7 +49,7 @@ public class ClienteController implements AccesoControlable {
     @FXML private ToggleButton btnPasaporte;
     @FXML private ToggleButton btnCarnet;
 
-    private ClienteDAO       dao        = new ClienteDAO();
+    private ClienteDAO dao = new ClienteDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
 
@@ -239,10 +239,12 @@ public class ClienteController implements AccesoControlable {
 
                 // Verifica movimientos para deshabilitar Eliminar si tiene
                 Cliente c = getTableView().getItems().get(getIndex());
-                boolean tieneMov = dao.tieneMovimientos(c.getIdCliente());
+                ResultadoEliminacion res = validacion.validarCliente(
+                        c.getIdCliente(), c.getNombre()
+                );
+                boolean tieneMov = !res.isPermitido();
                 btnEliminar.setDisable(tieneMov);
                 btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
-
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEliminar);
                 hbox.setStyle("-fx-alignment: CENTER-LEFT;");
                 setGraphic(hbox);
@@ -309,17 +311,18 @@ public class ClienteController implements AccesoControlable {
             PermisoUtil.denegado();
             return;
         }
-        String id              = txtId.getText().trim();
-        String nombre          = txtNombre.getText().trim();
+        String id = txtId.getText().trim();
+        String nombre  = txtNombre.getText().trim();
         TipoDocumento tipoDoc  = cbTipoDocumento.getValue();
         String numeroDocumento = txtNumeroDocumento.getText().trim();
-        String telefono        = txtTelefono.getText().trim();
-        String correo          = txtCorreo.getText().trim();
-        String direccion       = txtDireccion.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo = txtCorreo.getText().trim();
+        String direccion = txtDireccion.getText().trim();
 
         // Validación 1: campos obligatorios
         if (id.isEmpty() || nombre.isEmpty() ||
-                tipoDoc == null || numeroDocumento.isEmpty()) {
+                tipoDoc == null || numeroDocumento.isEmpty() ||
+                correo.isEmpty()) {
             new Alert(Alert.AlertType.WARNING,
                     "Completa los campos obligatorios: nombre, tipo y número de documento")
                     .showAndWait();
@@ -371,17 +374,9 @@ public class ClienteController implements AccesoControlable {
         }
 
         // Validación 4: teléfono opcional pero validado si se ingresa
-        if (!telefono.isEmpty() && !telefono.matches("\\d{9}")) {
+        if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
             new Alert(Alert.AlertType.WARNING,
-                    "El teléfono debe tener exactamente 9 dígitos").showAndWait();
-            return;
-        }
-
-        // Validación 5: correo opcional pero validado si se ingresa
-        if (!correo.isEmpty() &&
-                !correo.matches("[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El correo no tiene un formato válido (ej: nombre@dominio.com)")
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).")
                     .showAndWait();
             return;
         }
@@ -394,6 +389,14 @@ public class ClienteController implements AccesoControlable {
             return;
         }
 
+        // Validación 5: correo opcional pero validado si se ingresa
+        if (!correo.isEmpty() &&
+                !correo.matches("[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El correo no tiene un formato válido (ej: nombre@dominio.com)")
+                    .showAndWait();
+            return;
+        }
 
         // Validación 6: número de documento duplicado
         if (dao.existeNumeroDocumento(numeroDocumento, null)) {

@@ -9,6 +9,8 @@ public class Producto {
     private double precioVenta;
     private int stock;
     private String estado;
+    private int stockMinimo;
+    private int stockMaximo;
 
     public Producto() {}
 
@@ -25,29 +27,65 @@ public class Producto {
         this.estado = estado;
     }
 
-    public String getIdProducto() { return idProducto; }
-    public void setIdProducto(String idProducto) { this.idProducto = idProducto; }
+    public String getIdProducto() {
+        return idProducto; }
 
-    public Categoria getCategoria() { return categoria; }
-    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+    public void setIdProducto(String idProducto) {
+        this.idProducto = idProducto; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public Categoria getCategoria() {
+        return categoria; }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria; }
 
-    public double getPrecioCompra() { return precioCompra; }
-    public void setPrecioCompra(double precioCompra) { this.precioCompra = precioCompra; }
+    public String getNombre() {
+        return nombre; }
 
-    public double getPrecioVenta() { return precioVenta; }
-    public void setPrecioVenta(double precioVenta) { this.precioVenta = precioVenta; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre; }
 
-    public int getStock() { return stock; }
-    public void setStock(int stock) { this.stock = stock; }
+    public String getDescripcion() {
+        return descripcion; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion; }
+
+    public double getPrecioCompra() {
+        return precioCompra; }
+
+    public void setPrecioCompra(double precioCompra) {
+        this.precioCompra = precioCompra; }
+
+    public double getPrecioVenta() {
+        return precioVenta; }
+
+    public void setPrecioVenta(double precioVenta) {
+        this.precioVenta = precioVenta; }
+
+    public int getStock() {
+        return stock; }
+
+    public void setStock(int stock) {
+        this.stock = stock; }
+
+    public int getStockMinimo() {
+        return stockMinimo; }
+
+    public void setStockMinimo(int v) {
+        stockMinimo = v; }
+
+    public int getStockMaximo() {
+        return stockMaximo; }
+
+    public void setStockMaximo(int v) {
+        stockMaximo = v; }
+
+    public String getEstado() {
+        return estado; }
+
+    public void setEstado(String estado) {
+        this.estado = estado; }
 
     @Override
     public String toString() { return nombre; }

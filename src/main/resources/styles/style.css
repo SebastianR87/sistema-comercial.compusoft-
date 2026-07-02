@@ -1,189 +1,445 @@
-/* ===== GENERAL ===== */
+/* ============================================================
+   COMPUSOFT — Design System
+   Identidad: #E94560 coral/marca | SaaS moderno tipo Stripe/Linear
+   ============================================================ */
+
+/* ── TOKENS DE DISEÑO ────────────────────────────────────────
+   Paleta completa coherente con el login
+   ─────────────────────────────────────────────────────────── */
+
+/*
+  MARCA        #E94560   coral principal (botones, activos, énfasis)
+  MARCA HOVER  #C73652   coral oscuro (hover de botones primarios)
+  MARCA LIGHT  #FFF0F3   coral muy suave (fondos de hover en sidebar)
+  MARCA MID    #FDDDE3   coral claro (badge, chips activos)
+
+  DARK         #1A1A2E   casi negro (fondo sidebar, títulos fuertes)
+  DARK MID     #2D2D44   gris oscuro azulado (sidebar hover)
+  DARK LIGHT   #3D3D5C   gris medio sidebar (texto normal)
+
+  NEUTRAL 50   #F8FAFC   fondo global (casi blanco, limpio)
+  NEUTRAL 100  #F1F5F9   fondo tarjetas secundarias, filas alternas
+  NEUTRAL 200  #E2E8F0   bordes suaves
+  NEUTRAL 300  #CBD5E1   bordes más definidos
+  NEUTRAL 500  #64748B   texto secundario
+  NEUTRAL 700  #334155   texto principal
+  NEUTRAL 900  #0F172A   títulos fuertes (no negro puro)
+
+  WHITE        #FFFFFF   tarjetas, inputs, sidebar
+*/
+
+/* ── RESET GLOBAL ─────────────────────────────────────────── */
 * {
-    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-family: 'Segoe UI', 'Inter', sans-serif;
 }
 
 .root {
-    -fx-background-color: #f0f2f5;
+    -fx-background-color: #F8FAFC;
 }
 
-/* ===== SIDEBAR ===== */
+/* ============================================================
+   SIDEBAR — Dark elegante alineado con el login
+   ============================================================ */
+
 .sidebar {
-    -fx-background-color: #1a1a2e;
+    -fx-background-color: #1A1A2E;
     -fx-min-width: 220px;
+    -fx-pref-width: 220px;
     -fx-max-width: 220px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0, 2, 0);
 }
 
-.sidebar-title {
-    -fx-text-fill: #e94560;
-    -fx-font-size: 18px;
+/* Etiquetas de sección: GESTIÓN, COMERCIAL, SISTEMA */
+.sidebar-section-label {
+    -fx-font-size: 10px;
     -fx-font-weight: bold;
-    -fx-padding: 20 0 20 20;
+    -fx-text-fill: #4A4A6A;
+    -fx-letter-spacing: 1.5px;
+    -fx-padding: 16 16 4 16;
 }
 
+/* Botones del menú lateral */
 .sidebar-btn {
     -fx-background-color: transparent;
-    -fx-text-fill: #a0a0b0;
-    -fx-font-size: 14px;
+    -fx-text-fill: #9090AA;
+    -fx-font-size: 13px;
     -fx-alignment: CENTER-LEFT;
-    -fx-padding: 12 20;
+    -fx-padding: 9 14;
     -fx-cursor: hand;
-    -fx-min-width: 220px;
-    -fx-max-width: 220px;
-    -fx-background-radius: 0;
+    -fx-max-width: Infinity;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
 }
 
+/* Hover: coral muy suave con texto más claro */
 .sidebar-btn:hover {
-    -fx-background-color: #16213e;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #2D2D44;
+    -fx-text-fill: #FFFFFF;
 }
 
+/* Botón activo: coral marca como en el login */
 .sidebar-btn-active {
-    -fx-background-color: #e94560;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #E94560;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
+    -fx-background-radius: 8;
 }
 
-/* ===== TOPBAR ===== */
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
 .topbar {
-    -fx-background-color: #ffffff;
-    -fx-padding: 10 20;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 0 24;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);
+    -fx-min-height: 56px;
 }
 
 .topbar-title {
-    -fx-font-size: 20px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1a1a2e;
+    -fx-text-fill: #0F172A;
 }
 
-/* ===== CARDS ===== */
+/* ============================================================
+   CARDS / PANELES
+   ============================================================ */
+
 .card {
-    -fx-background-color: #ffffff;
+    -fx-background-color: #FFFFFF;
     -fx-background-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
     -fx-padding: 20;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
 }
 
-/* ===== TABLA ===== */
-.table-view {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
+/* ============================================================
+   BOTONES
+   ============================================================ */
 
-.table-view .column-header {
-    -fx-background-color: #f8f9fa;
-    -fx-font-weight: bold;
-    -fx-text-fill: #6c757d;
-    -fx-font-size: 12px;
-}
-
-.table-view .table-row-cell {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #f0f2f5;
-    -fx-border-width: 0 0 1 0;
-}
-
-.table-view .table-row-cell:hover {
-    -fx-background-color: #f8f9ff;
-}
-
-.table-view .table-row-cell:selected {
-    -fx-background-color: #e8f0fe;
-    -fx-text-fill: #1a1a2e;
-}
-
-/* ===== BOTONES ===== */
+/* Primario: coral marca — para Guardar, acciones principales */
 .btn-primary {
-    -fx-background-color: #e94560;
-    -fx-text-fill: white;
+    -fx-background-color: #E94560;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
+    -fx-font-size: 13px;
     -fx-background-radius: 8;
-    -fx-padding: 8 16;
+    -fx-padding: 9 18;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(233,69,96,0.3), 8, 0, 0, 3);
 }
 
 .btn-primary:hover {
-    -fx-background-color: #c73652;
+    -fx-background-color: #C73652;
+    -fx-effect: dropshadow(gaussian, rgba(233,69,96,0.4), 10, 0, 0, 4);
 }
 
+/* Secundario: para Editar */
 .btn-edit {
-    -fx-background-color: #4361ee;
-    -fx-text-fill: white;
-    -fx-background-radius: 6;
-    -fx-padding: 4 10;
-    -fx-cursor: hand;
+    -fx-background-color: #EEF2FF;
+    -fx-text-fill: #4361EE;
+    -fx-font-weight: bold;
     -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+    -fx-border-color: #C7D2FE;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
 }
 
 .btn-edit:hover {
-    -fx-background-color: #3451d1;
+    -fx-background-color: #E0E7FF;
+    -fx-text-fill: #3451D1;
 }
 
+/* Destructivo: para Eliminar */
 .btn-delete {
-    -fx-background-color: #ef233c;
-    -fx-text-fill: white;
-    -fx-background-radius: 6;
-    -fx-padding: 4 10;
-    -fx-cursor: hand;
+    -fx-background-color: #FFF0F3;
+    -fx-text-fill: #E94560;
+    -fx-font-weight: bold;
     -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+    -fx-border-color: #FDDDE3;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
 }
 
 .btn-delete:hover {
-    -fx-background-color: #c81a2e;
+    -fx-background-color: #FDDDE3;
+    -fx-text-fill: #C73652;
 }
 
-/* ===== FORMULARIO ===== */
+/* ============================================================
+   FORMULARIO — INPUTS
+   ============================================================ */
+
+.label-field {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155;
+}
+
 .text-field, .combo-box {
-    -fx-background-color: #f8f9fa;
-    -fx-border-color: #e0e0e0;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 8 12;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
+    -fx-text-fill: #0F172A;
+    -fx-prompt-text-fill: #94A3B8;
 }
 
 .text-field:focused {
-    -fx-border-color: #e94560;
-    -fx-border-width: 2;
+    -fx-border-color: #E94560;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(233,69,96,0.12), 6, 0, 0, 0);
 }
 
-.label-field {
+.combo-box:focused {
+    -fx-border-color: #E94560;
+    -fx-border-width: 1.5;
+}
+
+/* ── TextArea ───────────────────────────────────────────── */
+.text-area {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #495057;
 }
 
-/* ===== TABLA MEJORADA ===== */
+.text-area .content {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10;
+    -fx-text-fill: #0F172A;
+}
+
+.text-area:focused {
+    -fx-border-color: #E94560;
+    -fx-border-width: 1.5;
+}
+
+.text-area:focused .content {
+    -fx-background-color: #FFFFFF;
+}
+
+/* ── ComboBox dropdown ──────────────────────────────────── */
+.combo-box-popup .list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0, 0, 6);
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 8 12;
+    -fx-background-color: transparent;
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #FFF0F3;
+    -fx-text-fill: #E94560;
+}
+
+.combo-box-popup .list-cell:filled:selected,
+.combo-box-popup .list-cell:filled:selected:hover {
+    -fx-background-color: #E94560;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #94A3B8;
+}
+
+.combo-box:hover .arrow {
+    -fx-background-color: #E94560;
+}
+
+/* ============================================================
+   TABLA
+   ============================================================ */
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+
 .table-view .column-header-background {
-    -fx-background-color: #f0f2f5;
+    -fx-background-color: #F8FAFC;
 }
 
 .table-view .column-header {
-    -fx-background-color: #f0f2f5;
+    -fx-background-color: #F8FAFC;
     -fx-font-weight: bold;
-    -fx-text-fill: #495057;
-    -fx-font-size: 13px;
-    -fx-alignment: CENTER-LEFT;
-    -fx-padding: 10 0 10 10;
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-alignment: CENTER;
+    -fx-padding: 11 6;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
-.table-view .table-row-cell:even {
-    -fx-background-color: #ffffff;
+.table-view .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cell-size: 42px;
 }
 
 .table-view .table-row-cell:odd {
-    -fx-background-color: #f8f9fa;
+    -fx-background-color: #FAFBFC;
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: #FFFFFF;
 }
 
 .table-view .table-row-cell:hover {
-    -fx-background-color: #e8f0fe;
+    -fx-background-color: #FFF5F7;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #FDDDE3;
 }
 
 .table-view .table-cell {
-    -fx-alignment: CENTER-LEFT;
-    -fx-padding: 8 0 8 10;
-    -fx-border-color: transparent;
-    -fx-text-fill: #212529;
+    -fx-alignment: CENTER;
+    -fx-padding: 6 8;
+    -fx-text-fill: #334155;
     -fx-font-size: 13px;
+    -fx-border-color: transparent;
+}
+
+/* Separadores de columnas del Kárdex */
+.table-view .column-header-background .nested-column-header > .column-header {
+    -fx-border-color: transparent #E2E8F0 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.table-view .table-cell {
+    -fx-border-color: transparent #F1F5F9 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-alignment: CENTER;
+}
+
+.table-view .nested-column-header {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* ============================================================
+   TABS (TabPane)
+   ============================================================ */
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #F8FAFC;
+}
+
+.tab-pane > .tab-header-area {
+    -fx-padding: 10 0 0 10;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 8 18;
+    -fx-border-color: #E2E8F0 #E2E8F0 transparent #E2E8F0;
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 8 8 0 0;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #64748B;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #FFF5F7;
+}
+
+.tab-pane .tab:hover .tab-label {
+    -fx-text-fill: #E94560;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #E94560;
+    -fx-border-color: #E94560 #E94560 transparent #E94560;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.tab-pane .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background > .tab-down-button,
+.tab-pane > .tab-header-area > .tab-header-background > .control-buttons-tab {
+    -fx-background-color: #F8FAFC;
+}
+
+.tab-pane > .tab-content-area {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: transparent;
+}
+
+/* ============================================================
+   DATE PICKER (Kárdex)
+   ============================================================ */
+
+.date-picker {
+    -fx-background-color: transparent;
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 6 4;
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 4 6;
+}
+
+.date-picker .arrow-button:hover {
+    -fx-background-color: #FFF0F3;
+    -fx-background-radius: 4;
+}
+
+.date-picker-popup {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0, 0, 6);
 }

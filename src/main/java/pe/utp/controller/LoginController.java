@@ -33,6 +33,7 @@ public class LoginController {
             return;
         }
         Empleado empleado = dao.login(usuario, password);
+        new pe.utp.dao.CotizacionDAO().limpiarCotizacionesVencidas();
 
         if (empleado != null) {
             if (Rol.desdeCargo(empleado.getCargo()) == null) {

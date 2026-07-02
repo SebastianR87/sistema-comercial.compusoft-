@@ -43,6 +43,9 @@ public class ConfiguracionController implements AccesoControlable {
     @FXML private TableColumn<MetodoPago, Void> colAccMetodoPago;
     @FXML private TextField txtIdMetodoPago;
     @FXML private TextField txtMetodoPago;
+    @FXML private Label lblTituloTipoDoc;
+    @FXML private Label lblTituloTipoComp;
+    @FXML private Label lblTituloMetodoPago;
 
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
     private TipoComprobanteDAO tipoCompDAO = new TipoComprobanteDAO();
@@ -143,15 +146,48 @@ public class ConfiguracionController implements AccesoControlable {
         if (!verificarAcceso()) return;
         String id = txtIdTipoDoc.getText().trim();
         String documento = txtDocumento.getText().trim();
+        // Validación 1: campos obligatorios
         if (id.isEmpty() || documento.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Completa todos los campos").show();
+            new Alert(Alert.AlertType.WARNING,
+                    "Completa todos los campos").showAndWait();
             return;
         }
+
+        // Validación 2: solo letras y espacios
+        // Ej: "DNI", "Carnet de Extranjería"
+        if (!documento.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El documento solo puede contener letras y espacios")
+                    .showAndWait();
+            return;
+        }
+
+        // Validación 3: duplicado
+        String idExcluir = tipoDocSeleccionado != null
+                ? tipoDocSeleccionado.getIdTipoDocumento() : null;
+        if (tipoDocDAO.existeDocumento(documento, idExcluir)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Ya existe un tipo de documento con ese nombre")
+                    .showAndWait();
+            return;
+        }
+
         TipoDocumento td = new TipoDocumento(id, documento);
-        if (tipoDocSeleccionado == null) tipoDocDAO.insertar(td);
-        else tipoDocDAO.actualizar(td);
-        cargarTipoDoc();
-        limpiarTipoDoc();
+        boolean exito = (tipoDocSeleccionado == null)
+                ? tipoDocDAO.insertar(td)
+                : tipoDocDAO.actualizar(td);
+
+        if (exito) {
+            String msg = tipoDocSeleccionado == null
+                    ? "Tipo de documento registrado correctamente"
+                    : "Tipo de documento actualizado correctamente";
+            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+            cargarTipoDoc();
+            limpiarTipoDoc();
+        } else {
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo guardar el tipo de documento").showAndWait();
+        }
     }
 
     @FXML
@@ -159,15 +195,46 @@ public class ConfiguracionController implements AccesoControlable {
         if (!verificarAcceso()) return;
         String id = txtIdTipoComp.getText().trim();
         String nombre = txtNombreComp.getText().trim();
+
         if (id.isEmpty() || nombre.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Completa todos los campos").show();
+            new Alert(Alert.AlertType.WARNING,
+                    "Completa todos los campos").showAndWait();
             return;
         }
+
+        // Solo letras y espacios.
+        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El nombre solo puede contener letras y espacios")
+                    .showAndWait();
+            return;
+        }
+
+        String idExcluir = tipoCompSeleccionado != null
+                ? tipoCompSeleccionado.getIdTipoComprobante() : null;
+        if (tipoCompDAO.existeNombre(nombre, idExcluir)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Ya existe un tipo de comprobante con ese nombre")
+                    .showAndWait();
+            return;
+        }
+
         TipoComprobante tc = new TipoComprobante(id, nombre);
-        if (tipoCompSeleccionado == null) tipoCompDAO.insertar(tc);
-        else tipoCompDAO.actualizar(tc);
-        cargarTipoComp();
-        limpiarTipoComp();
+        boolean exito = (tipoCompSeleccionado == null)
+                ? tipoCompDAO.insertar(tc)
+                : tipoCompDAO.actualizar(tc);
+
+        if (exito) {
+            String msg = tipoCompSeleccionado == null
+                    ? "Tipo de comprobante registrado correctamente"
+                    : "Tipo de comprobante actualizado correctamente";
+            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+            cargarTipoComp();
+            limpiarTipoComp();
+        } else {
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo guardar el tipo de comprobante").showAndWait();
+        }
     }
 
     @FXML
@@ -176,14 +243,44 @@ public class ConfiguracionController implements AccesoControlable {
         String id = txtIdMetodoPago.getText().trim();
         String metodo = txtMetodoPago.getText().trim();
         if (id.isEmpty() || metodo.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Completa todos los campos").show();
+            new Alert(Alert.AlertType.WARNING,
+                    "Completa todos los campos").showAndWait();
             return;
         }
+
+        // Letras, números y espacios. Ej: "Tarjeta de Crédito", "Yape"
+        if (!metodo.matches("[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s]+")) {
+            new Alert(Alert.AlertType.WARNING,
+                    "El método contiene caracteres no permitidos")
+                    .showAndWait();
+            return;
+        }
+
+        String idExcluir = metodoPagoSeleccionado != null
+                ? metodoPagoSeleccionado.getIdMetodoPago() : null;
+        if (metodoPagoDAO.existeMetodo(metodo, idExcluir)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Ya existe un método de pago con ese nombre")
+                    .showAndWait();
+            return;
+        }
+
         MetodoPago mp = new MetodoPago(id, metodo);
-        if (metodoPagoSeleccionado == null) metodoPagoDAO.insertar(mp);
-        else metodoPagoDAO.actualizar(mp);
-        cargarMetodoPago();
-        limpiarMetodoPago();
+        boolean exito = (metodoPagoSeleccionado == null)
+                ? metodoPagoDAO.insertar(mp)
+                : metodoPagoDAO.actualizar(mp);
+
+        if (exito) {
+            String msg = metodoPagoSeleccionado == null
+                    ? "Método de pago registrado correctamente"
+                    : "Método de pago actualizado correctamente";
+            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+            cargarMetodoPago();
+            limpiarMetodoPago();
+        } else {
+            new Alert(Alert.AlertType.ERROR,
+                    "No se pudo guardar el método de pago").showAndWait();
+        }
     }
 
     // ===== LIMPIAR =====
@@ -191,6 +288,7 @@ public class ConfiguracionController implements AccesoControlable {
     private void limpiarTipoDoc() {
         txtDocumento.clear();
         tipoDocSeleccionado = null;
+        lblTituloTipoDoc.setText("➕ Nuevo Tipo Documento");
         generarIdTipoDoc();
     }
 
@@ -198,6 +296,7 @@ public class ConfiguracionController implements AccesoControlable {
     private void limpiarTipoComp() {
         txtNombreComp.clear();
         tipoCompSeleccionado = null;
+        lblTituloTipoComp.setText("➕ Nuevo Tipo Comprobante");
         generarIdTipoComp();
     }
 
@@ -205,6 +304,7 @@ public class ConfiguracionController implements AccesoControlable {
     private void limpiarMetodoPago() {
         txtMetodoPago.clear();
         metodoPagoSeleccionado = null;
+        lblTituloMetodoPago.setText("➕ Nuevo Método de Pago");
         generarIdMetodoPago();
     }
 
@@ -231,6 +331,7 @@ public class ConfiguracionController implements AccesoControlable {
                             txtIdTipoDoc.setText(td.getIdTipoDocumento());
                             txtIdTipoDoc.setDisable(true);
                             txtDocumento.setText(td.getDocumento());
+                            lblTituloTipoDoc.setText("Editar Tipo Documento");
                         }
                         case "tipoComp" -> {
                             TipoComprobante tc = (TipoComprobante) item;
@@ -238,6 +339,7 @@ public class ConfiguracionController implements AccesoControlable {
                             txtIdTipoComp.setText(tc.getIdTipoComprobante());
                             txtIdTipoComp.setDisable(true);
                             txtNombreComp.setText(tc.getNombre());
+                            lblTituloTipoComp.setText("Editar Tipo Comprobante");
                         }
                         case "metodoPago" -> {
                             MetodoPago mp = (MetodoPago) item;
@@ -245,6 +347,7 @@ public class ConfiguracionController implements AccesoControlable {
                             txtIdMetodoPago.setText(mp.getIdMetodoPago());
                             txtIdMetodoPago.setDisable(true);
                             txtMetodoPago.setText(mp.getMetodoDePago());
+                            lblTituloMetodoPago.setText("Editar Método de Pago");
                         }
                     }
                 });

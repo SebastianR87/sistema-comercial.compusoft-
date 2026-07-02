@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.VentaDetalleModalController"
+      spacing="0"
+      style="-fx-background-color: white;"
+      prefWidth="400">
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: white; -fx-background: white;
+                       -fx-border-color: transparent;">
+        <VBox fx:id="panelImprimible" spacing="6"
+              style="-fx-padding: 20 20; -fx-background-color: white;
+                     -fx-font-family: 'Courier New';"/>
+    </ScrollPane>
+
+    <!-- Botones fuera del área imprimible -->
+    <HBox spacing="10" alignment="CENTER_RIGHT"
+          style="-fx-padding: 12 20;
+                 -fx-background-color: #f8f9fa;
+                 -fx-border-color: #e0e0e0 transparent transparent transparent;
+                 -fx-border-width: 1;">
+        <Button text="🖨 Imprimir" onAction="#imprimir"
+                style="-fx-background-color: #1a1a2e; -fx-text-fill: white;
+                       -fx-background-radius: 6; -fx-cursor: hand;
+                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+        <Button text="✖ Cerrar" onAction="#cerrar"
+                style="-fx-background-color: #6c757d; -fx-text-fill: white;
+                       -fx-background-radius: 6; -fx-cursor: hand;
+                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+    </HBox>
+</VBox>

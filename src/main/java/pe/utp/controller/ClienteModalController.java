@@ -3,12 +3,14 @@ package pe.utp.controller;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import pe.utp.dao.ClienteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Cliente;
 import pe.utp.model.TipoDocumento;
+
 
 public class ClienteModalController {
 
@@ -17,7 +19,7 @@ public class ClienteModalController {
 
     // Cabecera dinámica
     @FXML private VBox  panelCabecera;
-    @FXML private Label lblIconoCabecera;
+    @FXML private Label lblTituloCabecera;
     @FXML private Label lblNombreCabecera;
     @FXML private Label lblSubtituloCabecera;
 
@@ -37,7 +39,6 @@ public class ClienteModalController {
     private ClienteDAO dao = new ClienteDAO();
     private TipoDocumentoDAO tipoDocDAO = new TipoDocumentoDAO();
 
-    // Cliente actual que se está viendo o editando
     private Cliente cliente;
 
     @FXML
@@ -50,7 +51,6 @@ public class ClienteModalController {
         cbTipoDocumento.setOnAction(e -> actualizarPlaceholder());
     }
 
-    /** Método principal que configura el modal **/
     public void setModo(String modo, Cliente c) {
         this.cliente = c;
         cargarDatos(c);
@@ -63,14 +63,6 @@ public class ClienteModalController {
     }
 
     private void cargarDatos(Cliente c) {
-
-        lblNombreCabecera.setText(c.getNombre());
-        lblSubtituloCabecera.setText(
-                c.getTipoDocumento() != null
-                        ? c.getTipoDocumento().getDocumento()
-                        : ""
-        );
-
         txtId.setText(c.getIdCliente());
         txtNombre.setText(c.getNombre());
 
@@ -81,6 +73,12 @@ public class ClienteModalController {
                     .findFirst()
                     .ifPresent(td -> cbTipoDocumento.setValue(td));
         }
+        lblNombreCabecera.setText(c.getNombre());
+        lblSubtituloCabecera.setText(
+                c.getTipoDocumento() != null
+                        ? c.getTipoDocumento().getDocumento()
+                        : ""
+        );
 
         txtNumeroDocumento.setText(
                 c.getNumeroDocumento() != null ? c.getNumeroDocumento() : ""
@@ -103,7 +101,7 @@ public class ClienteModalController {
         panelCabecera.setStyle(
                 "-fx-background-color: #4361ee; -fx-padding: 24 20 18 20;"
         );
-        lblIconoCabecera.setText("👁");
+        lblTituloCabecera.setText("DETALLE DE CLIENTE");
 
         txtNombre.setEditable(false);
         cbTipoDocumento.setDisable(true);
@@ -124,7 +122,7 @@ public class ClienteModalController {
         panelCabecera.setStyle(
                 "-fx-background-color: #2dc653; -fx-padding: 24 20 18 20;"
         );
-        lblIconoCabecera.setText("✏️");
+        lblTituloCabecera.setText("EDITAR CLIENTE");
 
         // Habilita todos los campos
         txtNombre.setEditable(true);

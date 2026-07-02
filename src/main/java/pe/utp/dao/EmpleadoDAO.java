@@ -175,7 +175,7 @@ public class EmpleadoDAO {
 
     // ===== OBTENER ULTIMO ID =====
     public String obtenerUltimoId() {
-        String sql = "SELECT TOP 1 id_empleado FROM empleado ORDER BY id_empleado DESC";
+        String sql = "SELECT id_empleado FROM empleado ORDER BY id_empleado DESC LIMIT 1";
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

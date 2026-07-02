@@ -24,9 +24,13 @@ public class CategoriaController implements AccesoControlable {
     @FXML private TableColumn<Categoria, Void> colAcciones;
     @FXML private TextField txtId;
     @FXML private TextField txtNombre;
+    @FXML private TextField txtBuscar;
+    @FXML private Label lblContador;
 
     private CategoriaDAO dao = new CategoriaDAO();
     private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
+    private ObservableList<Categoria> listaCategorias = FXCollections.observableArrayList();
+    private javafx.collections.transformation.FilteredList<Categoria> listaFiltrada;
     private Categoria categoriaSeleccionada = null;
 
     @FXML
@@ -50,10 +54,31 @@ public class CategoriaController implements AccesoControlable {
     }
 
     private void cargarTabla() {
-        ObservableList<Categoria> lista =
-                FXCollections.observableArrayList(dao.Listar());
-        tablaCategoria.setItems(lista);
+        listaCategorias.setAll(dao.Listar());
+        listaFiltrada = new javafx.collections.transformation
+                .FilteredList<>(listaCategorias, c -> true);
+        tablaCategoria.setItems(listaFiltrada);
+        actualizarContador();
     }
+
+    private void actualizarContador() {
+        int total = listaFiltrada != null
+                ? (int) listaFiltrada.stream().count()
+                : listaCategorias.size();
+        lblContador.setText(total + " registros");
+    }
+
+    @FXML
+    private void filtrar() {
+        String texto = txtBuscar.getText().trim().toLowerCase();
+        listaFiltrada.setPredicate(c ->
+                texto.isEmpty() ||
+                        c.getNombre().toLowerCase().contains(texto) ||
+                        c.getIdCategoria().toLowerCase().contains(texto)
+        );
+        actualizarContador();
+    }
+
 
     private void configurarColumnaAcciones() {
         colAcciones.setCellFactory(col -> new TableCell<>() {
@@ -119,16 +144,39 @@ public class CategoriaController implements AccesoControlable {
 
     @FXML
     private void guardar() {
+
         if (!PermisoService.puedeEditarCategoria()) {
             PermisoUtil.denegado();
             return;
         }
+
         String id = txtId.getText().trim();
         String nombre = txtNombre.getText().trim();
 
         if (id.isEmpty() || nombre.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Completa todos los campos").show();
+            new Alert(Alert.AlertType.WARNING,
+                    "Completa todos los campos").show();
             return;
+        }
+
+        // VALIDAR CATEGORÍA REPETIDA
+        if (categoriaSeleccionada == null) {
+
+            if (dao.existeNombre(nombre)) {
+                new Alert(Alert.AlertType.WARNING,
+                        "La categoría ya existe.")
+                        .showAndWait();
+                return;
+            }
+
+        } else {
+
+            if (dao.existeNombreExceptoId(nombre, id)) {
+                new Alert(Alert.AlertType.WARNING,
+                        "La categoría ya existe.")
+                        .showAndWait();
+                return;
+            }
         }
 
         Categoria c = new Categoria(id, nombre);

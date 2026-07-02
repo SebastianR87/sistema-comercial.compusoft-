@@ -113,4 +113,48 @@ public class CategoriaDAO {
         }
         return null;
     }
+
+    public boolean existeNombre(String nombre) {
+        String sql = "SELECT COUNT(*) FROM categoria WHERE LOWER(nombre) = LOWER(?)";
+
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, nombre);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al validar categoría: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean existeNombreExceptoId(String nombre, String id) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM categoria
+        WHERE LOWER(nombre) = LOWER(?)
+        AND id_categoria <> ?
+        """;
+
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, nombre);
+            ps.setString(2, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al validar categoría: " + e.getMessage());
+        }
+        return false;
+    }
 }
+
+

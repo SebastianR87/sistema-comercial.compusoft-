@@ -32,6 +32,17 @@ public final class PermisoService {
         return rol == Rol.ADMINISTRADOR || rol == Rol.ALMACENERO;
     }
 
+    public static boolean puedeEditarCotizacion() {
+        Rol rol = Sesion.getRol();
+        return rol == Rol.ADMINISTRADOR || rol == Rol.VENDEDOR;
+    }
+
+    public static boolean puedeEditarVenta() {
+        Rol rol = Sesion.getRol();
+        return rol == Rol.ADMINISTRADOR || rol == Rol.VENDEDOR;
+    }
+
+
     private static Set<Modulo> permisosDe(Rol rol) {
         return switch (rol) {
             case ADMINISTRADOR -> EnumSet.allOf(Modulo.class);
@@ -39,13 +50,16 @@ public final class PermisoService {
                     Modulo.PRODUCTO,
                     Modulo.CLIENTE,
                     Modulo.VENTA,
-                    Modulo.COTIZACION
+                    Modulo.COTIZACION,
+                    Modulo.COMPATIBILIDAD
             );
             case ALMACENERO -> EnumSet.of(
                     Modulo.CATEGORIA,
                     Modulo.PRODUCTO,
                     Modulo.PROVEEDOR,
-                    Modulo.COMPRA
+                    Modulo.KARDEX,
+                    Modulo.COMPRA,
+                    Modulo.COMPATIBILIDAD
             );
         };
     }

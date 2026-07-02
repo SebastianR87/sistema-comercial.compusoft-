@@ -8,114 +8,153 @@
             fx:controller="pe.utp.controller.MainController"
             stylesheets="@../styles/style.css"
             prefWidth="1100" prefHeight="680">
-
-
     <left>
-        <VBox styleClass="sidebar" spacing="0" minHeight="0" prefHeight="680">
+        <VBox styleClass="sidebar" spacing="0"
+              minHeight="0" prefWidth="220">
 
-            <VBox alignment="CENTER" spacing="4"
-                  style="-fx-padding: 30 20 20 20; -fx-background-color: #16213e;">
-                <Label text="🖥️"
-                       style="-fx-font-size: 36px;"/>
-                <Label text="COMPUSOFT"
-                       style="-fx-text-fill: #ffffff; -fx-font-size: 16px;
-                              -fx-font-weight: bold; -fx-letter-spacing: 2px;"/>
-                <Label text="Sistema Comercial"
-                       style="-fx-text-fill: #a0a0b0; -fx-font-size: 11px;"/>
-            </VBox>
+            <!-- Logo -->
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-padding: 18 16 14 16;
+             -fx-border-color: transparent transparent #2d5a8e transparent;
+             -fx-border-width: 0 0 1 0;">
+                <Label text="🖥️" style="-fx-font-size: 22px;"/>
+                <VBox spacing="1">
+                    <Label text="COMPUSOFT"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;
+                      -fx-text-fill: #ffffff;"/>
+                    <Label text="Sistema Comercial"
+                           style="-fx-font-size: 10px; -fx-text-fill: #7ea8cc;"/>
+                </VBox>
+            </HBox>
 
-            <VBox alignment="CENTER_LEFT" spacing="4"
-                  style="-fx-padding: 12 20; -fx-background-color: #0f3460;">
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="👤"
-                           style="-fx-font-size: 18px;"/>
-                    <VBox spacing="2">
-                        <Label fx:id="lblNombre"
-                               style="-fx-text-fill: #ffffff; -fx-font-size: 12px;
-                                      -fx-font-weight: bold;"/>
+            <!-- Usuario con avatar -->
+            <HBox spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-padding: 12 16;
+             -fx-border-color: transparent transparent #2d5a8e transparent;
+             -fx-border-width: 0 0 1 0;">
+                <Label text="👤"
+                       style="-fx-font-size: 18px;
+              -fx-background-color: #E94560;
+              -fx-background-radius: 20;
+              -fx-padding: 6;
+              -fx-text-fill: #FFFFFF;"/>
+                <VBox spacing="2">
+                    <Label fx:id="lblNombre"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+              -fx-text-fill: #FFFFFF;"/>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="●"
+                               style="-fx-font-size: 8px; -fx-text-fill: #22C55E;"/>
                         <Label fx:id="lblCargo"
-                               style="-fx-text-fill: #a0a0b0; -fx-font-size: 10px;"/>
-                    </VBox>
-                </HBox>
-            </VBox>
+                               style="-fx-font-size: 10px; -fx-text-fill: #9090AA;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
 
-            <Separator style="-fx-background-color: #16213e;"/>
+            <!-- Menú principal -->
+            <VBox spacing="2" VBox.vgrow="ALWAYS"
+                  style="-fx-padding: 8 10;">
 
+                <!-- GESTIÓN -->
+                <Label fx:id="lblSeccionGestion"
+                       text="GESTIÓN"
+                       styleClass="sidebar-section-label"
+                       style="-fx-padding: 10 6 4 6;"/>
 
-            <VBox spacing="0" VBox.vgrow="ALWAYS" style="-fx-padding: 10 0;">
+                <Button fx:id="btnCategoria"
+                        text="  📦  Categorías"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirCategoria"/>
+                <Button fx:id="btnProducto"
+                        text="  🖥️  Productos"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirProducto"/>
+                <Button fx:id="btnCliente"
+                        text="  👤  Clientes"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirCliente"/>
+                <Button fx:id="btnProveedor"
+                        text="  🏭  Proveedores"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirProveedor"/>
 
-                <Label text="MENÚ PRINCIPAL"
-                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
-                              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
+                <!-- COMERCIAL -->
+                <Label fx:id="lblSeccionComercial"
+                       text="COMERCIAL"
+                       styleClass="sidebar-section-label"
+                       style="-fx-padding: 10 6 4 6;"/>
 
-                <Button fx:id="btnCategoria" text="  📦  Categoría"
-                        styleClass="sidebar-btn" onAction="#abrirCategoria"/>
-
-                <Button fx:id="btnProducto" text="  🖥️  Producto"
-                        styleClass="sidebar-btn" onAction="#abrirProducto"/>
-
-                <Button fx:id="btnCliente" text="  👤  Cliente"
-                        styleClass="sidebar-btn" onAction="#abrirCliente"/>
-
-                <Button fx:id="btnProveedor" text="  🏭  Proveedor"
-                        styleClass="sidebar-btn" onAction="#abrirProveedor"/>
-
-                <Separator style="-fx-background-color: #16213e; -fx-padding: 5 0;"/>
-
-                <Label text="OPERACIONES"
-                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
-                              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
-
-                <Button fx:id="btnVenta" text="  🛒  Venta"
-                        styleClass="sidebar-btn" onAction="#abrirVenta"/>
-
-                <Button fx:id="btnCompra" text="  📥  Compra"
-                        styleClass="sidebar-btn" onAction="#abrirCompra"/>
-
-                <Button fx:id="btnConfigurador" text="  ⚙️  Cotización"
-                        styleClass="sidebar-btn" onAction="#abrirConfigurador"/>
-
-                <Separator style="-fx-background-color: #16213e; -fx-padding: 5 0;"/>
-
-                <Label text="ADMINISTRACION"
-                       style="-fx-text-fill: #4a4a6a; -fx-font-size: 10px;
-              -fx-font-weight: bold; -fx-padding: 10 20 5 20;"/>
-
-                <Button fx:id="btnEmpleados" text="  👥  Empleados"
-                        styleClass="sidebar-btn" onAction="#abrirEmpleados"
+                <Button fx:id="btnCompra"
+                        text="  📥  Compras"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirCompra"/>
+                <Button fx:id="btnVenta"
+                        text="  🛒  Ventas"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirVenta"/>
+                <Button fx:id="btnConfigurador"
+                        text="  📝  Cotizaciones"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirCotizacion"/>
+                <Button fx:id="btnCompatibilidad"
+                        text="  🔗  Compatibilidad"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirCompatibilidad"
                         visible="false" managed="false"/>
 
-                <Button fx:id="btnConfiguracion" text="  ⚙️  Configuración"
-                        styleClass="sidebar-btn" onAction="#abrirConfiguracion"
+                <!-- SISTEMA -->
+                <Label fx:id="lblSeccionSistema"
+                       text="SISTEMA"
+                       styleClass="sidebar-section-label"
+                       style="-fx-padding: 10 6 4 6;"
+                       visible="false" managed="false"/>
+
+                <Button fx:id="btnEmpleados"
+                        text="  👥  Empleados"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirEmpleados"
+                        visible="false" managed="false"/>
+                <Button fx:id="btnKardex"
+                        text="  📊  Kárdex"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirKardex"
+                        visible="false" managed="false"/>
+                <Button fx:id="btnConfiguracion"
+                        text="  ⚙️  Configuración"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirConfiguracion"
                         visible="false" managed="false"/>
 
             </VBox>
 
-
-            <VBox style="-fx-padding: 10 0 20 0;
-             -fx-background-color: #1a1a2e;">
-                <Separator style="-fx-background-color: #16213e;"/>
+            <!-- Cerrar sesión al fondo -->
+            <VBox style="-fx-padding: 8 10 12 10;
+             -fx-border-color: #2d5a8e transparent transparent transparent;
+             -fx-border-width: 1 0 0 0;">
                 <Button text="  🚪  Cerrar Sesión"
                         styleClass="sidebar-btn"
-                        style="-fx-text-fill: #e94560; -fx-font-weight: bold;"
+                        style="-fx-text-fill: #ff8fa3;"
                         onAction="#cerrarSesion"/>
             </VBox>
 
         </VBox>
     </left>
 
-
     <center>
         <StackPane fx:id="panelContenido"
-                   style="-fx-background-color: #f0f2f5; -fx-padding: 20;">
-            <VBox alignment="CENTER" spacing="10">
+                   style="-fx-background-color: #f8fafc;">
+            <VBox alignment="CENTER" spacing="16"
+                  style="-fx-padding: 40;">
                 <Label text="🖥️"
-                       style="-fx-font-size: 60px;"/>
+                       style="-fx-font-size: 64px;"/>
                 <Label text="Bienvenido a COMPUSOFT"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold;
-                              -fx-text-fill: #1a1a2e;"/>
-                <Label text="Selecciona una opción del menú para comenzar"
-                       style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+                       style="-fx-font-size: 26px; -fx-font-weight: bold;
+                          -fx-text-fill: #1e293b;"/>
+                <Label text="Sistema de Gestión Comercial para Tienda de Computadoras"
+                       style="-fx-font-size: 14px; -fx-text-fill: #94a3b8;"/>
+                <Label fx:id="lblBienvenidaUsuario"
+                       style="-fx-font-size: 13px; -fx-text-fill: #64748b;
+                          -fx-font-style: italic;"/>
             </VBox>
         </StackPane>
     </center>
