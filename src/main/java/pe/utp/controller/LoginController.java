@@ -33,9 +33,16 @@ public class LoginController {
             return;
         }
         Empleado empleado = dao.login(usuario, password);
-        new pe.utp.dao.CotizacionDAO().limpiarCotizacionesVencidas();
 
         if (empleado != null) {
+            // Antes esta limpieza corría ANTES de saber si el login
+            // fue exitoso, así que cualquier intento fallido (incluso
+            // spam de credenciales incorrectas) disparaba de todas
+            // formas un mantenimiento real sobre la BD (borra
+            // cotizaciones vencidas). Ahora solo corre tras un login
+            // válido.
+            new pe.utp.dao.CotizacionDAO().limpiarCotizacionesVencidas();
+
             if (Rol.desdeCargo(empleado.getCargo()) == null) {
                 mostrarError("Cargo no reconocido. Contacta al administrador.");
                 return;

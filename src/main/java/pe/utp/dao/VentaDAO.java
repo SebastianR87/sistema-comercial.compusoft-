@@ -18,41 +18,37 @@ public class VentaDAO {
 
     /**
      * Registra la venta completa en una sola transacción.
-     * A diferencia de Compra, aquí RESTAMOS stock y validamos
-     * que haya suficiente stock antes de confirmar.
+     * A diferencia de Compra, aquí CONSUMIMOS stock: se descuenta
+     * siguiendo orden FIFO (lote más antiguo primero) en vez de
+     * restar directamente sobre producto.stock, para que el costo
+     * de cada venta quede asociado al costo real del lote de origen
+     * y no a un promedio (ver LoteDAO.consumirFIFO).
      *
      * Flujo:
-     * 1. Verifica stock disponible de cada producto
-     * 2. Inserta la cabecera en tabla venta
-     * 3. Inserta cada línea en detalle_venta
-     * 4. Resta el stock de cada producto
-     * 5. COMMIT si todo salió bien, ROLLBACK si algo falló
+     * 1. Inserta la cabecera en tabla venta
+     * 2. Inserta cada línea en detalleventa, descuenta el stock de
+     *    forma atómica/condicional (el propio UPDATE actúa como
+     *    chequeo de stock suficiente), consume lotes FIFO y registra
+     *    en detalleventa_lote de dónde salió cada cantidad
+     * 3. COMMIT si todo salió bien, ROLLBACK si algo falló
+     *
+     * Antes había un "Paso 1" que verificaba el stock disponible con
+     * un SELECT separado, ANTES de insertar nada, y solo más abajo
+     * (Paso 4 original) restaba el stock sin condición. Ese chequeo
+     * separado del descuento real dejaba una ventana: si dos ventas
+     * del mismo producto se registraban casi al mismo tiempo, ambas
+     * podían leer el mismo stock disponible en el SELECT, pasar la
+     * validación, y luego ambas restar -- vendiendo más unidades de
+     * las que realmente había (stock quedaba negativo). Ahora el
+     * chequeo y el descuento son la MISMA operación SQL
+     * ("UPDATE ... WHERE stock >= ?"), así que no hay ventana entre
+     * verificar y actuar.
      */
     public String registrarVenta(Venta venta, List<DetalleVenta> detalles) {
         try {
             conexion.setAutoCommit(false);
 
-            // Paso 1: verifica stock ANTES de hacer cualquier cambio
-            String sqlStockActual = "SELECT stock FROM producto WHERE id_producto = ?";
-            PreparedStatement psStockActual = conexion.prepareStatement(sqlStockActual);
-
-            for (DetalleVenta d : detalles) {
-                psStockActual.setString(1, d.getProducto().getIdProducto());
-                ResultSet rs = psStockActual.executeQuery();
-                int stockDisponible = 0;
-                if (rs.next()) stockDisponible = rs.getInt("stock");
-                rs.close();
-
-                if (d.getCantidad() > stockDisponible) {
-                    conexion.rollback();
-                    conexion.setAutoCommit(true);
-                    // Retorna mensaje de error específico con el producto
-                    return "STOCK_INSUFICIENTE:" + d.getProducto().getNombre() +
-                            ":" + stockDisponible;
-                }
-            }
-
-            // Paso 2: inserta la cabecera de la venta
+            // Paso 1: inserta la cabecera de la venta
             String sqlVenta = "INSERT INTO venta " +
                     "(id_venta, id_cliente, id_empleado, id_tipo_comprobante, " +
                     "id_metodopago, numero_comprobante, fecha, descuento, total, " +
@@ -72,15 +68,27 @@ public class VentaDAO {
             psVenta.setDouble(11, venta.getVuelto());
             psVenta.executeUpdate();
 
-            // Paso 3 y 4: inserta detalle y resta stock
+            // Paso 2: inserta detalle, descuenta stock de forma
+            // atómica/condicional, consume lotes FIFO, y registra de
+            // qué lote(s) salió cada línea
             String sqlDetalle = "INSERT INTO detalleventa " +
                     "(id_detalleventa, id_venta, id_producto, cantidad, precio) " +
                     "VALUES (?,?,?,?,?)";
+            // El "AND stock >= ?" es el chequeo de stock suficiente:
+            // si no hay filas afectadas, es porque no había stock (ver
+            // comentario en el javadoc de este método)
             String sqlRestarStock = "UPDATE producto " +
-                    "SET stock = stock - ? WHERE id_producto = ?";
+                    "SET stock = stock - ? WHERE id_producto = ? AND stock >= ?";
+            String sqlStockActual = "SELECT stock FROM producto WHERE id_producto = ?";
+            String sqlDetalleLote = "INSERT INTO detalleventa_lote " +
+                    "(id_detalleventa_lote, id_detalleventa, id_lote, cantidad, costo_unitario_momento) " +
+                    "VALUES (?,?,?,?,?)";
 
             PreparedStatement psDetalle = conexion.prepareStatement(sqlDetalle);
             PreparedStatement psRestar = conexion.prepareStatement(sqlRestarStock);
+            PreparedStatement psStockActual = conexion.prepareStatement(sqlStockActual);
+            PreparedStatement psDetalleLote = conexion.prepareStatement(sqlDetalleLote);
+            LoteDAO loteDAO = new LoteDAO(conexion);
 
             for (DetalleVenta d : detalles) {
                 psDetalle.setString(1, d.getIdDetalleVenta());
@@ -90,9 +98,52 @@ public class VentaDAO {
                 psDetalle.setDouble(5, d.getPrecio());
                 psDetalle.executeUpdate();
 
+                // El stock total del producto se mantiene como columna
+                // resumen, igual que en Compra -- se sigue actualizando
+                // aquí aunque el detalle real viva ahora en los lotes.
+                // La condición "stock >= cantidad" hace que este UPDATE
+                // sea el chequeo Y el descuento en una sola operación
+                // atómica (ver javadoc del método).
                 psRestar.setInt(1, d.getCantidad());
                 psRestar.setString(2, d.getProducto().getIdProducto());
-                psRestar.executeUpdate();
+                psRestar.setInt(3, d.getCantidad());
+                int filasAfectadas = psRestar.executeUpdate();
+
+                if (filasAfectadas == 0) {
+                    conexion.rollback();
+                    conexion.setAutoCommit(true);
+                    // No hubo stock suficiente. Se consulta aparte
+                    // solo para reportar cuánto había disponible --
+                    // el formato "STOCK_INSUFICIENTE:nombre:stock" se
+                    // mantiene igual para no romper a quienes llaman
+                    // este método (CompraController/VentaController
+                    // hacen .split(":") sobre este mismo formato).
+                    psStockActual.setString(1, d.getProducto().getIdProducto());
+                    ResultSet rsStock = psStockActual.executeQuery();
+                    int stockDisponible = 0;
+                    if (rsStock.next()) stockDisponible = rsStock.getInt("stock");
+                    rsStock.close();
+                    return "STOCK_INSUFICIENTE:" + d.getProducto().getNombre() +
+                            ":" + stockDisponible;
+                }
+
+                // Consume del/los lote(s) más antiguos primero (FIFO).
+                // Puede devolver varias filas si esta línea cruza
+                // más de un lote (ej: pide 12, el lote más viejo solo
+                // tenía 10 -- ahí toma 10 de uno y 2 del siguiente).
+                List<LoteDAO.Consumo> consumos =
+                        loteDAO.consumirFIFO(d.getProducto().getIdProducto(), d.getCantidad());
+
+                int contador = 1;
+                for (LoteDAO.Consumo c : consumos) {
+                    psDetalleLote.setString(1, "DVL-" + d.getIdDetalleVenta() + "-" + contador);
+                    psDetalleLote.setString(2, d.getIdDetalleVenta());
+                    psDetalleLote.setString(3, c.getIdLote());
+                    psDetalleLote.setInt(4, c.getCantidad());
+                    psDetalleLote.setDouble(5, c.getCostoUnitario());
+                    psDetalleLote.executeUpdate();
+                    contador++;
+                }
             }
 
             conexion.commit();
@@ -113,13 +164,15 @@ public class VentaDAO {
     }
 
     /**
-     * Anula una venta ya registrada: revierte el stock de cada producto
-     * vendido y marca la venta como ANULADA. No borra ningún registro, para mantener consistencia
+     * Anula una venta ya registrada: devuelve cada cantidad vendida
+     * al lote EXACTO del que salió (usando detalleventa_lote), y
+     * marca la venta como ANULADA. No borra ningún registro.
      *
      * Flujo:
      * 1. Verifica que la venta exista y no esté ya anulada
-     * 2. Trae el detalle de la venta (para saber qué stock revertir)
-     * 3. Devuelve el stock de cada producto
+     * 2. Trae el detalle de la venta
+     * 3. Por cada línea, devuelve la cantidad a su(s) lote(s) de
+     *    origen y actualiza el stock total del producto
      * 4. Actualiza el estado de la venta a 'ANULADA'
      * 5. COMMIT si todo salió bien, ROLLBACK si algo falló
      */
@@ -150,12 +203,31 @@ public class VentaDAO {
             // Paso 2: trae el detalle para saber qué stock revertir
             List<DetalleVenta> detalles = listarDetalle(idVenta);
 
-            // Paso 3: devuelve el stock de cada producto
+            // Paso 3: devuelve cada cantidad EXACTAMENTE al lote del
+            // que salió (consultando detalleventa_lote), en vez de
+            // sumar el stock del producto de forma genérica. Así cada
+            // lote recupera su costo real sin mezclarse con otros.
+            LoteDAO loteDAO = new LoteDAO(conexion);
+            String sqlLotesConsumidos = "SELECT id_lote, cantidad " +
+                    "FROM detalleventa_lote WHERE id_detalleventa = ?";
+            PreparedStatement psLotesConsumidos = conexion.prepareStatement(sqlLotesConsumidos);
+
             String sqlDevolverStock = "UPDATE producto " +
                     "SET stock = stock + ? WHERE id_producto = ?";
             PreparedStatement psDevolver = conexion.prepareStatement(sqlDevolverStock);
 
             for (DetalleVenta d : detalles) {
+                psLotesConsumidos.setString(1, d.getIdDetalleVenta());
+                ResultSet rsLotes = psLotesConsumidos.executeQuery();
+                while (rsLotes.next()) {
+                    loteDAO.devolverALote(
+                            rsLotes.getString("id_lote"),
+                            rsLotes.getInt("cantidad"));
+                }
+                rsLotes.close();
+
+                // El stock total del producto (columna resumen) se
+                // sigue actualizando igual que antes
                 psDevolver.setInt(1, d.getCantidad());
                 psDevolver.setString(2, d.getProducto().getIdProducto());
                 psDevolver.executeUpdate();

@@ -56,4 +56,18 @@ public class QueryHelper {
         }
     }
 
+    /**
+     * Devuelve la expresión SQL para truncar una fecha-hora a solo
+     * fecha (sin hora), usada para agrupar movimientos por día.
+     * MySQL: DATE(columna)
+     * SQL Server: CAST(columna AS DATE)
+     */
+    public static String fechaSolo(String columna) {
+        if (motor.equalsIgnoreCase("mysql")) {
+            return "DATE(" + columna + ")";
+        } else {
+            return "CAST(" + columna + " AS DATE)";
+        }
+    }
+
 }

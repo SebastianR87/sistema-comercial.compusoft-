@@ -10,12 +10,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import pe.utp.dao.CompraDAO;
+import pe.utp.dao.LoteDAO;
 import pe.utp.dao.ProductoDAO;
 import pe.utp.dao.ProveedorDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.*;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 import pe.utp.security.Sesion;
+import pe.utp.util.FormatoMoneda;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -64,6 +67,10 @@ public class CompraController implements AccesoControlable {
     private CompraDAO compraDAO = new CompraDAO();
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
     private ProductoDAO productoDAO  = new ProductoDAO();
+    // producto.precio_compra ya no se guarda (cada lote tiene su
+    // propio costo real -- ver comentario donde se usa más abajo);
+    // el costo promedio real se calcula desde los lotes
+    private LoteDAO loteDAO = new LoteDAO(pe.utp.Conexion.ConexionDB.getConexion());
 
     // ObservableList para que la tabla se actualice automáticamente del carrito
     private ObservableList<DetalleCompra> detalleActual =
@@ -223,13 +230,22 @@ public class CompraController implements AccesoControlable {
                     }
                 });
 
-        // Rellena el precio al seleccionar
+        // Rellena el precio al seleccionar. Antes usaba
+        // p.getPrecioCompra(), columna que ya NO se actualiza tras la
+        // creación del producto (queda fija en 0 para siempre, ver
+        // comentario en CompraDAO.registrarCompra()) -- así que este
+        // autocompletado nunca proponía nada útil. Se usa el costo
+        // promedio real calculado desde los lotes, igual que en
+        // ProductoController.cargarTabla().
         cbProducto.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal instanceof Producto p &&
                     txtPrecioUnitario.getText().isEmpty()) {
-                txtPrecioUnitario.setText(
-                        String.format("%.2f", p.getPrecioCompra())
-                );
+                double costoPromedio = loteDAO.obtenerCostoPromedio(p.getIdProducto());
+                if (costoPromedio > 0) {
+                    txtPrecioUnitario.setText(
+                            String.format("%.2f", costoPromedio)
+                    );
+                }
             }
         });
     }
@@ -256,6 +272,7 @@ public class CompraController implements AccesoControlable {
                 new SimpleDoubleProperty(
                         data.getValue().getPrecio()).asObject()
         );
+        colPrecioUnit.setCellFactory(FormatoMoneda.celda());
 
         // Subtotal calculado: cantidad × precio
         // getSubtotal() ya está definido en el modelo DetalleCompra
@@ -263,6 +280,7 @@ public class CompraController implements AccesoControlable {
                 new SimpleDoubleProperty(
                         data.getValue().getSubtotal()).asObject()
         );
+        colSubtotal.setCellFactory(FormatoMoneda.celda());
 
         // Columna de quitar: botón X para eliminar la línea del detalle
         colQuitarDet.setCellFactory(col -> new TableCell<>() {
@@ -359,6 +377,7 @@ public class CompraController implements AccesoControlable {
 
         colTotal.setCellValueFactory(
                 new PropertyValueFactory<>("total"));
+        colTotal.setCellFactory(FormatoMoneda.celda());
 
         // Columna de estado, pintada según el valor
         colEstado.setCellValueFactory(data ->
@@ -390,23 +409,14 @@ public class CompraController implements AccesoControlable {
             final Button btnAnular = new Button("Anular");
             final HBox contenedor = new HBox(6, btnVer, btnAnular);
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #4361ee;" +
-                                "-fx-text-fill: white;" +
-                                "-fx-background-radius: 6;" +
-                                "-fx-cursor: hand;" +
-                                "-fx-font-size: 11px;"
-                );
+                btnVer.getStyleClass().add("btn-table-view");
                 btnVer.setOnAction(e -> {
                     Compra c = getTableView()
                             .getItems().get(getIndex());
                     mostrarDetalleCompra(c);
                 });
 
-                btnAnular.setStyle(
-                        "-fx-background-color: #fcebeb; -fx-text-fill: #a32d2d;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
+                btnAnular.getStyleClass().add("btn-table-delete");
                 btnAnular.setOnAction(e -> {
                     Compra c = getTableView().getItems().get(getIndex());
                     confirmarYAnular(c);
@@ -427,6 +437,7 @@ public class CompraController implements AccesoControlable {
                 btnAnular.setManaged(puedeAnular);
                 btnAnular.setDisable(yaAnulada);
 
+                contenedor.setAlignment(javafx.geometry.Pos.CENTER);
                 setGraphic(contenedor);
             }
         });
@@ -449,10 +460,8 @@ public class CompraController implements AccesoControlable {
 
         if (producto == null || cantStr.isEmpty() ||
                 precioStr.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un producto de la lista.\n" +
-                            "Escribe para buscar y luego haz clic en la opción.")
-                    .showAndWait();
+            CSDialog.warning("Producto no seleccionado",
+                    "Selecciona un producto de la lista. Escribe para buscar y luego haz clic en la opción.");
             return;
         }
 
@@ -463,37 +472,38 @@ public class CompraController implements AccesoControlable {
             );
 
             if (cantidad <= 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "La cantidad debe ser mayor a cero").showAndWait();
+                CSDialog.warning("Cantidad inválida", "La cantidad debe ser mayor a cero.");
                 return;
             }
             if (precio <= 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El precio debe ser mayor a cero").showAndWait();
+                CSDialog.warning("Precio inválido", "El precio debe ser mayor a cero.");
                 return;
             }
 
             // Validación adicional: precio de compra no debe superar el precio de venta registrado del producto
             if (precio > producto.getPrecioVenta()) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("Advertencia de precio");
-                confirm.setHeaderText("El precio de compra supera el de venta");
-                confirm.setContentText(
-                        "Precio de compra ingresado: S/ " +
+                boolean continuar = CSDialog.confirm(
+                        "Advertencia de precio",
+                        "El precio de compra supera el de venta.\n\n" +
+                                "Precio de compra ingresado: S/ " +
                                 String.format("%.2f", precio) + "\n" +
                                 "Precio de venta registrado: S/ " +
                                 String.format("%.2f", producto.getPrecioVenta()) + "\n\n" +
-                                "¿Deseas continuar de todas formas?"
-                );
-                confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-                if (confirm.showAndWait().orElse(ButtonType.NO)
-                        == ButtonType.NO) return;
+                                "¿Deseas continuar de todas formas?",
+                        "Continuar", "Cancelar", true);
+                if (!continuar) return;
             }
 
-            // Si el producto ya está en el detalle suma la cantidad
+            // Si el producto ya está en el detalle CON EL MISMO PRECIO,
+            // suma la cantidad a esa línea. Si el precio es distinto,
+            // NO se mezcla -- se crea una línea nueva más abajo, porque
+            // cada línea genera su propio lote con su propio costo real
+            // (FIFO). Mezclar cantidades a distinto precio en una sola
+            // línea perdería el costo real de una de las dos compras.
             for (DetalleCompra det : detalleActual) {
                 if (det.getProducto().getIdProducto()
-                        .equals(producto.getIdProducto())) {
+                        .equals(producto.getIdProducto())
+                        && Math.abs(det.getPrecio() - precio) < 0.001) {
                     det.setCantidad(det.getCantidad() + cantidad);
                     tablaDetalle.refresh();
                     actualizarTotal();
@@ -511,9 +521,7 @@ public class CompraController implements AccesoControlable {
             limpiarFormProducto();
 
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Cantidad y precio deben ser números válidos")
-                    .showAndWait();
+            CSDialog.warning("Datos inválidos", "Cantidad y precio deben ser números válidos.");
         }
     }
 
@@ -528,7 +536,7 @@ public class CompraController implements AccesoControlable {
 
     @FXML
     private void registrarCompra() {
-        if (!PermisoService.puedeEditarProveedor()) {
+        if (!PermisoService.puedeEditarCompra()) {
             PermisoUtil.denegado();
             return;
         }
@@ -539,18 +547,14 @@ public class CompraController implements AccesoControlable {
 
         // Validación 1: proveedor seleccionado del listado
         if (prov == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un proveedor del listado.\n" +
-                            "Escribe el nombre y haz clic en una opción.")
-                    .showAndWait();
+            CSDialog.warning("Proveedor no seleccionado",
+                    "Selecciona un proveedor del listado. Escribe el nombre y haz clic en una opción.");
             return;
         }
 
         // Validación 2: al menos un producto en el detalle
         if (detalleActual.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Agrega al menos un producto al detalle")
-                    .showAndWait();
+            CSDialog.warning("Detalle vacío", "Agrega al menos un producto al detalle.");
             return;
         }
 
@@ -579,17 +583,25 @@ public class CompraController implements AccesoControlable {
 
         if (exito) {
             // Verifica si algún producto quedó con costo promedio
-            // mayor a su precio de venta actual, lo cual generaría pérdida
+            // mayor a su precio de venta actual, lo cual generaría
+            // pérdida. Antes comparaba contra
+            // actualizado.getPrecioCompra(), que siempre es 0 (esa
+            // columna no se actualiza más -- ver comentario en el
+            // listener de arriba), así que este aviso NUNCA podía
+            // dispararse. Se usa el costo promedio real de los lotes.
             StringBuilder alerta = new StringBuilder();
             for (DetalleCompra det : detallesFinales) {
                 Producto actualizado = productoDAO.buscarPorId(
                         det.getProducto().getIdProducto()
                 );
+                double costoPromedio = actualizado != null
+                        ? loteDAO.obtenerCostoPromedio(actualizado.getIdProducto())
+                        : 0;
                 if (actualizado != null &&
-                        actualizado.getPrecioCompra() > actualizado.getPrecioVenta()) {
+                        costoPromedio > actualizado.getPrecioVenta()) {
                     alerta.append("• ").append(actualizado.getNombre())
                             .append(": costo S/ ")
-                            .append(String.format("%.2f", actualizado.getPrecioCompra()))
+                            .append(String.format("%.2f", costoPromedio))
                             .append(" > precio venta S/ ")
                             .append(String.format("%.2f", actualizado.getPrecioVenta()))
                             .append("\n");
@@ -614,13 +626,11 @@ public class CompraController implements AccesoControlable {
                         "Considera revisar el stock máximo de estos productos.";
             }
 
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+            CSDialog.success("Compra registrada", msg);
             limpiarFormulario();
             cargarHistorial();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar la compra.\n" +
-                            "Revisa la consola para más detalles.").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar la compra. Revisa la consola para más detalles.");
         }
     }
 
@@ -637,16 +647,20 @@ public class CompraController implements AccesoControlable {
             CompraDetalleModalController ctrl = loader.getController();
             ctrl.cargarDatos(c, detalle);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle("Comprobante de Compra");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
             modal.showAndWait();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir el detalle: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir el detalle: " + ex.getMessage());
         }
     }
 
@@ -657,49 +671,40 @@ public class CompraController implements AccesoControlable {
         }
 
         if ("ANULADA".equalsIgnoreCase(c.getEstado())) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Esta compra ya está anulada.").showAndWait();
+            CSDialog.info("Compra anulada", "Esta compra ya está anulada.");
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+        boolean confirmado = CSDialog.confirm(
+                "Confirmar anulación",
                 "¿Anular la compra " + c.getNumeroComprobante() + "?\n\n" +
-                        "Esta acción revertirá el stock y el costo promedio (CPP)\n" +
-                        "de los productos comprados a su valor anterior.\n" +
+                        "Esta acción revertirá el stock y el costo promedio (CPP) " +
+                        "de los productos comprados a su valor anterior. " +
                         "La compra quedará marcada como ANULADA y no se eliminará del historial.",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Confirmar anulación");
-        confirm.showAndWait();
-
-        if (confirm.getResult() != ButtonType.YES) return;
+                "Anular", "Cancelar", true, true);
+        if (!confirmado) return;
 
         String resultado = compraDAO.anularCompra(c.getIdCompra());
 
         switch (resultado) {
             case "OK" -> {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Compra " + c.getNumeroComprobante() + " anulada correctamente.\n" +
-                                "El stock y el costo promedio han sido revertidos.").showAndWait();
+                CSDialog.success("Compra anulada",
+                        "Compra " + c.getNumeroComprobante() + " anulada correctamente. " +
+                                "El stock y el costo promedio han sido revertidos.");
                 cargarHistorial();
             }
-            case "YA_ANULADA" -> new Alert(Alert.AlertType.WARNING,
-                    "Esta compra ya estaba anulada.").showAndWait();
-            case "NO_EXISTE" -> new Alert(Alert.AlertType.ERROR,
-                    "No se encontró la compra.").showAndWait();
+            case "YA_ANULADA" -> CSDialog.warning("Compra anulada", "Esta compra ya estaba anulada.");
+            case "NO_EXISTE" -> CSDialog.error("Error", "No se encontró la compra.");
             default -> {
                 if (resultado.startsWith("STOCK_INSUFICIENTE:")) {
                     String[] partes = resultado.split(":");
-                    new Alert(Alert.AlertType.WARNING,
-                            "No se puede anular esta compra.\n\n" +
-                                    "El producto \"" + partes[1] + "\" ya no tiene stock suficiente\n" +
-                                    "(disponible: " + partes[2] + " unidades) porque parte de esa\n" +
+                    CSDialog.warning("No se puede anular",
+                            "El producto \"" + partes[1] + "\" ya no tiene stock suficiente " +
+                                    "(disponible: " + partes[2] + " unidades) porque parte de esa " +
                                     "mercadería ya fue vendida.\n\n" +
-                                    "No es posible revertir esta compra sin dejar el stock inconsistente.")
-                            .showAndWait();
+                                    "No es posible revertir esta compra sin dejar el stock inconsistente.");
                 } else {
-                    new Alert(Alert.AlertType.ERROR,
-                            "No se pudo anular la compra.\nRevisa la consola para más detalles.")
-                            .showAndWait();
+                    CSDialog.error("Error", "No se pudo anular la compra. Revisa la consola para más detalles.");
                 }
             }
         }

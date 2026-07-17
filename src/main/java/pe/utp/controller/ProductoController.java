@@ -13,8 +13,11 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.CategoriaDAO;
+import pe.utp.dao.LoteDAO;
 import pe.utp.dao.ProductoDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
+import pe.utp.util.FormatoMoneda;
 import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.Categoria;
 import pe.utp.model.Producto;
@@ -55,6 +58,7 @@ public class ProductoController implements AccesoControlable {
     @FXML private TextField txtBuscarProducto;
 
     private ProductoDAO dao = new ProductoDAO();
+    private LoteDAO loteDAO = new LoteDAO(pe.utp.Conexion.ConexionDB.getConexion());
     private CategoriaDAO categoriaDAO = new CategoriaDAO();
     private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private Categoria categoriaActual = null;
@@ -99,8 +103,10 @@ public class ProductoController implements AccesoControlable {
                 new PropertyValueFactory<>("nombre"));
         colPrecioCompra.setCellValueFactory(
                 new PropertyValueFactory<>("precioCompra"));
+        colPrecioCompra.setCellFactory(FormatoMoneda.celda());
         colPrecioVenta.setCellValueFactory(
                 new PropertyValueFactory<>("precioVenta"));
+        colPrecioVenta.setCellFactory(FormatoMoneda.celda());
         colStock.setCellValueFactory(
                 new PropertyValueFactory<>("stock"));
         colEstado.setCellValueFactory(
@@ -241,9 +247,17 @@ public class ProductoController implements AccesoControlable {
     }
 
     private void cargarTabla() {
-        listaProductos.setAll(
-                dao.listarPorCategoria(categoriaActual.getIdCategoria())
-        );
+        List<Producto> productos = dao.listarPorCategoria(categoriaActual.getIdCategoria());
+
+        // precio_compra ya no se guarda en producto (viene de los
+        // lotes FIFO); se calcula aquí el costo promedio de
+        // referencia de los lotes activos, solo para mostrarlo en
+        // la tabla -- no se usa para el consumo real de stock.
+        for (Producto p : productos) {
+            p.setPrecioCompra(loteDAO.obtenerCostoPromedio(p.getIdProducto()));
+        }
+
+        listaProductos.setAll(productos);
         listaFiltradaProductos = new javafx.collections.transformation
                 .FilteredList<>(listaProductos, p -> true);
         tablaProducto.setItems(listaFiltradaProductos);
@@ -266,21 +280,9 @@ public class ProductoController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #2dc653; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;" +
-                                "-fx-font-size: 11px;"
-                );
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;" +
-                                "-fx-font-size: 11px;"
-                );
-                btnEliminar.setStyle(
-                        "-fx-background-color: #343a40; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;" +
-                                "-fx-font-size: 11px;"
-                );
+                btnVer.getStyleClass().add("btn-table-view");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 // Ver: abre el modal en modo solo lectura
                 btnVer.setOnAction(e -> {
@@ -304,20 +306,22 @@ public class ProductoController implements AccesoControlable {
                         res.mostrarAlerta();
                         return;
                     }
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    // Ejemplo de reemplazo de Alert por CSDialog: confirm()
+                    // con foco inicial en "Cancelar" (focoEnCancelar=true)
+                    // porque eliminar es una acción destructiva -- así un
+                    // Enter reflejo no la dispara por accidente.
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar producto",
                             "¿Eliminar " + p.getNombre() + "?",
-                            ButtonType.YES, ButtonType.NO);
-                    alert.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            if (dao.eliminar(p.getIdProducto())) {
-                                cargarTabla();
-                                cargarCards();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo eliminar el producto").show();
-                            }
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        if (dao.eliminar(p.getIdProducto())) {
+                            cargarTabla();
+                            cargarCards();
+                        } else {
+                            CSDialog.error("Error", "No se pudo eliminar el producto");
                         }
-                    });
+                    }
                 });
             }
 
@@ -335,7 +339,7 @@ public class ProductoController implements AccesoControlable {
                 btnEliminar.setOpacity(1.0);
 
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEliminar);
-                hbox.setStyle("-fx-alignment: CENTER-LEFT;");
+                hbox.setAlignment(Pos.CENTER);
                 setGraphic(hbox);
             }
         });
@@ -355,13 +359,23 @@ public class ProductoController implements AccesoControlable {
             ProductoModalController ctrl = loader.getController();
             ctrl.setModo(modo, p);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle(modo.equals(ProductoModalController.MODO_VER)
                     ? "Detalle del Producto"
                     : "Editar Producto");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
+            // Alto fijo: sin esto, el Stage crece al alto preferido de
+            // TODO el contenido (incluida la tabla de lotes), ocupando
+            // toda la pantalla en laptops. Con alto fijo, el ScrollPane
+            // interno del modal se encarga de scrollear el exceso.
+            modal.setHeight(640);
             modal.showAndWait();
 
             // Recarga tabla y cards para reflejar cambios
@@ -369,8 +383,7 @@ public class ProductoController implements AccesoControlable {
             cargarCards();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir la ventana: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
         }
     }
 
@@ -390,8 +403,7 @@ public class ProductoController implements AccesoControlable {
         // precio_compra ya no se pide, se define con la primera compra
         if (id.isEmpty() || nombre.isEmpty() ||
                 txtPrecioVenta.getText().isEmpty() || estado == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos obligatorios").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos obligatorios.");
             return;
         }
 
@@ -399,15 +411,18 @@ public class ProductoController implements AccesoControlable {
             // precio_compra inicia en 0, se definirá con la
             // primera compra real registrada en el sistema
             double precioCompra = 0;
+            // .replace(",", ".") porque el teclado numérico de algunos
+            // usuarios escribe coma decimal (ej. "150,50"); antes solo
+            // el modal de edición (ProductoModalController) tenía este
+            // reemplazo -- aquí, en el alta, un precio con coma tiraba
+            // NumberFormatException y el producto no se podía crear.
             double precioVenta  = Double.parseDouble(
-                    txtPrecioVenta.getText().trim());
+                    txtPrecioVenta.getText().trim().replace(",", "."));
 
             // Validación: precio de venta no negativo
             // No se compara contra precio_compra porque este es 0 al crear
             if (precioVenta < 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El precio de venta no puede ser negativo")
-                        .showAndWait();
+                CSDialog.warning("Precio inválido", "El precio de venta no puede ser negativo.");
                 return;
             }
 
@@ -419,31 +434,34 @@ public class ProductoController implements AccesoControlable {
                 stockMinimo = Integer.parseInt(txtStockMinimo.getText().trim());
                 stockMaximo = Integer.parseInt(txtStockMaximo.getText().trim());
             } catch (NumberFormatException ex) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Stock mínimo y máximo deben ser números válidos.\n" +
-                                "Ejemplo: 5 y 50").showAndWait();
+                CSDialog.warning("Datos inválidos",
+                        "Stock mínimo y máximo deben ser números válidos.\nEjemplo: 5 y 50");
                 return;
             }
 
             if (stockMinimo < 0 || stockMaximo < 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El stock mínimo y máximo no pueden ser negativos")
-                        .showAndWait();
+                CSDialog.warning("Datos inválidos", "El stock mínimo y máximo no pueden ser negativos.");
                 return;
             }
 
             if (stockMaximo > 0 && stockMinimo > stockMaximo) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El stock mínimo no puede ser mayor al máximo.")
-                        .showAndWait();
+                CSDialog.warning("Datos inválidos", "El stock mínimo no puede ser mayor al máximo.");
                 return;
             }
 
             // Verifica que el ID no exista antes de insertar
             if (dao.buscarPorId(id) != null) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Ya existe un producto con ese ID.\n" +
-                                "Usa Limpiar para generar un nuevo ID").showAndWait();
+                CSDialog.warning("ID duplicado",
+                        "Ya existe un producto con ese ID.\nUsa Limpiar para generar un nuevo ID.");
+                return;
+            }
+
+            // Verifica que el nombre no esté repetido (ver comentario
+            // en ProductoDAO.existeNombre): antes se podían crear dos
+            // productos con el mismo nombre, generando ambigüedad al
+            // buscarlos o seleccionarlos en Venta/Compra.
+            if (dao.existeNombre(nombre, null)) {
+                CSDialog.warning("Producto duplicado", "Ya existe un producto con ese nombre.");
                 return;
             }
 
@@ -455,20 +473,22 @@ public class ProductoController implements AccesoControlable {
 
             boolean exito = dao.insertar(p);
             if (exito) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Producto registrado correctamente").showAndWait();
+                // "Registrado correctamente" es un mensaje de ÉXITO, no
+                // solo información neutra -- success() (verde) comunica
+                // mejor el resultado que info() (azul), a diferencia del
+                // Alert.AlertType.INFORMATION original que no distinguía
+                // entre ambos casos.
+                CSDialog.success("Producto registrado", "El producto fue registrado correctamente.");
                 cargarTabla();
                 cargarCards();
                 limpiar();
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "No se pudo registrar el producto").showAndWait();
+                CSDialog.error("Error", "No se pudo registrar el producto.");
             }
 
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Precio y stock deben ser números válidos\n" +
-                            "Ejemplo precio: 150.50   Ejemplo stock: 10").showAndWait();
+            CSDialog.warning("Datos inválidos",
+                    "Precio y stock deben ser números válidos.\nEjemplo precio: 150.50   Ejemplo stock: 10");
         }
     }
 

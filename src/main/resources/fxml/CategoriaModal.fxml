@@ -5,65 +5,45 @@
 <?import javafx.geometry.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="pe.utp.controller.ProveedorModalController"
+      fx:controller="pe.utp.controller.CategoriaModalController"
       spacing="0"
       style="-fx-background-color: white;"
-      prefWidth="520">
+      prefWidth="420">
 
-    <!-- CABECERA: barra de marca + título chico / nombre grande -->
+    <!-- CABECERA: barra de marca + título chico / nombre grande,
+         igual patrón que ProveedorModal/ClienteModal/ProductoModal -->
     <HBox alignment="CENTER_LEFT" spacing="12"
           style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
         <Region prefWidth="4" minHeight="40"
                 style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
 
         <VBox spacing="2" HBox.hgrow="ALWAYS">
-            <Label fx:id="lblTituloCabecera" text="DETALLE DE PROVEEDOR"
+            <Label fx:id="lblTituloCabecera" text="NUEVA CATEGORÍA"
                    style="-fx-font-size: 11px; -fx-font-weight: bold;
                           -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
-            <Label fx:id="lblNombreCabecera" text="Nombre del proveedor"
+            <Label fx:id="lblNombreCabecera" text="Nueva categoría"
                    style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
         </VBox>
     </HBox>
 
-    <!-- CUERPO CON LOS CAMPOS, en 2 columnas.
-         Sin ScrollPane: son pocos campos, siempre entran completos. -->
+    <!-- CUERPO: solo ID (generado, no editable) y Nombre -->
     <VBox spacing="16" style="-fx-padding: 22 24;">
 
-        <Label text="DATOS DEL PROVEEDOR"
+        <Label text="DATOS DE LA CATEGORÍA"
                style="-fx-font-size: 12px; -fx-font-weight: bold;
               -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
 
-        <HBox spacing="16">
-            <VBox spacing="6" HBox.hgrow="ALWAYS">
-                <Label text="ID Proveedor" styleClass="label-field"/>
-                <TextField fx:id="txtId" disable="true" styleClass="campo-input"
-                           maxWidth="Infinity" prefWidth="228"/>
-            </VBox>
-            <VBox spacing="6" HBox.hgrow="ALWAYS">
-                <Label text="RUC" styleClass="label-field"/>
-                <TextField fx:id="txtRuc" styleClass="campo-input"
-                           maxWidth="Infinity" prefWidth="228" promptText="11 dígitos numéricos"/>
-            </VBox>
-        </HBox>
-
         <VBox spacing="6">
-            <Label text="Nombre empresa" styleClass="label-field"/>
-            <TextField fx:id="txtNombre" styleClass="campo-input"
-                       promptText="Ej: Tech Solutions S.A.C."/>
+            <Label text="ID Categoría" styleClass="label-field"/>
+            <TextField fx:id="txtId" disable="true" styleClass="campo-input"
+                       maxWidth="Infinity"/>
         </VBox>
 
-        <HBox spacing="16">
-            <VBox spacing="6" HBox.hgrow="ALWAYS">
-                <Label text="Teléfono" styleClass="label-field"/>
-                <TextField fx:id="txtTelefono" styleClass="campo-input"
-                           maxWidth="Infinity" prefWidth="228" promptText="Ej: 987654321"/>
-            </VBox>
-            <VBox spacing="6" HBox.hgrow="ALWAYS">
-                <Label text="Dirección" styleClass="label-field"/>
-                <TextField fx:id="txtDireccion" styleClass="campo-input"
-                           maxWidth="Infinity" prefWidth="228" promptText="Ej: Av. Industrial 456"/>
-            </VBox>
-        </HBox>
+        <VBox spacing="6">
+            <Label text="Nombre" styleClass="label-field"/>
+            <TextField fx:id="txtNombre" styleClass="campo-input"
+                       promptText="Ej: Procesadores"/>
+        </VBox>
 
     </VBox>
 

@@ -53,11 +53,21 @@ public class ConexionDB {
         }
     }
 
+    // Antes se creaba una Connection física NUEVA en cada llamada y nunca
+    // se cerraba en ningún DAO -> fuga de conexiones sin límite (cada
+    // navegación entre pantallas abría más conexiones contra la BD hasta
+    // agotar el límite del motor). Ahora se reutiliza una única conexión
+    // (patrón singleton perezoso) y solo se abre una nueva si la anterior
+    // nunca existió o quedó cerrada/caída.
+    private static Connection conexion;
+
     public static Connection getConexion() {
         try {
-            Connection conn = DriverManager.getConnection(url, user, password);
-            System.out.println("Conexion exitosa a " + database + " [" + motor + "]");
-            return conn;
+            if (conexion == null || conexion.isClosed()) {
+                conexion = DriverManager.getConnection(url, user, password);
+                System.out.println("Conexion exitosa a " + database + " [" + motor + "]");
+            }
+            return conexion;
         } catch (SQLException e) {
             System.out.println("Error de conexion: " + e.getMessage());
             return null;

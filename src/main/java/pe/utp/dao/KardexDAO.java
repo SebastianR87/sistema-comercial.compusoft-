@@ -18,11 +18,20 @@ public class KardexDAO {
 
     // Modelo de un movimiento del Kárdex
     public static class MovimientoKardex {
+        // fecha real para ordenar cronológicamente. "fecha" (String)
+        // solo es para mostrar en pantalla/PDF -- antes se ordenaba
+        // comparando ese String con dd/MM/yyyy, lo cual es una
+        // comparación alfabética: solo daba el orden correcto dentro
+        // del mismo mes y año (ej. "15/01/2026" > "20/12/2025"
+        // alfabéticamente, aunque diciembre 2025 es anterior), y
+        // corrompía el saldo acumulado FIFO en productos con
+        // movimientos de varios meses/años.
+        public java.time.LocalDateTime fechaOrden;
         public String fecha;
-        public String tipo;// COMPRA o VENTA
+        public String tipo;      // COMPRA o VENTA
         public String documento; // número de comprobante
-        public int cantidad;    // cantidad bruta
-        public double precio;      // precio del movimiento
+        public int cantidad;
+        public double precio;
         // Entradas
         public int entradaCant;
         public double entradaCosto;
@@ -38,106 +47,110 @@ public class KardexDAO {
     }
 
     /**
-     * Lista todos los movimientos de un producto ordenados por fecha.
-     * Usa DOS consultas simples en vez de un UNION complejo
-     * para no sobrecargar la BD (consejo del profesor).
-     * El CPP de las salidas se calcula en Java fila por fila.
+     * Lista los movimientos de un producto ordenados por fecha,
+     * basados en el costeo por lotes (FIFO) real del sistema:
+     *
+     * - Entradas: vienen de lote_compra (cada lote = una compra real,
+     *   con su costo exacto). Se excluyen los lotes ANULADOS, ya que
+     *   una compra anulada nunca "entró" realmente en términos
+     *   contables.
+     * - Salidas: vienen de detalleventa_lote (cada fila indica de
+     *   qué lote salió y a qué costo real, no un promedio). Se
+     *   excluyen las ventas con estado ANULADA.
+     *
+     * El saldo (columna Existencias) se acumula fila por fila en
+     * base a estos valores reales -- ya no se recalcula un CPP
+     * "adivinado": los entrada/salida que se acumulan son el costo
+     * verdadero de cada lote, así que el promedio resultante es
+     * mucho más fiel que el esquema anterior.
      */
     public List<MovimientoKardex> listarMovimientos(String idProducto) {
         List<MovimientoKardex> lista = new ArrayList<>();
 
-        // Consulta 1: compras — simple y directa
-        String sqlCompras =
+        // Entradas: un lote = una compra real con su costo exacto.
+        // cantidad_original (no cantidad_restante) porque el Kárdex
+        // muestra el histórico de lo que entró, no lo que queda hoy.
+        String sqlEntradas =
                 "SELECT c.fecha, c.numero_comprobante AS documento, " +
-                        "dc.cantidad, dc.precio " +
-                        "FROM detallecompra dc " +
+                        "lc.cantidad_original AS cantidad, lc.costo_unitario AS precio " +
+                        "FROM lote_compra lc " +
+                        "INNER JOIN detallecompra dc ON lc.id_detallecompra = dc.id_detallecompra " +
                         "INNER JOIN compra c ON dc.id_compra = c.id_compra " +
-                        "WHERE dc.id_producto = ?";
+                        "WHERE lc.id_producto = ? AND lc.estado = 'ACTIVO'";
 
-        // Consulta 2: ventas — simple y directa
-        String sqlVentas =
+        // Salidas: cada fila de detalleventa_lote es el costo REAL
+        // del lote consumido en esa venta (FIFO), no un promedio.
+        String sqlSalidas =
                 "SELECT v.fecha, v.numero_comprobante AS documento, " +
-                        "dv.cantidad, dv.precio " +
-                        "FROM detalleventa dv " +
+                        "dvl.cantidad AS cantidad, dvl.costo_unitario_momento AS precio " +
+                        "FROM detalleventa_lote dvl " +
+                        "INNER JOIN detalleventa dv ON dvl.id_detalleventa = dv.id_detalleventa " +
                         "INNER JOIN venta v ON dv.id_venta = v.id_venta " +
-                        "WHERE dv.id_producto = ?";
+                        "WHERE dv.id_producto = ? AND (v.estado IS NULL OR v.estado <> 'ANULADA')";
 
         try {
-            // Lee compras
-            PreparedStatement psC =
-                    conexion.prepareStatement(sqlCompras);
-            psC.setString(1, idProducto);
-            ResultSet rsC = psC.executeQuery();
-            while (rsC.next()) {
+            PreparedStatement psE = conexion.prepareStatement(sqlEntradas);
+            psE.setString(1, idProducto);
+            ResultSet rsE = psE.executeQuery();
+            while (rsE.next()) {
                 MovimientoKardex m = new MovimientoKardex();
                 m.tipo = "COMPRA";
-                m.fecha = rsC.getTimestamp("fecha")
-                        .toLocalDateTime()
-                        .format(java.time.format.DateTimeFormatter
-                                .ofPattern("dd/MM/yyyy HH:mm"));
-                m.documento = rsC.getString("documento");
-                m.cantidad  = rsC.getInt("cantidad");
-                m.precio    = rsC.getDouble("precio");
+                m.fechaOrden = rsE.getTimestamp("fecha").toLocalDateTime();
+                m.fecha = m.fechaOrden
+                        .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                m.documento = rsE.getString("documento");
+                m.cantidad  = rsE.getInt("cantidad");
+                m.precio    = rsE.getDouble("precio");
                 lista.add(m);
             }
 
-            // Lee ventas
-            PreparedStatement psV =
-                    conexion.prepareStatement(sqlVentas);
-            psV.setString(1, idProducto);
-            ResultSet rsV = psV.executeQuery();
-            while (rsV.next()) {
+            PreparedStatement psS = conexion.prepareStatement(sqlSalidas);
+            psS.setString(1, idProducto);
+            ResultSet rsS = psS.executeQuery();
+            while (rsS.next()) {
                 MovimientoKardex m = new MovimientoKardex();
                 m.tipo = "VENTA";
-                m.fecha = rsV.getTimestamp("fecha")
-                        .toLocalDateTime()
-                        .format(java.time.format.DateTimeFormatter
-                                .ofPattern("dd/MM/yyyy HH:mm"));
-                m.documento = rsV.getString("documento");
-                m.cantidad  = rsV.getInt("cantidad");
-                m.precio    = rsV.getDouble("precio");
+                m.fechaOrden = rsS.getTimestamp("fecha").toLocalDateTime();
+                m.fecha = m.fechaOrden
+                        .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                m.documento = rsS.getString("documento");
+                m.cantidad  = rsS.getInt("cantidad");
+                m.precio    = rsS.getDouble("precio");
                 lista.add(m);
             }
 
-            // Ordena todos los movimientos por fecha en Java
-            // más simple y eficiente que ORDER BY en UNION
-            lista.sort((a, b) -> a.fecha.compareTo(b.fecha));
+            // Ordena todos los movimientos por fecha real (no por el
+            // String formateado -- ver comentario en fechaOrden)
+            lista.sort((a, b) -> a.fechaOrden.compareTo(b.fechaOrden));
 
-            // Calcula saldo acumulado y CPP fila por fila
+            // Acumula el saldo fila por fila, usando los costos
+            // REALES de cada entrada/salida (no un CPP recalculado)
             int saldoCant  = 0;
             double saldoTotal = 0;
 
             for (MovimientoKardex m : lista) {
                 if ("COMPRA".equals(m.tipo)) {
-                    // Entrada: suma al saldo
-                    m.entradaCant = m.cantidad;
+                    m.entradaCant  = m.cantidad;
                     m.entradaCosto = m.precio;
                     m.entradaTotal = m.cantidad * m.precio;
-                    m.salidaCant = 0;
-                    m.salidaCosto = 0;
-                    m.salidaTotal = 0;
+                    m.salidaCant   = 0;
+                    m.salidaCosto  = 0;
+                    m.salidaTotal  = 0;
                     saldoCant  += m.cantidad;
                     saldoTotal += m.entradaTotal;
                 } else {
-                    // Salida: el costo unitario es el CPP acumulado
-                    // hasta ese momento, no el precio de venta al cliente
-                    double cppActual = saldoCant > 0
-                            ? saldoTotal / saldoCant : 0;
                     m.entradaCant  = 0;
                     m.entradaCosto = 0;
                     m.entradaTotal = 0;
                     m.salidaCant   = m.cantidad;
-                    m.salidaCosto  = cppActual;
-                    m.salidaTotal  = m.cantidad * cppActual;
+                    m.salidaCosto  = m.precio; // costo real del lote consumido
+                    m.salidaTotal  = m.cantidad * m.precio;
                     saldoCant  -= m.cantidad;
                     saldoTotal -= m.salidaTotal;
-                    // Evita saldo negativo por redondeo
                     if (saldoTotal < 0) saldoTotal = 0;
                 }
-                // Existencias acumuladas
                 m.saldoCant  = saldoCant;
-                m.saldoCosto = saldoCant > 0
-                        ? saldoTotal / saldoCant : 0;
+                m.saldoCosto = saldoCant > 0 ? saldoTotal / saldoCant : 0;
                 m.saldoTotal = saldoTotal;
             }
 
@@ -150,7 +163,8 @@ public class KardexDAO {
 
     /**
      * Trae los datos completos del producto para la ficha del Kárdex.
-     * Incluye categoría, stock mínimo y máximo.
+     * El stock viene de la columna resumen de producto (ya se
+     * mantiene sincronizada con la suma de lotes activos).
      */
     public Producto obtenerProducto(String idProducto) {
         String sql =
@@ -168,7 +182,6 @@ public class KardexDAO {
                 p.setIdProducto(rs.getString("id_producto"));
                 p.setNombre(rs.getString("nombre"));
                 p.setStock(rs.getInt("stock"));
-                p.setPrecioCompra(rs.getDouble("precio_compra"));
                 p.setPrecioVenta(rs.getDouble("precio_venta"));
                 p.setStockMinimo(rs.getInt("stock_minimo"));
                 p.setStockMaximo(rs.getInt("stock_maximo"));
@@ -179,8 +192,7 @@ public class KardexDAO {
                 return p;
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener producto: " +
-                    e.getMessage());
+            System.out.println("Error al obtener producto: " + e.getMessage());
         }
         return null;
     }

@@ -7,19 +7,22 @@ import javafx.print.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 import pe.utp.model.DetalleVenta;
 import pe.utp.model.Venta;
 
-
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class VentaDetalleModalController {
 
     @FXML private VBox panelImprimible;
 
-    // Fuente monoespaciada para alineación perfecta en impresión
+    // Fuente monoespaciada para alineación perfecta en impresión.
+    // Tamaño original, tal como estaba antes de tocar nada.
     private static final String F  =
             "-fx-font-family: 'Courier New'; " +
                     "-fx-font-size: 11px; -fx-text-fill: black;";
@@ -29,6 +32,27 @@ public class VentaDetalleModalController {
     private static final String FB12 =
             "-fx-font-family: 'Courier New'; " +
                     "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: black;";
+
+    // Anchos fijos de columna de la tabla de productos, compartidos
+    // entre addEncabezadoTabla() y addFilaProducto() para que el
+    // encabezado y las filas siempre queden alineados. Antes "Cant."
+    // media 60px en el encabezado pero la columna de datos medía
+    // solo 38px -- un descuadre real que corría "P.Unit."/"Importe"
+    // del encabezado respecto a los datos de cada fila. Se dejan
+    // unificados aquí (esto no afecta el tamaño de letra).
+    private static final double COL_CODIGO  = 55;
+    private static final double COL_CANT    = 45;
+    private static final double COL_PUNIT   = 60;
+    private static final double COL_IMPORTE = 65;
+
+    // Ancho angosto tipo "ticket" que se usa al imprimir en vez de
+    // estirar el contenido a todo el ancho de la hoja (ver imprimir()):
+    // coincide con el ancho de contenido de la vista previa en pantalla
+    // (modal de 400px menos el padding de 20px a cada lado). El diseño
+    // sigue pensado para una impresora térmica real, así que en una
+    // hoja A4 de prueba se va a ver margen blanco a los costados --
+    // eso es esperado, no un error.
+    private static final double ANCHO_TICKET_IMPRESION = 360;
 
     public void cargarDatos(Venta venta, List<DetalleVenta> detalle, double igvTasa) {
         panelImprimible.getChildren().clear();
@@ -88,12 +112,12 @@ public class VentaDetalleModalController {
         //Mismo estilo que la imagen de referencia
         addMontoLinea("OP. EXONERADA", "0.00",                        false);
         addMontoLinea("OP. INAFECTA",  "0.00",                        false);
-        addMontoLinea("OP. GRAVADA",   String.format("%.2f", base),   false);
-        addMontoLinea("I.G.V.",        String.format("%.2f", igv),    false);
-        addMontoLinea("DESCUENTOS",    String.format("%.2f", descuento), false);
+        addMontoLinea("OP. GRAVADA",   String.format(Locale.US, "%.2f", base),   false);
+        addMontoLinea("I.G.V.",        String.format(Locale.US, "%.2f", igv),    false);
+        addMontoLinea("DESCUENTOS",    String.format(Locale.US, "%.2f", descuento), false);
         addSepSimple();
         //Importe Total en negrita con el mismo estilo de línea punteada
-        addMontoLinea("IMPORTE TOTAL", String.format("%.2f", total),  true);
+        addMontoLinea("IMPORTE TOTAL", String.format(Locale.US, "%.2f", total),  true);
         addSepSimple();
 
         //SON: CENTRADO
@@ -109,16 +133,16 @@ public class VentaDetalleModalController {
             addMontoLinea("REDONDEO", "0.00", false);
             addCentrado(
                     "EFECTIVO S/: " +
-                            String.format("%.2f", venta.getMontoPagado()) + " SOLES",
+                            String.format(Locale.US, "%.2f", venta.getMontoPagado()) + " SOLES",
                     11, false);
-            addMontoLinea("VUELTO", String.format("%.2f", venta.getVuelto()), true);
+            addMontoLinea("VUELTO", String.format(Locale.US, "%.2f", venta.getVuelto()), true);
         } else {
             //Tarjeta/Yape/Transferencia: formato "ONLINE VISA S/: X.XX SOLES"
             String cancelo = metodo.contains("TARJETA")
                     ? metodo.replace("TARJETA DE ", "") + " S/: " +
-                    String.format("%.2f", total) + " SOLES"
+                    String.format(Locale.US, "%.2f", total) + " SOLES"
                     : metodo + " S/: " +
-                    String.format("%.2f", total) + " SOLES";
+                    String.format(Locale.US, "%.2f", total) + " SOLES";
             addCentrado(cancelo, 11, false);
 
             if (metodo.contains("TARJETA")) {
@@ -171,13 +195,19 @@ public class VentaDetalleModalController {
      * Mismo ancho fijo que las columnas de datos.
      */
     private void addEncabezadoTabla() {
-        Label cod  = col("Código",   55, true);
+        // Antes "Cant." medía 60px aquí pero la columna de cantidad
+        // real en addFilaProducto media solo 38px -- las columnas
+        // P.Unit./Importe del encabezado quedaban corridas 22px a la
+        // derecha respecto a los datos de cada fila, un descuadre que
+        // también hacía ver la boleta menos legible. Ahora ambos
+        // métodos usan las mismas constantes de ancho (ver COL_*).
+        Label cod  = col("Código",   COL_CODIGO, true);
         Label desc = new Label("Descripción");
         desc.setStyle(FB);
         HBox.setHgrow(desc, Priority.ALWAYS);
-        Label cant  = col("Cant.",    60, true);
-        Label punit = col("P.Unit.", 60, true);
-        Label imp   = col("Importe", 65, true);
+        Label cant  = col("Cant.",    COL_CANT, true);
+        Label punit = col("P.Unit.", COL_PUNIT, true);
+        Label imp   = col("Importe", COL_IMPORTE, true);
 
         HBox f = new HBox(4, cod, desc, cant, punit, imp);
         f.setAlignment(Pos.CENTER_LEFT);
@@ -188,16 +218,16 @@ public class VentaDetalleModalController {
     private void addFilaProducto(DetalleVenta d) {
         Label cod = col(
                 d.getProducto().getIdProducto() != null
-                        ? d.getProducto().getIdProducto() : "", 55, false);
+                        ? d.getProducto().getIdProducto() : "", COL_CODIGO, false);
 
         Label desc = new Label(d.getProducto().getNombre());
         desc.setStyle(F);
         desc.setWrapText(true);
         HBox.setHgrow(desc, Priority.ALWAYS);
 
-        Label cant  = col(String.valueOf(d.getCantidad()), 38, false);
-        Label punit = col(String.format("%.3f", d.getPrecio()), 60, false);
-        Label imp   = col(String.format("%.3f", d.getSubtotal()), 65, true);
+        Label cant  = col(String.valueOf(d.getCantidad()), COL_CANT, false);
+        Label punit = col(String.format(Locale.US, "%.2f", d.getPrecio()), COL_PUNIT, false);
+        Label imp   = col(String.format(Locale.US, "%.2f", d.getSubtotal()), COL_IMPORTE, true);
 
         HBox f = new HBox(4, cod, desc, cant, punit, imp);
         f.setAlignment(Pos.CENTER_LEFT);
@@ -271,32 +301,86 @@ public class VentaDetalleModalController {
                 panelImprimible.getScene().getWindow());
         if (!ok) return;
 
+        // Se determina el papel DESPUÉS del diálogo, usando la
+        // impresora que el usuario efectivamente eligió (puede no
+        // ser la impresora por defecto). Intenta un papel angosto
+        // tipo ticket/rollo térmico si esa impresora lo soporta
+        // (impresoras térmicas reales sí lo tienen). Si no (como
+        // "Microsoft Print to PDF", que solo ofrece tamaños
+        // estándar), cae de vuelta a A4 -- pero el contenido NO se
+        // estira a todo el ancho de la hoja, se mantiene angosto.
+        Paper papel = elegirPapelTicket(job.getPrinter());
         PageLayout layout = job.getPrinter().createPageLayout(
-                Paper.A4,
+                papel,
                 PageOrientation.PORTRAIT,
                 Printer.MarginType.HARDWARE_MINIMUM
         );
 
-        // Guarda el tamaño original del panel
+        // Guarda el tamaño y las transformaciones originales del panel
         double anchoOriginal = panelImprimible.getPrefWidth();
 
-        // Ajusta temporalmente el ancho al de la página imprimible
-        // para que el contenido se escale correctamente al imprimir
-        double anchoPagina = layout.getPrintableWidth();
-        panelImprimible.setPrefWidth(anchoPagina);
+        // Antes el ancho se estiraba a TODO el ancho de la página
+        // imprimible (A4 completa, ~595pt) sin agrandar la letra --
+        // el resultado era texto chico flotando en una hoja casi
+        // vacía, muy distinto a como se ve una boleta real entregada
+        // en una tienda. Ahora se mantiene un ancho angosto tipo
+        // ticket (pensado para una impresora térmica real, aunque hoy
+        // se pruebe en A4/Carta): la legibilidad ya la da el tamaño de
+        // letra del propio diseño (ver F/FB/FB12 más arriba), así que
+        // aquí solo hace falta mantenerlo angosto y centrado.
+        double anchoTicket = Math.min(ANCHO_TICKET_IMPRESION, layout.getPrintableWidth());
+        panelImprimible.setPrefWidth(anchoTicket);
         panelImprimible.applyCss();
         panelImprimible.layout();
+
+        // Si el contenido es más alto que la hoja (boletas largas con
+        // muchos productos), se escala hacia abajo lo necesario para
+        // que quepa completo en una sola página, en vez de cortarse.
+        double altoContenido = panelImprimible.prefHeight(anchoTicket);
+        double escala = 1.0;
+        if (altoContenido > layout.getPrintableHeight()) {
+            escala = layout.getPrintableHeight() / altoContenido;
+        }
+
+        // Centra el ticket horizontalmente en la hoja (si se imprime
+        // en A4/Carta completa, va a quedar margen blanco a los
+        // costados -- es esperado, el diseño sigue pensado para papel
+        // térmico angosto) en vez de dejarlo pegado al margen izquierdo.
+        double offsetX = Math.max(0,
+                (layout.getPrintableWidth() - anchoTicket * escala) / 2);
+
+        Scale transformEscala = new Scale(escala, escala, 0, 0);
+        Translate transformCentrado = new Translate(offsetX, 0);
+        panelImprimible.getTransforms().addAll(transformEscala, transformCentrado);
 
         // Imprime directamente el panel sin moverlo de su contenedor
         // Esto evita que la ventana quede en blanco
         boolean exito = job.printPage(layout, panelImprimible);
 
-        // Restaura el ancho original para que la ventana siga bien
+        // Restaura el tamaño y quita las transformaciones para que la
+        // ventana en pantalla se vea exactamente igual que antes de imprimir
+        panelImprimible.getTransforms().removeAll(transformEscala, transformCentrado);
         panelImprimible.setPrefWidth(anchoOriginal);
         panelImprimible.applyCss();
         panelImprimible.layout();
 
         if (exito) job.endJob();
+    }
+
+    /**
+     * Busca en la impresora seleccionada un papel angosto tipo
+     * ticket/rollo térmico (ancho <= ~250pt, unos 88mm). Si la
+     * impresora no ofrece ninguno (caso típico de "Microsoft Print
+     * to PDF", que solo trae A4/Carta), usa el papel por defecto
+     * -- el ancho del contenido se controla aparte, no aquí.
+     */
+    private Paper elegirPapelTicket(Printer printer) {
+        for (Paper p : printer.getPrinterAttributes().getSupportedPapers()) {
+            if (p.getWidth() > 0 && p.getWidth() <= 250) {
+                return p;
+            }
+        }
+        return printer.getDefaultPageLayout().getPaper();
     }
 
     @FXML
@@ -326,7 +410,7 @@ public class VentaDetalleModalController {
         long e = (long) monto;
         int c = (int) Math.round((monto - e) * 100);
         String p = e == 0 ? "CERO" : convertirEntero(e);
-        return p + " CON " + String.format("%02d", c) + "/100";
+        return p + " CON " + String.format(Locale.US, "%02d", c) + "/100";
     }
 
     private String convertirEntero(long n) {

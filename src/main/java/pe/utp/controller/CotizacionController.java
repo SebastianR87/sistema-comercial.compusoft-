@@ -21,10 +21,12 @@ import javafx.scene.paint.Color;
 import pe.utp.dao.CotizacionDAO;
 import pe.utp.dao.ClienteDAO;
 import pe.utp.dao.ProductoDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.*;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 import pe.utp.security.Sesion;
+import pe.utp.util.FormatoMoneda;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +57,7 @@ public class CotizacionController implements AccesoControlable {
     @FXML private Label lblTotal;
     @FXML private Label lblSubtotal;
 
-    // ── Pestaña Historial ─────────────────────────────────
+    // Pestaña Historial
     @FXML private TextField txtBuscarHistorial;
     @FXML private ComboBox<String>  cbFiltroEstado;
     @FXML private TableView<Cotizacion> tablaHistorial;
@@ -246,9 +248,11 @@ public class CotizacionController implements AccesoControlable {
         colPrecioUnit.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecio()).asObject()
         );
+        colPrecioUnit.setCellFactory(FormatoMoneda.celda());
         colSubtotal.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getSubtotal()).asObject()
         );
+        colSubtotal.setCellFactory(FormatoMoneda.celda());
         colQuitarDet.setCellFactory(col -> new TableCell<>() {
             final Button btn = new Button("✕");
             {
@@ -278,8 +282,7 @@ public class CotizacionController implements AccesoControlable {
         String precioStr = txtPrecioUnitario.getText().trim();
 
         if (producto == null || cantStr.isEmpty() || precioStr.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un producto, cantidad y precio").showAndWait();
+            CSDialog.warning("Datos incompletos", "Selecciona un producto, cantidad y precio.");
             return;
         }
         try {
@@ -287,8 +290,7 @@ public class CotizacionController implements AccesoControlable {
             double precio   = Double.parseDouble(precioStr.replace(",", "."));
 
             if (cantidad <= 0 || precio <= 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Cantidad y precio deben ser mayores a cero").showAndWait();
+                CSDialog.warning("Datos inválidos", "Cantidad y precio deben ser mayores a cero.");
                 return;
             }
 
@@ -298,17 +300,20 @@ public class CotizacionController implements AccesoControlable {
                             .equals(producto.getIdProducto()))
                     .mapToInt(DetalleCotizacion::getCantidad).sum();
             if (enCarrito + cantidad > producto.getStock()) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Stock insuficiente para \"" + producto.getNombre() + "\".\n" +
-                                "Disponible: " + producto.getStock() + " unidades.\n" +
-                                "Ya tienes " + enCarrito + " en el carrito.").showAndWait();
+                CSDialog.warning("Stock insuficiente",
+                        "Stock insuficiente para \"" + producto.getNombre() + "\". " +
+                                "Disponible: " + producto.getStock() + " unidades. " +
+                                "Ya tienes " + enCarrito + " en el carrito.");
                 return;
             }
 
-            // Si ya está en el carrito suma la cantidad
+            // Si el producto ya está en el detalle CON EL MISMO PRECIO,
+            // suma la cantidad. Si el precio es distinto, se agrega como
+            // línea nueva -- refleja precios reales distintos para el mismo producto.
             for (DetalleCotizacion det : detalleActual) {
                 if (det.getProducto().getIdProducto()
-                        .equals(producto.getIdProducto())) {
+                        .equals(producto.getIdProducto())
+                        && Math.abs(det.getPrecio() - precio) < 0.001) {
                     det.setCantidad(det.getCantidad() + cantidad);
                     tablaDetalle.refresh();
                     actualizarTotal();
@@ -325,8 +330,7 @@ public class CotizacionController implements AccesoControlable {
             limpiarFormProducto();
 
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Cantidad y precio deben ser números válidos").showAndWait();
+            CSDialog.warning("Datos inválidos", "Cantidad y precio deben ser números válidos.");
         }
     }
 
@@ -360,13 +364,11 @@ public class CotizacionController implements AccesoControlable {
         Cliente cliente = (clienteObj instanceof Cliente c) ? c : null;
 
         if (cliente == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un cliente del listado.").showAndWait();
+            CSDialog.warning("Cliente no seleccionado", "Selecciona un cliente del listado.");
             return;
         }
         if (detalleActual.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Agrega al menos un producto al detalle.").showAndWait();
+            CSDialog.warning("Detalle vacío", "Agrega al menos un producto al detalle.");
             return;
         }
 
@@ -377,7 +379,14 @@ public class CotizacionController implements AccesoControlable {
             descuento = Double.parseDouble(
                     txtDescuento.getText().trim().replace(",", "."));
         } catch (NumberFormatException ignored) {}
-        if (descuento < 0 || descuento > subtotal) descuento = 0;
+        // Mismo ajuste que en VentaController.registrarVenta(): antes
+        // un descuento mayor al subtotal se reseteaba a 0 aquí (se
+        // guardaba el subtotal completo), mientras que
+        // actualizarTotal() (la vista previa) lo recorta al subtotal
+        // -- el vendedor veía un total en pantalla y se guardaba otro
+        // mayor. Ahora ambos recortan igual.
+        if (descuento < 0) descuento = 0;
+        if (descuento > subtotal) descuento = subtotal;
         double total = subtotal - descuento;
 
         String idCot = txtNumeroCotizacion.getText();
@@ -396,14 +405,12 @@ public class CotizacionController implements AccesoControlable {
 
         boolean exito = cotizacionDAO.registrarCotizacion(cot, detallesFinales);
         if (exito) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Cotización " + idCot + " registrada correctamente.\n" +
-                            "Estado: PENDIENTE").showAndWait();
+            CSDialog.success("Cotización registrada",
+                    "Cotización " + idCot + " registrada correctamente. Estado: PENDIENTE.");
             limpiarFormulario();
             cargarHistorial();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar la cotización.").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar la cotización.");
         }
     }
 
@@ -431,6 +438,7 @@ public class CotizacionController implements AccesoControlable {
                 )
         );
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+        colTotal.setCellFactory(FormatoMoneda.celda());
 
         // Columna estado con color según valor
         colEstado.setCellFactory(col -> new TableCell<>() {
@@ -545,22 +553,23 @@ public class CotizacionController implements AccesoControlable {
 
     // ACCIONES DEL HISTORIAL
     private void cambiarEstado(Cotizacion c, String nuevoEstado) {
-        String msg = Cotizacion.ACEPTADA.equals(nuevoEstado)
-                ? "¿Marcar esta cotización como ACEPTADA?"
-                : "¿Marcar esta cotización como RECHAZADA?";
+        boolean esRechazo = Cotizacion.RECHAZADA.equals(nuevoEstado);
+        String msg = esRechazo
+                ? "¿Marcar esta cotización como RECHAZADA?"
+                : "¿Marcar esta cotización como ACEPTADA?";
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, msg,
-                ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.YES) {
-                if (cotizacionDAO.cambiarEstado(c.getIdCotizacion(), nuevoEstado)) {
-                    cargarHistorial();
-                } else {
-                    new Alert(Alert.AlertType.ERROR,
-                            "No se pudo cambiar el estado.").showAndWait();
-                }
+        // Rechazar se pinta en rojo (peligroso=true): no hay botón en
+        // el historial para revertirlo desde la UI, a diferencia de
+        // Aceptar que sí puede seguir su flujo normal hacia Convertir.
+        boolean confirmado = CSDialog.confirm(
+                "Cambiar estado", msg, "Confirmar", "Cancelar", esRechazo, esRechazo);
+        if (confirmado) {
+            if (cotizacionDAO.cambiarEstado(c.getIdCotizacion(), nuevoEstado)) {
+                cargarHistorial();
+            } else {
+                CSDialog.error("Error", "No se pudo cambiar el estado.");
             }
-        });
+        }
     }
 
     /**
@@ -573,9 +582,8 @@ public class CotizacionController implements AccesoControlable {
     private void convertirAVenta(Cotizacion c) {
         // Verifica que no haya sido ya convertida
         if (Cotizacion.CONVERTIDA.equals(c.getEstado())) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Esta cotización ya fue convertida a venta anteriormente.")
-                    .showAndWait();
+            CSDialog.warning("Cotización ya convertida",
+                    "Esta cotización ya fue convertida a venta anteriormente.");
             return;
         }
 
@@ -593,12 +601,24 @@ public class CotizacionController implements AccesoControlable {
             }
         }
         if (sinStock.length() > 0) {
-            new Alert(Alert.AlertType.WARNING,
+            CSDialog.warning("Stock insuficiente",
                     "No se puede convertir a venta. Stock insuficiente:\n\n" +
-                            sinStock + "\nActualiza el stock antes de continuar.")
-                    .showAndWait();
+                            sinStock + "\nActualiza el stock antes de continuar.");
             return;
         }
+
+        // Validación agregada: antes no pedía confirmación antes de
+        // convertir -- un solo clic en "→ Venta" marcaba la cotización
+        // como CONVERTIDA (irreversible desde la UI) y navegaba fuera
+        // del historial. Se agrega esta confirmación para evitar una
+        // conversión accidental.
+        boolean confirmado = CSDialog.confirm(
+                "Convertir a venta",
+                "¿Convertir la cotización " + c.getIdCotizacion() + " en una venta?\n\n" +
+                        "Se pre-cargará el formulario de Venta con estos productos y " +
+                        "la cotización quedará marcada como CONVERTIDA.",
+                "Convertir", "Cancelar", false);
+        if (!confirmado) return;
 
         try {
             // Carga el FXML de Venta
@@ -627,13 +647,11 @@ public class CotizacionController implements AccesoControlable {
                 );
                 cargarHistorial();
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "No se pudo navegar al módulo de Venta.").showAndWait();
+                CSDialog.error("Error", "No se pudo navegar al módulo de Venta.");
             }
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "Error al convertir: " + ex.getMessage()).showAndWait();
+            CSDialog.error("Error", "Error al convertir: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -650,16 +668,20 @@ public class CotizacionController implements AccesoControlable {
             CotizacionDetalleModalController ctrl = loader.getController();
             ctrl.cargarDatos(c, detalle);
 
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle("Detalle de Cotización " + c.getIdCotizacion());
-            modal.setScene(new javafx.scene.Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
             modal.showAndWait();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir el detalle: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir el detalle: " + ex.getMessage());
         }
     }
 
@@ -672,10 +694,8 @@ public class CotizacionController implements AccesoControlable {
     @FXML
     private void verificarCarrito() {
         if (detalleActual.size() < 2) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Agrega al menos 2 productos al carrito\n" +
-                            "para verificar compatibilidad entre ellos.")
-                    .showAndWait();
+            CSDialog.info("Carrito insuficiente",
+                    "Agrega al menos 2 productos al carrito para verificar compatibilidad entre ellos.");
             return;
         }
 

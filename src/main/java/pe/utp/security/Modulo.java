@@ -11,5 +11,6 @@ public enum Modulo {
     COMPATIBILIDAD,
     EMPLEADOS,
     KARDEX,
+    REPORTES,
     CONFIGURACION
 }

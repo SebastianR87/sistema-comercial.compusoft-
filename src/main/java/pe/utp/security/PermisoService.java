@@ -32,6 +32,20 @@ public final class PermisoService {
         return rol == Rol.ADMINISTRADOR || rol == Rol.ALMACENERO;
     }
 
+    /**
+     * Permiso propio para registrar compras. Hoy da el mismo resultado
+     * que puedeEditarProveedor() (mismos roles: Administrador y
+     * Almacenero, que son quienes tienen Modulo.COMPRA), pero antes
+     * CompraController reusaba puedeEditarProveedor() para esto -- un
+     * nombre engañoso que habría quedado desalineado si algún día se
+     * separan los permisos de Proveedor y Compra. Con su propio método
+     * queda claro y mantenible qué permiso gatea cada acción.
+     */
+    public static boolean puedeEditarCompra() {
+        Rol rol = Sesion.getRol();
+        return rol == Rol.ADMINISTRADOR || rol == Rol.ALMACENERO;
+    }
+
     public static boolean puedeEditarCotizacion() {
         Rol rol = Sesion.getRol();
         return rol == Rol.ADMINISTRADOR || rol == Rol.VENDEDOR;

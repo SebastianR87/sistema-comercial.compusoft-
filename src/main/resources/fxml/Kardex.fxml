@@ -6,130 +6,109 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="pe.utp.controller.KardexController"
-      spacing="0" style="-fx-background-color: #f0f2f5;">
+      spacing="0" style="-fx-background-color: #F8FAFC;">
 
     <!-- TOPBAR -->
     <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
         <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
-        <Label text="📊 Kárdex de Inventario" styleClass="topbar-title"/>
+        <Label text="Kárdex de Inventario" styleClass="topbar-title"/>
     </HBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                style="-fx-background-color: #f0f2f5;
-                       -fx-background: #f0f2f5;
+                style="-fx-background-color: #F8FAFC;
+                       -fx-background: #F8FAFC;
                        -fx-border-color: transparent;">
         <VBox spacing="16" style="-fx-padding: 20;">
 
             <!-- SELECTOR DE PRODUCTO -->
             <VBox styleClass="card" spacing="12">
-                <Label text="🔍 Selecciona un producto"
-                       style="-fx-font-size: 13px; -fx-font-weight: bold;
-                  -fx-text-fill: #1a1a2e;"/>
+                <Label text="SELECCIONA UN PRODUCTO"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold;
+                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
                 <Separator/>
 
-                <!-- Contenedor principal con borde unificado
-                     Todos los controles dentro tienen la misma altura
-                     y comparten el mismo borde exterior como si fueran uno -->
-                <HBox spacing="0" alignment="CENTER"
+                <!-- Producto: su propia fila a todo el ancho, es el
+                     campo principal (buscador con autocompletado). -->
+                <HBox alignment="CENTER_LEFT"
                       style="-fx-background-color: white;
-                 -fx-border-color: #ced4da;
-                 -fx-border-radius: 8;
-                 -fx-background-radius: 8;
-                 -fx-border-width: 1.5;
-                 -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.06),6,0,0,2);">
-
-                    <!-- Producto: separador derecho como divisor entre secciones -->
-                    <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
-                          style="-fx-padding: 0 10;
-                     -fx-border-color: transparent #ced4da transparent transparent;
-                     -fx-border-width: 0 1 0 0;">
-                        <Label text="📦"
-                               style="-fx-font-size: 14px; -fx-padding: 0 6 0 0;"/>
-                        <ComboBox fx:id="cbProducto"
-                                  HBox.hgrow="ALWAYS"
-                                  maxWidth="Infinity"
-                                  promptText="Busca por nombre o ID del producto..."
-                                  style="-fx-background-color: transparent;
-                             -fx-border-color: transparent;
-                             -fx-padding: 4 0;
-                             -fx-font-size: 13px;"/>
-                    </HBox>
-
-                    <!-- Desde: con ícono de calendario -->
-                    <HBox alignment="CENTER_LEFT"
-                          style="-fx-padding: 0 10;
-                     -fx-border-color: transparent #ced4da transparent transparent;
-                     -fx-border-width: 0 1 0 0;">
-                        <Label text="Desde:"
-                               style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #6c757d; -fx-padding: 0 6 0 0;"/>
-                        <DatePicker fx:id="dpDesde"
-                                    prefWidth="130"
-                                    style="-fx-background-color: transparent;
-                               -fx-border-color: transparent;
-                               -fx-font-size: 12px;"/>
-                    </HBox>
-
-                    <!-- Hasta: con ícono de calendario -->
-                    <HBox alignment="CENTER_LEFT"
-                          style="-fx-padding: 0 10;
-                     -fx-border-color: transparent #ced4da transparent transparent;
-                     -fx-border-width: 0 1 0 0;">
-                        <Label text="Hasta:"
-                               style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #6c757d; -fx-padding: 0 6 0 0;"/>
-                        <DatePicker fx:id="dpHasta"
-                                    prefWidth="130"
-                                    style="-fx-background-color: transparent;
-                               -fx-border-color: transparent;
-                               -fx-font-size: 12px;"/>
-                    </HBox>
-
-                    <!-- Botones dentro del mismo contenedor -->
-                    <HBox spacing="0" alignment="CENTER">
-
-                        <!-- Generar: azul -->
-                        <Button text="🔍 Generar"
-                                onAction="#generarKardex"
-                                prefHeight="42" prefWidth="110"
-                                style="-fx-background-color: #4361ee;
-                   -fx-text-fill: white;
-                   -fx-background-radius: 0;
-                   -fx-cursor: hand;
-                   -fx-font-weight: bold;
-                   -fx-font-size: 12px;
-                   -fx-border-color: transparent #2d4bc4 transparent transparent;
-                   -fx-border-width: 0 1 0 0;"/>
-
-                        <!-- Limpiar: gris -->
-                        <Button text="🔄 Limpiar"
-                                onAction="#limpiar"
-                                prefHeight="42" prefWidth="110"
-                                style="-fx-background-color: #6c757d;
-                   -fx-text-fill: white;
-                   -fx-background-radius: 0;
-                   -fx-cursor: hand;
-                   -fx-font-size: 12px;
-                   -fx-border-color: transparent #545b62 transparent transparent;
-                   -fx-border-width: 0 1 0 0;"/>
-
-                        <!-- Imprimir: verde, solo visible cuando hay datos -->
-                        <Button fx:id="btnImprimir"
-                                text="🖨 Imprimir"
-                                onAction="#imprimirKardex"
-                                prefHeight="42" prefWidth="110"
-                                visible="false" managed="false"
-                                style="-fx-background-color: #2dc653;
-                   -fx-text-fill: white;
-                   -fx-background-radius: 0 8 8 0;
-                   -fx-cursor: hand;
-                   -fx-font-size: 12px;"/>
-                    </HBox>
+                             -fx-border-color: #CBD5E1;
+                             -fx-border-radius: 10;
+                             -fx-background-radius: 10;
+                             -fx-border-width: 1.5;
+                             -fx-padding: 0 12;">
+                    <ComboBox fx:id="cbProducto"
+                              HBox.hgrow="ALWAYS"
+                              maxWidth="Infinity"
+                              minWidth="0"
+                              promptText="Busca por nombre o ID del producto..."
+                              style="-fx-background-color: transparent;
+                                     -fx-border-color: transparent;
+                                     -fx-padding: 6 0;
+                                     -fx-font-size: 13px;"/>
                 </HBox>
 
-                <!-- Nota informativa debajo del buscador -->
-                <Label text="💡 Selecciona un producto y un rango de fechas, luego presiona Generar."
-                       style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;
+                <!-- Rango de fechas: bloque propio, separado del
+                     buscador de producto (antes iba apretado en la
+                     misma fila/caja), con Desde/Hasta rotulados arriba
+                     como en Reportes, y atajos rápidos para no tener
+                     que abrir el calendario para rangos comunes. -->
+                <VBox spacing="8">
+                    <Label text="RANGO DE FECHAS"
+                           style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                    <HBox spacing="14" alignment="CENTER_LEFT">
+                        <VBox spacing="3">
+                            <Label text="DESDE"
+                                   style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                          -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                            <DatePicker fx:id="dpDesde" styleClass="campo-input" prefWidth="140"/>
+                        </VBox>
+                        <VBox spacing="3">
+                            <Label text="HASTA"
+                                   style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                          -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                            <DatePicker fx:id="dpHasta" styleClass="campo-input" prefWidth="140"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <!-- Atajos rápidos: ToggleButton (no Button)
+                             dentro de un mismo ToggleGroup, para que el
+                             atajo activo quede visualmente marcado
+                             (:selected en style.css) hasta que se elija
+                             otro o se edite una fecha a mano. Solo
+                             ajustan Desde/Hasta; el usuario sigue
+                             presionando "Generar". -->
+                        <fx:define>
+                            <ToggleGroup fx:id="grupoRangoFechas"/>
+                        </fx:define>
+                        <ToggleButton fx:id="btnRangoHoy" text="Hoy" toggleGroup="$grupoRangoFechas"
+                                      onAction="#rangoHoy" styleClass="btn-neutral"
+                                      style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                        <ToggleButton fx:id="btnRango7Dias" text="Últimos 7 días" toggleGroup="$grupoRangoFechas"
+                                      onAction="#rangoUltimos7Dias" styleClass="btn-neutral"
+                                      style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                        <ToggleButton fx:id="btnRangoMes" text="Este mes" toggleGroup="$grupoRangoFechas"
+                                      onAction="#rangoEsteMes" styleClass="btn-neutral"
+                                      style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                        <ToggleButton fx:id="btnRangoAnio" text="Este año" toggleGroup="$grupoRangoFechas"
+                                      onAction="#rangoEsteAnio" styleClass="btn-neutral"
+                                      style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Botones separados, cada uno con su propio radio y hover -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="Generar" onAction="#generarKardex"
+                            styleClass="btn-primary"/>
+                    <Button text="Limpiar" onAction="#limpiar"
+                            styleClass="btn-neutral"/>
+                    <Button fx:id="btnImprimir" text="Imprimir" onAction="#imprimirKardex"
+                            styleClass="btn-table-edit"
+                            style="-fx-font-size: 12px; -fx-padding: 9 18;"
+                            visible="false" managed="false"/>
+                </HBox>
+
+                <Label text="Selecciona un producto y un rango de fechas, luego presiona Generar."
+                       style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;
                   -fx-font-style: italic;"/>
             </VBox>
 
@@ -138,80 +117,80 @@
                   visible="false" managed="false"
                   style="-fx-background-color: white;
                          -fx-background-radius: 12;
-                         -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.08),10,0,0,2);
-                         -fx-border-color: #e0e0e0;
+                         -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.06),8,0,0,2);
+                         -fx-border-color: #E2E8F0;
                          -fx-border-radius: 12;
                          -fx-border-width: 1;">
 
-                <!-- Cabecera de la ficha con fondo oscuro, tipo boleta -->
-                <VBox spacing="4"
-                      style="-fx-background-color: #1a1a2e;
+                <!-- Cabecera de la ficha: navy de marca, misma familia que el sidebar -->
+                <HBox alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: #1F2A44;
                              -fx-background-radius: 12 12 0 0;
                              -fx-padding: 16 20;">
-                    <Label text="FICHA DEL PRODUCTO"
-                           style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                  -fx-text-fill: rgba(255,255,255,0.6);
-                                  -fx-letter-spacing: 1px;"/>
-                    <Label fx:id="lblProducto"
-                           style="-fx-font-size: 18px; -fx-font-weight: bold;
-                                  -fx-text-fill: white;"/>
-                    <Label fx:id="lblCategoria"
-                           style="-fx-font-size: 12px;
-                                  -fx-text-fill: rgba(255,255,255,0.7);"/>
-                </VBox>
+                    <Region prefWidth="3" prefHeight="34" minWidth="3"
+                            style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
+                    <VBox spacing="2">
+                        <Label text="FICHA DEL PRODUCTO"
+                               style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                      -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+                        <Label fx:id="lblProducto"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                      -fx-text-fill: white;"/>
+                        <Label fx:id="lblCategoria"
+                               style="-fx-font-size: 11px;
+                                      -fx-text-fill: #8A93A8;"/>
+                    </VBox>
+                </HBox>
 
                 <!-- Métricas en tarjetas horizontales -->
                 <HBox spacing="0">
-                    <!-- Existencia Actual -->
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
                           prefWidth="160" minWidth="120"
                           style="-fx-padding: 20 12;
-             -fx-border-color: transparent #e0e0e0 transparent transparent;
+             -fx-border-color: transparent #E2E8F0 transparent transparent;
              -fx-border-width: 0 1 0 0;">
                         <Label text="Existencia Actual"
                                style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #6c757d; -fx-letter-spacing: 0.5px;"/>
+                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblExistenciaActual"
                                style="-fx-font-size: 24px; -fx-font-weight: bold;
-              -fx-text-fill: #4361ee;
+              -fx-text-fill: #315E9E;
               -fx-min-width: 60px;"/>
                         <Label text="unidades"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;"/>
+                               style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
                     </VBox>
 
-                    <!-- Stock Mínimo -->
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
                           prefWidth="160" minWidth="120"
                           style="-fx-padding: 20 12;
-             -fx-border-color: transparent #e0e0e0 transparent transparent;
+             -fx-border-color: transparent #E2E8F0 transparent transparent;
              -fx-border-width: 0 1 0 0;">
                         <Label text="Stock Mínimo"
                                style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #6c757d; -fx-letter-spacing: 0.5px;"/>
+                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblStockMinimo"
                                style="-fx-font-size: 24px; -fx-font-weight: bold;
-              -fx-text-fill: #e67e00;
+              -fx-text-fill: #92400E;
               -fx-min-width: 60px;"/>
                         <Label text="unidades"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;"/>
+                               style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
                     </VBox>
 
-                    <!-- Stock Máximo: sin borde derecho porque es el último -->
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
                           prefWidth="160" minWidth="120"
                           style="-fx-padding: 20 12;">
                         <Label text="Stock Máximo"
                                style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #6c757d; -fx-letter-spacing: 0.5px;"/>
+                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblStockMaximo"
                                style="-fx-font-size: 24px; -fx-font-weight: bold;
-              -fx-text-fill: #2dc653;
+              -fx-text-fill: #166534;
               -fx-min-width: 60px;"/>
                         <Label text="unidades"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;"/>
+                               style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
                     </VBox>
                 </HBox>
             </VBox>
@@ -220,26 +199,22 @@
             <VBox fx:id="panelTabla" styleClass="card" spacing="12"
                   VBox.vgrow="ALWAYS" visible="false" managed="false">
 
-                <Label text="📊 Movimientos de Inventario"
-                       style="-fx-font-size: 13px; -fx-font-weight: bold;
-                              -fx-text-fill: #1a1a2e;"/>
+                <Label text="MOVIMIENTOS DE INVENTARIO"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold;
+                              -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
                 <Separator/>
 
                 <TableView fx:id="tablaKardex" VBox.vgrow="ALWAYS"
-                           minHeight="200"
-                           style="-fx-background-color: white;
-                                  -fx-border-color: #e0e0e0;
-                                  -fx-border-radius: 8;
-                                  -fx-background-radius: 8;">
+                           minHeight="200">
                     <columns>
                         <TableColumn fx:id="colFecha"
                                      text="Fecha" prefWidth="120"/>
                         <TableColumn fx:id="colDetalle"
                                      text="Detalle" prefWidth="130"/>
 
-                        <TableColumn text="📥 Entradas"
+                        <TableColumn text="ENTRADAS"
                                      style="-fx-alignment: CENTER;
-                                            -fx-background-color: #eef8f0;">
+                                            -fx-background-color: #F0FDF4;">
                             <columns>
                                 <TableColumn fx:id="colEntradaCant"
                                              text="Cantidad" prefWidth="70"/>
@@ -250,9 +225,9 @@
                             </columns>
                         </TableColumn>
 
-                        <TableColumn text="📤 Salidas"
+                        <TableColumn text="SALIDAS"
                                      style="-fx-alignment: CENTER;
-                                            -fx-background-color: #fef0f0;">
+                                            -fx-background-color: #FFF0F3;">
                             <columns>
                                 <TableColumn fx:id="colSalidaCant"
                                              text="Cantidad" prefWidth="70"/>
@@ -263,9 +238,9 @@
                             </columns>
                         </TableColumn>
 
-                        <TableColumn text="📦 Existencias"
+                        <TableColumn text="EXISTENCIAS"
                                      style="-fx-alignment: CENTER;
-                                            -fx-background-color: #eef2ff;">
+                                            -fx-background-color: #F0F5FC;">
                             <columns>
                                 <TableColumn fx:id="colSaldoCant"
                                              text="Cantidad" prefWidth="70"/>
@@ -285,51 +260,223 @@
                 <HBox spacing="10">
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #eef8f0;
-                                 -fx-background-radius: 8;
-                                 -fx-padding: 10 16;
-                                 -fx-border-color: #c3e6cb;
-                                 -fx-border-radius: 8;
+                          style="-fx-background-color: #F0FDF4;
+                                 -fx-background-radius: 10;
+                                 -fx-padding: 12 16;
+                                 -fx-border-color: #BBF7D0;
+                                 -fx-border-radius: 10;
                                  -fx-border-width: 1;">
                         <Label text="TOTAL ENTRADAS"
                                style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #2dc653;"/>
+                                      -fx-text-fill: #166534; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblTotalEntradas"
-                               style="-fx-font-size: 18px; -fx-font-weight: bold;
-                                      -fx-text-fill: #2dc653;"/>
+                               style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                      -fx-text-fill: #166534;"/>
                     </VBox>
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #fef0f0;
-                                 -fx-background-radius: 8;
-                                 -fx-padding: 10 16;
-                                 -fx-border-color: #f5c6cb;
-                                 -fx-border-radius: 8;
+                          style="-fx-background-color: #FFF0F3;
+                                 -fx-background-radius: 10;
+                                 -fx-padding: 12 16;
+                                 -fx-border-color: #FDDDE3;
+                                 -fx-border-radius: 10;
                                  -fx-border-width: 1;">
                         <Label text="TOTAL SALIDAS"
                                style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #e94560;"/>
+                                      -fx-text-fill: #E94560; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblTotalSalidas"
-                               style="-fx-font-size: 18px; -fx-font-weight: bold;
-                                      -fx-text-fill: #e94560;"/>
+                               style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                      -fx-text-fill: #E94560;"/>
                     </VBox>
                     <VBox spacing="4" alignment="CENTER"
                           HBox.hgrow="ALWAYS"
-                          style="-fx-background-color: #eef2ff;
-                                 -fx-background-radius: 8;
-                                 -fx-padding: 10 16;
-                                 -fx-border-color: #c5cff7;
-                                 -fx-border-radius: 8;
+                          style="-fx-background-color: #F0F5FC;
+                                 -fx-background-radius: 10;
+                                 -fx-padding: 12 16;
+                                 -fx-border-color: #CBD9EE;
+                                 -fx-border-radius: 10;
                                  -fx-border-width: 1;">
-                        <Label text="SALDO ACTUAL"
+                        <Label text="SALDO AL CORTE"
                                style="-fx-font-size: 10px; -fx-font-weight: bold;
-                                      -fx-text-fill: #4361ee;"/>
+                                      -fx-text-fill: #315E9E; -fx-letter-spacing: 0.5px;"/>
                         <Label fx:id="lblSaldoActual"
-                               style="-fx-font-size: 18px; -fx-font-weight: bold;
-                                      -fx-text-fill: #4361ee;"/>
+                               style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                      -fx-text-fill: #315E9E;"/>
                     </VBox>
                 </HBox>
             </VBox>
         </VBox>
     </ScrollPane>
+
+    <!-- ============================================================
+         PANEL DE IMPRESIÓN (oculto en pantalla, solo para PDF). Se
+         llena por código (ver construirTablaImpresion en el
+         controller) con Labels planos dentro de un GridPane, en vez
+         de imprimir tablaKardex directamente.
+
+         Motivo: tablaKardex es un TableView, que es VIRTUALIZADO: en
+         pantalla solo crea/renderiza las filas que caben en su alto
+         visible, no todas las del kárdex. Al imprimir ese nodo
+         directamente, muchas filas no llegaban a materializarse y la
+         página salía en blanco (o solo se veían los encabezados).
+         ============================================================ -->
+    <VBox fx:id="panelImpresionKardex" visible="false" managed="false"
+          style="-fx-background-color: white; -fx-padding: 8;" spacing="10">
+
+        <!-- BLOQUE 1: Encabezado. Mismo estilo (logo 40x40, tipografía,
+             margen, divisor de 2px) que Reportes (Ventas/Compras), para
+             que los tres reportes impresos compartan una sola identidad
+             visual. A la derecha, alineados, van Emisión/Generado
+             por/Período (Período reemplaza aquí el "Tipo de reporte" de
+             Reportes: el Kárdex no tiene esa dimensión, pero sí un
+             periodo de corte). -->
+        <VBox spacing="10">
+            <HBox alignment="TOP_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #E94560; -fx-background-radius: 8;"
+                           prefWidth="40" prefHeight="40" maxWidth="40" maxHeight="40">
+                    <Label text="CS" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;"/>
+                </StackPane>
+                <VBox spacing="1">
+                    <Label text="CompuSoft S.A.C" style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1F2A44;"/>
+                    <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 10px; -fx-text-fill: #94A3B8;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox spacing="2" alignment="TOP_RIGHT">
+                    <Label fx:id="lblImpKardexEmision" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                    <Label fx:id="lblImpKardexGeneradoPor" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpKardexPeriodo" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+                </VBox>
+            </HBox>
+            <Region style="-fx-background-color: #315E9E;" prefHeight="2">
+                <VBox.margin><Insets top="6"/></VBox.margin>
+            </Region>
+        </VBox>
+
+        <!-- Título del reporte + encabezado de la sección de ficha. -->
+        <VBox spacing="4">
+            <Label text="KÁRDEX DE INVENTARIO"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            <Label text="INFORMACIÓN DEL PRODUCTO"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+        </VBox>
+
+        <!-- BLOQUE 2: Información del producto, en ficha de 3 columnas
+             x 2 filas (en vez de varias líneas sueltas): Producto,
+             Categoría y Código arriba; Existencia actual, Stock mínimo
+             y Stock máximo abajo, con el mismo acento de color que ya
+             usan estos tres datos en pantalla (azul/ámbar/verde). Sin
+             "Proveedor": un kárdex de un producto puede reunir
+             movimientos de varios proveedores distintos, así que un
+             solo campo no aplicaría (sí aparece el detalle de cada
+             movimiento en la tabla). -->
+        <GridPane hgap="12" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.33"/>
+                <ColumnConstraints percentWidth="33.34"/>
+            </columnConstraints>
+            <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                  style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="PRODUCTO" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexProducto" wrapText="true"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            </VBox>
+            <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                  style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="CATEGORÍA" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexCategoria" wrapText="true"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            </VBox>
+            <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                  style="-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="CÓDIGO" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexCodigo"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            </VBox>
+            <VBox spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                  style="-fx-background-color: #F0F5FC; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="EXISTENCIA ACTUAL" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexExistencia"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #315E9E;"/>
+            </VBox>
+            <VBox spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                  style="-fx-background-color: #FFFBEB; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="STOCK MÍNIMO" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexStockMin"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #92400E;"/>
+            </VBox>
+            <VBox spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="2"
+                  style="-fx-background-color: #F0FDF4; -fx-background-radius: 8; -fx-padding: 10;">
+                <Label text="STOCK MÁXIMO" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <Label fx:id="lblImpKardexStockMax"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+            </VBox>
+        </GridPane>
+
+        <!-- BLOQUE 3: Resumen de movimientos, en 3 tarjetas de color
+             suave (mismo lenguaje visual que los KPI de Reportes), en
+             vez de un solo cuadro grande: Total Entradas, Total
+             Salidas y Saldo Final, mismos datos que ya se ven en
+             pantalla, para que el reporte impreso deje claro el total
+             sin tener que sumar la tabla. -->
+        <VBox spacing="4">
+            <Label text="RESUMEN DE MOVIMIENTOS"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <GridPane hgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33.33"/>
+                    <ColumnConstraints percentWidth="33.33"/>
+                    <ColumnConstraints percentWidth="33.34"/>
+                </columnConstraints>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                      style="-fx-background-color: #F0FDF4; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label text="TOTAL ENTRADAS" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpKardexTotalEntradas" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                      style="-fx-background-color: #FFF0F3; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label text="TOTAL SALIDAS" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpKardexTotalSalidas" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #E94560;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="2"
+                      style="-fx-background-color: #F0F5FC; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label text="SALDO FINAL" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpKardexSaldo" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #315E9E;"/>
+                </VBox>
+            </GridPane>
+        </VBox>
+
+        <Region style="-fx-background-color: #E2E8F0;" prefHeight="1"/>
+
+        <!-- BLOQUE 4: Tabla de movimientos, elemento dominante de la
+             página (ver construirTablaImpresionKardex en el
+             controller: encabezados de grupo diferenciados por color,
+             filas alternadas, alineación numérica a la derecha, sin
+             repetir "S/" en cada celda). -->
+        <Label text="DETALLE DE MOVIMIENTOS (montos en S/)"
+               style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+        <GridPane fx:id="gridImpresionKardex" hgap="4" vgap="3"/>
+
+        <!-- Espaciador flexible: el controlador redimensiona
+             panelImpresionKardex al ALTO COMPLETO de la página (no a su
+             alto natural de contenido); este Region con
+             VBox.vgrow="ALWAYS" absorbe el espacio sobrante y empuja el
+             pie de página al margen inferior, sin importar cuántas
+             filas tenga esta página en particular (mismo patrón ya
+             usado en Reportes). -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Pie de página REAL, al final físico de cada hoja (antes el
+             número de página iba pegado junto al título, arriba de la
+             tabla, no como un pie real); mismo patrón que Reportes. -->
+        <Region style="-fx-background-color: #E2E8F0;" prefHeight="1">
+            <VBox.margin><Insets top="6"/></VBox.margin>
+        </Region>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+            <Label fx:id="lblPieKardexFecha" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblImpKardexPagina" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+        </HBox>
+    </VBox>
 </VBox>

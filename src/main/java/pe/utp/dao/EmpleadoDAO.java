@@ -1,6 +1,7 @@
 package pe.utp.dao;
 
 import pe.utp.Conexion.ConexionDB;
+import pe.utp.Conexion.QueryHelper;
 import pe.utp.model.Empleado;
 import java.sql.*;
 import java.util.ArrayList;
@@ -175,7 +176,19 @@ public class EmpleadoDAO {
 
     // ===== OBTENER ULTIMO ID =====
     public String obtenerUltimoId() {
-        String sql = "SELECT id_empleado FROM empleado ORDER BY id_empleado DESC LIMIT 1";
+        // Antes tenía el "LIMIT 1" de MySQL escrito directo en el SQL,
+        // a diferencia de TODOS los demás DAO que pasan por
+        // QueryHelper.limitar() para que también funcione con SQL
+        // Server (que usa "SELECT TOP 1" en vez de "LIMIT"). Con
+        // motor=sqlserver esta consulta fallaba silenciosamente
+        // (SQLException atrapada, retorna null), así que
+        // generarId() en el controlador nunca detectaba el último ID
+        // real y siempre proponía "EMP001" -- que ya existe desde el
+        // primer empleado creado, haciendo fallar el alta de
+        // cualquier empleado siguiente.
+        String sql = QueryHelper.limitar(
+                "SELECT id_empleado FROM empleado ORDER BY id_empleado DESC", 1
+        );
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -186,15 +199,39 @@ public class EmpleadoDAO {
         return null;
     }
 
+    // ===== CONTAR ADMINISTRADORES ACTIVOS =====
+    // Usado antes de desactivar/eliminar/degradar un Administrador,
+    // para no dejar el sistema sin ningún admin que pueda entrar a
+    // revertir el cambio (ver EmpleadoController/EmpleadoModalController).
+    public int contarAdministradoresActivos() {
+        String sql = "SELECT COUNT(*) FROM empleado " +
+                "WHERE cargo = 'Administrador' AND estado = 'ACTIVO'";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.out.println("Error al contar administradores activos: " + e.getMessage());
+        }
+        return 0;
+    }
+
     // ===== EXISTE NUMERO DOCUMENTO =====
+    // Antes filtraba "AND estado = 'ACTIVO'": solo miraba empleados
+    // activos, así que un documento de un empleado desactivado
+    // quedaba "libre" para asignarlo a un empleado nuevo. Si luego se
+    // reactivaba al primer empleado, terminaban DOS empleados activos
+    // con el mismo número de documento a la vez, sin ninguna
+    // validación que lo detecte. El número de documento debe ser
+    // único sin importar si el dueño está activo o no.
     public boolean existeNumeroDocumento(String numeroDocumento, String idExcluir) {
         String sql;
         if (idExcluir != null) {
             sql = "SELECT COUNT(*) FROM empleado " +
-                    "WHERE numero_documento = ? AND id_empleado != ? AND estado = 'ACTIVO'";
+                    "WHERE numero_documento = ? AND id_empleado != ?";
         } else {
             sql = "SELECT COUNT(*) FROM empleado " +
-                    "WHERE numero_documento = ? AND estado = 'ACTIVO'";
+                    "WHERE numero_documento = ?";
         }
         try {
             PreparedStatement ps = conexion.prepareStatement(sql);

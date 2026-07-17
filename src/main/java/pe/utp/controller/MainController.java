@@ -4,12 +4,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Empleado;
 import pe.utp.security.Modulo;
 import pe.utp.security.PermisoService;
@@ -34,6 +33,7 @@ public class MainController {
     @FXML private Button btnEmpleados;
     @FXML private Button btnConfiguracion;
     @FXML private Button btnKardex;
+    @FXML private Button btnReportes;
     @FXML private Button btnCompatibilidad;
     @FXML private Label lblSeccionSistema;
     @FXML private Label lblSeccionGestion;
@@ -66,6 +66,7 @@ public class MainController {
         configurarBoton(btnCompatibilidad, Modulo.COMPATIBILIDAD);
         configurarBoton(btnEmpleados, Modulo.EMPLEADOS);
         configurarBoton(btnKardex, Modulo.KARDEX);
+        configurarBoton(btnReportes, Modulo.REPORTES);
         configurarBoton(btnConfiguracion, Modulo.CONFIGURACION);
 
         // Oculta la sección SISTEMA completa si ningún botón es visible
@@ -86,6 +87,7 @@ public class MainController {
 
         boolean hayBotonesSistema = btnEmpleados.isVisible()
                 || btnKardex.isVisible()
+                || btnReportes.isVisible()
                 || btnConfiguracion.isVisible();
         lblSeccionSistema.setVisible(hayBotonesSistema);
         lblSeccionSistema.setManaged(hayBotonesSistema);
@@ -142,33 +144,37 @@ public class MainController {
     private void abrirKardex() { marcarActivo(btnKardex);cargarVista("/fxml/Kardex.fxml", Modulo.KARDEX);}
 
     @FXML
+    private void abrirReportes() { marcarActivo(btnReportes); cargarVista("/fxml/Reportes.fxml", Modulo.REPORTES); }
+
+    @FXML
     private void abrirConfiguracion() {
         marcarActivo(btnConfiguracion);cargarVista("/fxml/Configuracion.fxml", Modulo.CONFIGURACION);
     }
 
     @FXML
     private void cerrarSesion() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                "¿Desea cerrar sesión?", ButtonType.YES, ButtonType.NO);
-        alert.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.YES) {
-                try {
-                    Sesion.cerrar();
-                    FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/fxml/Login.fxml"));
-                    Parent root = loader.load();
-                    Stage stage = (Stage) panelContenido.getScene().getWindow();
-                    stage.setMaximized(false);
-                    stage.setWidth(700);
-                    stage.setHeight(520);
-                    stage.setScene(new Scene(root));
-                    stage.centerOnScreen();
-                    stage.show();
-                } catch (Exception e) {
-                    System.out.println("Error al cerrar sesion: " + e.getMessage());
-                }
-            }
-        });
+        // Ejemplo de reemplazo de Alert por CSDialog: confirm() simple,
+        // sin necesidad de lambda/ifPresent -- ya devuelve un boolean.
+        boolean confirmado = CSDialog.confirm(
+                "Cerrar sesión", "¿Desea cerrar sesión?");
+        if (!confirmado) {
+            return;
+        }
+        try {
+            Sesion.cerrar();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/Login.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) panelContenido.getScene().getWindow();
+            stage.setMaximized(false);
+            stage.setWidth(700);
+            stage.setHeight(520);
+            stage.setScene(new Scene(root));
+            stage.centerOnScreen();
+            stage.show();
+        } catch (Exception e) {
+            System.out.println("Error al cerrar sesion: " + e.getMessage());
+        }
     }
 
     private void cargarVista(String ruta, Modulo modulo) {
@@ -179,8 +185,7 @@ public class MainController {
         try {
             var url = getClass().getResource(ruta);
             if (url == null) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Este módulo aún no está implementado.").show();
+                CSDialog.info("Módulo no disponible", "Este módulo aún no está implementado.");
                 return;
             }
             FXMLLoader loader = new FXMLLoader(url);
@@ -192,8 +197,7 @@ public class MainController {
             panelContenido.getChildren().setAll(vista);
         } catch (Exception e) {
             e.printStackTrace();
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage()).show();
+            CSDialog.error("Error", "No se pudo cargar la vista: " + ruta + "\n" + e.getMessage());
         }
     }
 
@@ -204,7 +208,7 @@ public class MainController {
         botonesMenu = List.of(
                 btnCategoria, btnProducto, btnCliente, btnProveedor,
                 btnCompra, btnVenta, btnConfigurador, btnCompatibilidad,
-                btnEmpleados, btnKardex, btnConfiguracion
+                btnEmpleados, btnKardex, btnReportes, btnConfiguracion
         );
     }
 

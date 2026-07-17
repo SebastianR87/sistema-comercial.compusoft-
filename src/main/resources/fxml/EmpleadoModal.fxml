@@ -4,132 +4,130 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
 
-<!-- VBox principal del modal con fondo blanco y padding generoso -->
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="pe.utp.controller.EmpleadoModalController"
       spacing="0"
       style="-fx-background-color: white;"
-      prefWidth="440">
+      prefWidth="560">
 
-    <!-- CABECERA DINÁMICA
-         fx:id="panelCabecera" permite cambiar su color desde Java.
-         Azul en modo VER, verde en modo EDITAR -->
-    <VBox fx:id="panelCabecera" spacing="4" alignment="CENTER_LEFT"
-          style="-fx-background-color: #4361ee; -fx-padding: 20 24;">
+    <!-- CABECERA: barra de marca + título chico / nombre grande -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
+        <Region prefWidth="4" minHeight="40"
+                style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
 
-        <Label fx:id="lblTituloCabecera" text="DETALLE DE EMPLEADO"
-               style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: rgba(255,255,255,0.7);
-                  -fx-letter-spacing: 1px;"/>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTituloCabecera" text="DETALLE DE EMPLEADO"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Label fx:id="lblNombreCabecera" text="Nombre del empleado"
+                   style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+            <Label fx:id="lblCargoCabecera"
+                   style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
+        </VBox>
+    </HBox>
 
-        <!-- Agrega estos dos labels nuevos -->
-        <Label fx:id="lblNombreCabecera"
-               style="-fx-font-size: 20px; -fx-font-weight: bold;
-                  -fx-text-fill: white;"/>
-
-        <Label fx:id="lblCargoCabecera"
-               style="-fx-font-size: 12px;
-                  -fx-text-fill: rgba(255,255,255,0.75);"/>
-    </VBox>
-
-    <!-- CUERPO CON LOS CAMPOS
-         ScrollPane permite scroll si el contenido no cabe -->
+    <!-- CUERPO CON LOS CAMPOS, en 2 columnas -->
     <ScrollPane fitToWidth="true"
-                style="-fx-background-color: white; -fx-background: white;"
+                style="-fx-background-color: white; -fx-background: white;
+                       -fx-border-color: transparent;"
                 VBox.vgrow="ALWAYS">
-        <VBox spacing="12" style="-fx-padding: 20;">
+        <VBox spacing="16" style="-fx-padding: 22 24;">
 
-            <!-- ID: siempre deshabilitado, nunca se puede cambiar -->
-            <VBox spacing="4">
-                <Label text="ID Empleado" styleClass="label-field"/>
-                <TextField fx:id="txtId" disable="true"
-                           style="-fx-background-color: #f0f0f0;
-                                  -fx-text-fill: #6c757d;"/>
-            </VBox>
+            <Label text="DATOS DEL EMPLEADO"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
 
-            <VBox spacing="4">
-                <Label text="Nombre completo" styleClass="label-field"/>
-                <TextField fx:id="txtNombre" promptText="Nombre completo"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="ID Empleado" styleClass="label-field"/>
+                    <TextField fx:id="txtId" disable="true" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Cargo" styleClass="label-field"/>
+                    <ComboBox fx:id="cbCargo" maxWidth="Infinity" minWidth="0" prefWidth="248"
+                              promptText="Selecciona un cargo"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
-                <Label text="Cargo" styleClass="label-field"/>
-                <ComboBox fx:id="cbCargo" maxWidth="Infinity"
-                          promptText="Selecciona un cargo"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Nombre completo" styleClass="label-field"/>
+                    <TextField fx:id="txtNombre" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248" promptText="Nombre completo"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Tipo de documento" styleClass="label-field"/>
+                    <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity" minWidth="0" prefWidth="248"
+                              promptText="Selecciona tipo" onAction="#actualizarPlaceholder"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
-                <Label text="Tipo de documento" styleClass="label-field"/>
-                <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity"
-                          promptText="Selecciona tipo"
-                          onAction="#actualizarPlaceholder"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Número de documento" styleClass="label-field"/>
+                    <TextField fx:id="txtNumeroDocumento" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248" promptText="Selecciona un tipo primero"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Teléfono" styleClass="label-field"/>
+                    <TextField fx:id="txtTelefono" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248" promptText="Ej: 987654321"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
-                <Label text="Número de documento" styleClass="label-field"/>
-                <TextField fx:id="txtNumeroDocumento"
-                           promptText="Selecciona un tipo primero"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Dirección" styleClass="label-field"/>
+                    <TextField fx:id="txtDireccion" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248" promptText="Ej: Av. Lima 123"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Usuario" styleClass="label-field"/>
+                    <TextField fx:id="txtUsuario" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="248" promptText="Usuario para login"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
-                <Label text="Teléfono" styleClass="label-field"/>
-                <TextField fx:id="txtTelefono" promptText="Ej: 987654321"/>
-            </VBox>
-
-            <VBox spacing="4">
-                <Label text="Dirección" styleClass="label-field"/>
-                <TextField fx:id="txtDireccion" promptText="Ej: Av. Lima 123"/>
-            </VBox>
-
-            <VBox spacing="4">
-                <Label text="Usuario" styleClass="label-field"/>
-                <TextField fx:id="txtUsuario" promptText="Usuario para login"/>
-            </VBox>
-
-            <!-- PANEL CONTRASEÑA
-                 fx:id="panelPassword" permite ocultarlo en modo VER -->
-            <VBox fx:id="panelPassword" spacing="4">
+            <!-- PANEL CONTRASEÑA: se oculta en modo VER -->
+            <VBox fx:id="panelPassword" spacing="6">
                 <Label text="Contraseña" styleClass="label-field"/>
                 <HBox spacing="0">
-                    <PasswordField fx:id="txtPassword" promptText="Contraseña"
-                                   HBox.hgrow="ALWAYS"/>
-                    <TextField fx:id="txtPasswordVisible" promptText="Contraseña"
-                               HBox.hgrow="ALWAYS" visible="false" managed="false"/>
-                    <Button fx:id="btnMostrar" text="👁"
-                            onAction="#togglePassword"
-                            style="-fx-background-color: #f0f2f5;
-                                   -fx-border-color: #e0e0e0;
-                                   -fx-border-radius: 0 8 8 0;
-                                   -fx-background-radius: 0 8 8 0;
+                    <PasswordField fx:id="txtPassword" styleClass="campo-input"
+                                   promptText="Contraseña" HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="txtPasswordVisible" styleClass="campo-input"
+                               promptText="Contraseña" HBox.hgrow="ALWAYS"
+                               visible="false" managed="false"/>
+                    <Button fx:id="btnMostrar" text="👁" onAction="#togglePassword"
+                            style="-fx-background-color: #F1F5F9;
+                                   -fx-border-color: #E2E8F0;
+                                   -fx-border-radius: 0 10 10 0;
+                                   -fx-background-radius: 0 10 10 0;
                                    -fx-cursor: hand; -fx-font-size: 14px;
-                                   -fx-padding: 8 10;"/>
+                                   -fx-padding: 9 12;"/>
                 </HBox>
             </VBox>
 
         </VBox>
     </ScrollPane>
 
-    <!-- PIE DEL MODAL
-         Cancelar siempre visible, Guardar solo en modo EDITAR -->
+    <!-- PIE DEL MODAL -->
     <HBox fx:id="panelBotones" spacing="10" alignment="CENTER_RIGHT"
-          style="-fx-padding: 14 20;
-                 -fx-background-color: #f8f9fa;
-                 -fx-border-color: #e0e0e0 transparent transparent transparent;
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
                  -fx-border-width: 1;">
 
-        <!-- fx:id="btnCancelar" para cambiar su texto según el modo
-             En VER dice "Cerrar", en EDITAR dice "Cancelar" -->
-        <Button fx:id="btnCancelar" text="✖ Cerrar" onAction="#cancelar"
-                style="-fx-background-color: #6c757d; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+        <Button fx:id="btnCancelar" text="Cancelar"
+                onAction="#cancelar"
+                style="-fx-background-color: white; -fx-text-fill: #334155;
+                       -fx-border-color: #CBD5E1; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-padding: 9 18; -fx-font-size: 13px;"/>
 
-        <!-- fx:id="btnGuardar" para ocultarlo en modo VER -->
-        <Button fx:id="btnGuardar" text="💾 Guardar cambios" onAction="#guardar"
-                style="-fx-background-color: #4361ee; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;
-                       -fx-font-weight: bold;"/>
+        <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                onAction="#guardar"/>
     </HBox>
 
 </VBox>

@@ -13,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.ProveedorDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Proveedor;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
@@ -64,6 +65,11 @@ public class ProveedorController implements AccesoControlable {
         generarId();
         cargarTabla();
         aplicarPermisos();
+
+        // Tooltip con la dirección completa al pasar el mouse
+        Tooltip ttDireccion = new Tooltip();
+        ttDireccion.textProperty().bind(txtDireccion.textProperty());
+        txtDireccion.setTooltip(ttDireccion);
     }
 
     @Override
@@ -93,18 +99,9 @@ public class ProveedorController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #2dc653; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
-                btnEliminar.setStyle(
-                        "-fx-background-color: #343a40; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
+                btnVer.getStyleClass().add("btn-table-view");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 btnVer.setOnAction(e -> {
                     Proveedor p = getTableView().getItems().get(getIndex());
@@ -129,31 +126,22 @@ public class ProveedorController implements AccesoControlable {
                         return;
                     }
 
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                    confirm.setTitle("Eliminar proveedor");
-                    confirm.setHeaderText("¿Eliminar a " + p.getNombre() + "?");
-                    confirm.setContentText(
-                            "Esta acción eliminará al proveedor permanentemente\n" +
-                                    "y no se puede deshacer."
-                    );
-                    confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
-                    confirm.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            boolean exito = dao.eliminar(p.getIdProveedor());
-                            if (exito) {
-                                new Alert(Alert.AlertType.INFORMATION,
-                                        "Proveedor eliminado correctamente")
-                                        .showAndWait();
-                                cargarTabla();
-                                filtrar();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo eliminar el proveedor")
-                                        .showAndWait();
-                            }
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar proveedor",
+                            "¿Eliminar a " + p.getNombre() + "?\n" +
+                                    "Esta acción eliminará al proveedor permanentemente " +
+                                    "y no se puede deshacer.",
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        boolean exito = dao.eliminar(p.getIdProveedor());
+                        if (exito) {
+                            CSDialog.success("Proveedor eliminado", "El proveedor fue eliminado correctamente.");
+                            cargarTabla();
+                            filtrar();
+                        } else {
+                            CSDialog.error("Error", "No se pudo eliminar el proveedor.");
                         }
-                    });
+                    }
                 });
             }
 
@@ -175,7 +163,7 @@ public class ProveedorController implements AccesoControlable {
                 btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
 
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEliminar);
-                hbox.setStyle("-fx-alignment: CENTER-LEFT;");
+                hbox.setAlignment(javafx.geometry.Pos.CENTER);
                 setGraphic(hbox);
             }
         });
@@ -191,11 +179,16 @@ public class ProveedorController implements AccesoControlable {
             ProveedorModalController ctrl = loader.getController();
             ctrl.setModo(modo, p);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle(modo.equals(ProveedorModalController.MODO_VER)
                     ? "Detalle del Proveedor"
                     : "Editar Proveedor");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
             modal.showAndWait();
@@ -204,8 +197,7 @@ public class ProveedorController implements AccesoControlable {
             filtrar();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir la ventana: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
         }
     }
 
@@ -224,38 +216,35 @@ public class ProveedorController implements AccesoControlable {
 
         // Validación 1: campos obligatorios
         if (id.isEmpty() || nombre.isEmpty() || ruc.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre y el RUC son obligatorios").showAndWait();
+            CSDialog.warning("Campos incompletos", "El nombre y el RUC son obligatorios.");
             return;
         }
 
         // Validación 2: nombre acepta razones sociales
         if (!nombre.matches("[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s\\.\\,\\-\\_&]+")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre contiene caracteres no permitidos").showAndWait();
+            CSDialog.warning("Nombre inválido", "El nombre contiene caracteres no permitidos.");
             return;
         }
 
         // Validación 3: RUC exactamente 11 dígitos
         if (!ruc.matches("\\d{11}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El RUC debe tener exactamente 11 dígitos numéricos")
-                    .showAndWait();
+            CSDialog.warning("RUC inválido", "El RUC debe tener exactamente 11 dígitos numéricos.");
             return;
         }
 
-        // Validación 4: teléfono 9 dígitos si se ingresa
+        // Validación 4: teléfono opcional pero validado si se ingresa.
+        // Rango 7-15 dígitos con "+" opcional: no asumir solo números
+        // peruanos, hay formatos internacionales más cortos que
+        // también son válidos.
         if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).")
-                    .showAndWait();
+            CSDialog.warning("Teléfono inválido",
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).");
             return;
         }
 
         // Validación 5: RUC duplicado
         if (dao.existeRuc(ruc, null)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un proveedor con ese RUC").showAndWait();
+            CSDialog.warning("RUC duplicado", "Ya existe un proveedor con ese RUC.");
             return;
         }
 
@@ -263,14 +252,12 @@ public class ProveedorController implements AccesoControlable {
 
         boolean exito = dao.insertar(p);
         if (exito) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Proveedor registrado correctamente").showAndWait();
+            CSDialog.success("Proveedor registrado", "El proveedor fue registrado correctamente.");
             cargarTabla();
             filtrar();
             limpiar();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar el proveedor").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar el proveedor.");
         }
     }
 

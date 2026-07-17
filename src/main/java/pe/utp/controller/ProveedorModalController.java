@@ -1,10 +1,12 @@
 package pe.utp.controller;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import pe.utp.dao.ProveedorDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Proveedor;
 import javafx.scene.control.Label;
 
@@ -13,7 +15,6 @@ public class ProveedorModalController {
     public static final String MODO_VER    = "VER";
     public static final String MODO_EDITAR = "EDITAR";
 
-    @FXML private VBox panelCabecera;
     @FXML private Label lblTituloCabecera;
     @FXML private Label lblNombreCabecera;
     @FXML private TextField txtId;
@@ -27,6 +28,18 @@ public class ProveedorModalController {
 
     private ProveedorDAO dao = new ProveedorDAO();
     private Proveedor proveedor;
+
+    // Bloquea clic/selección en el campo Dirección en modo Ver,
+    // sin bloquear el hover (necesario para el Tooltip)
+    private final javafx.event.EventHandler<MouseEvent> bloquearClick = MouseEvent::consume;
+
+    @FXML
+    public void initialize() {
+        // Tooltip con la dirección completa al pasar el mouse
+        Tooltip ttDireccion = new Tooltip();
+        ttDireccion.textProperty().bind(txtDireccion.textProperty());
+        txtDireccion.setTooltip(ttDireccion);
+    }
 
     public void setModo(String modo, Proveedor p) {
         this.proveedor = p;
@@ -48,31 +61,51 @@ public class ProveedorModalController {
     }
 
     private void configurarModoVer() {
-        panelCabecera.setStyle(
-                "-fx-background-color: #4361ee; -fx-padding: 24 20 18 20;"
-        );
         lblTituloCabecera.setText("DETALLE DE PROVEEDOR");
-        txtNombre.setEditable(false);
-        txtRuc.setEditable(false);
-        txtTelefono.setEditable(false);
+
+        txtNombre.setDisable(true);
+        txtRuc.setDisable(true);
+        txtTelefono.setDisable(true);
+
         txtDireccion.setEditable(false);
+        txtDireccion.setFocusTraversable(false);
+        txtDireccion.addEventFilter(MouseEvent.MOUSE_PRESSED, bloquearClick);
+        txtDireccion.getStyleClass().add("campo-readonly");
+
         btnGuardar.setVisible(false);
         btnGuardar.setManaged(false);
-        btnCancelar.setText("✖ Cerrar");
+
+        // En modo Ver, el único botón visible (Cerrar) toma el
+        // color de marca, ya que es la acción principal disponible
+        btnCancelar.setText("Cerrar");
+        btnCancelar.getStyleClass().setAll("btn-primary");
+        btnCancelar.setStyle("");
     }
 
     private void configurarModoEditar() {
-        panelCabecera.setStyle(
-                "-fx-background-color: #2dc653; -fx-padding: 24 20 18 20;"
-        );
         lblTituloCabecera.setText("EDITAR PROVEEDOR");
-        txtNombre.setEditable(true);
-        txtRuc.setEditable(true);
-        txtTelefono.setEditable(true);
+
+        txtNombre.setDisable(false);
+        txtRuc.setDisable(false);
+        txtTelefono.setDisable(false);
+
         txtDireccion.setEditable(true);
+        txtDireccion.setFocusTraversable(true);
+        txtDireccion.removeEventFilter(MouseEvent.MOUSE_PRESSED, bloquearClick);
+        txtDireccion.getStyleClass().remove("campo-readonly");
+
         btnGuardar.setVisible(true);
         btnGuardar.setManaged(true);
-        btnCancelar.setText("✖ Cancelar");
+
+        // En modo Editar, Cancelar vuelve a su estilo neutro
+        // (blanco con borde), y Guardar es el que lleva el color
+        btnCancelar.setText("Cancelar");
+        btnCancelar.getStyleClass().remove("btn-primary");
+        btnCancelar.setStyle(
+                "-fx-background-color: white; -fx-text-fill: #334155;" +
+                        "-fx-border-color: #CBD5E1; -fx-border-radius: 8;" +
+                        "-fx-background-radius: 8; -fx-cursor: hand;" +
+                        "-fx-padding: 9 18; -fx-font-size: 13px;");
     }
 
     @FXML
@@ -84,37 +117,35 @@ public class ProveedorModalController {
 
         // Validación 1: campos obligatorios
         if (nombre.isEmpty() || ruc.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre y el RUC son obligatorios").showAndWait();
+            CSDialog.warning("Campos incompletos", "El nombre y el RUC son obligatorios.");
             return;
         }
 
         // Validación 2: nombre acepta razones sociales
         if (!nombre.matches("[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s\\.\\,\\-\\_&]+")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre contiene caracteres no permitidos").showAndWait();
+            CSDialog.warning("Nombre inválido", "El nombre contiene caracteres no permitidos.");
             return;
         }
 
         // Validación 3: RUC exactamente 11 dígitos
         if (!ruc.matches("\\d{11}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El RUC debe tener exactamente 11 dígitos numéricos")
-                    .showAndWait();
+            CSDialog.warning("RUC inválido", "El RUC debe tener exactamente 11 dígitos numéricos.");
             return;
         }
 
-        // Validación 4: teléfono 9 dígitos si se ingresa
-        if (!telefono.isEmpty() && !telefono.matches("\\d{9}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El teléfono debe tener exactamente 9 dígitos").showAndWait();
+        // Validación 4: teléfono opcional pero validado si se ingresa.
+        // Rango 7-15 dígitos con "+" opcional, igual que ProveedorController:
+        // no asumir solo números peruanos, hay formatos internacionales
+        // más cortos que también son válidos.
+        if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
+            CSDialog.warning("Teléfono inválido",
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).");
             return;
         }
 
         // Validación 5: RUC duplicado excluyendo al propio proveedor
         if (dao.existeRuc(ruc, proveedor.getIdProveedor())) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe otro proveedor con ese RUC").showAndWait();
+            CSDialog.warning("RUC duplicado", "Ya existe otro proveedor con ese RUC.");
             return;
         }
 
@@ -125,12 +156,15 @@ public class ProveedorModalController {
 
         boolean exito = dao.actualizar(proveedor);
         if (exito) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Proveedor actualizado correctamente").showAndWait();
+            // Cierra el modal y difiere el mensaje con Platform.runLater
+            // (ver comentario detallado en ClienteModalController.guardar()):
+            // cerrar este modal y abrir el diálogo en el mismo pulso hacía
+            // que el diálogo quedara "abierto" pero sin pintarse.
             cerrarModal();
+            Platform.runLater(() ->
+                    CSDialog.success("Proveedor actualizado", "El proveedor fue actualizado correctamente."));
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo actualizar el proveedor").showAndWait();
+            CSDialog.error("Error", "No se pudo actualizar el proveedor.");
         }
     }
 

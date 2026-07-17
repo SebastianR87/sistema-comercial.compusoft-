@@ -5,11 +5,18 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import pe.utp.dao.CompatibilidadDAO;
 import pe.utp.dao.ProductoDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Compatibilidad;
 import pe.utp.model.Producto;
 import pe.utp.security.PermisoService;
@@ -22,6 +29,7 @@ public class CompatibilidadController implements AccesoControlable {
     // Formulario
     @FXML private VBox panelFormulario;
     @FXML private Label lblTituloForm;
+    @FXML private Button btnGuardarRegla;
     @FXML private ComboBox<Producto> cbProducto1;
     @FXML private ComboBox<Producto> cbProducto2;
     @FXML private ComboBox<String>  cbEstado;
@@ -152,35 +160,28 @@ public class CompatibilidadController implements AccesoControlable {
 
         // Validación 1: ambos productos seleccionados
         if (p1 == null || p2 == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona ambos componentes de la lista.")
-                    .showAndWait();
+            CSDialog.warning("Componentes no seleccionados", "Selecciona ambos componentes de la lista.");
             return;
         }
 
         // Validación 2: no puede ser el mismo producto
         if (p1.getIdProducto().equals(p2.getIdProducto())) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Los dos componentes no pueden ser el mismo producto.")
-                    .showAndWait();
+            CSDialog.warning("Componentes inválidos", "Los dos componentes no pueden ser el mismo producto.");
             return;
         }
 
         // Validación 3: estado obligatorio
         if (estado == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona el estado de compatibilidad.")
-                    .showAndWait();
+            CSDialog.warning("Estado requerido", "Selecciona el estado de compatibilidad.");
             return;
         }
 
         if (reglaSeleccionada == null) {
             // Validación 4: no duplicar reglas
             if (dao.existeRegla(p1.getIdProducto(), p2.getIdProducto())) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Ya existe una regla de compatibilidad entre estos dos componentes.\n" +
-                                "Usa Editar en la tabla para modificarla.")
-                        .showAndWait();
+                CSDialog.warning("Regla duplicada",
+                        "Ya existe una regla de compatibilidad entre estos dos componentes. " +
+                                "Usa Editar en la tabla para modificarla.");
                 return;
             }
 
@@ -189,26 +190,22 @@ public class CompatibilidadController implements AccesoControlable {
                     id, p1, p2, estado, txtRestriccion.getText().trim()
             );
             if (dao.insertar(c)) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Regla registrada correctamente.").showAndWait();
+                CSDialog.success("Regla registrada", "La regla fue registrada correctamente.");
                 cargarTabla();
                 ocultarFormulario();
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "No se pudo registrar la regla.").showAndWait();
+                CSDialog.error("Error", "No se pudo registrar la regla.");
             }
         } else {
             // Edición
             reglaSeleccionada.setEstado(estado);
             reglaSeleccionada.setRestriccion(txtRestriccion.getText().trim());
             if (dao.actualizar(reglaSeleccionada)) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Regla actualizada correctamente.").showAndWait();
+                CSDialog.success("Regla actualizada", "La regla fue actualizada correctamente.");
                 cargarTabla();
                 ocultarFormulario();
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "No se pudo actualizar la regla.").showAndWait();
+                CSDialog.error("Error", "No se pudo actualizar la regla.");
             }
         }
     }
@@ -222,15 +219,11 @@ public class CompatibilidadController implements AccesoControlable {
         Producto b = (vb instanceof Producto) ? (Producto) vb : null;
 
         if (a == null || b == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona ambos componentes para verificar.")
-                    .showAndWait();
+            CSDialog.warning("Componentes no seleccionados", "Selecciona ambos componentes para verificar.");
             return;
         }
         if (a.getIdProducto().equals(b.getIdProducto())) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona dos componentes diferentes.")
-                    .showAndWait();
+            CSDialog.warning("Componentes inválidos", "Selecciona dos componentes diferentes.");
             return;
         }
 
@@ -368,18 +361,25 @@ public class CompatibilidadController implements AccesoControlable {
             }
         });
 
-        // Columna acciones: Editar y Eliminar
+        // Columna acciones: Ver, Editar y Eliminar
+        // (mismos estilos y disposición que Producto/Cliente: Ver abre
+        // un modal de solo lectura, Editar reutiliza la tarjeta "Nueva
+        // Regla" ya visible en pantalla, Eliminar pide una confirmación
+        // pequeña con Alert en vez de un modal propio)
         colAcciones.setCellFactory(col -> new TableCell<>() {
+            final Button btnVer      = new Button("Ver");
             final Button btnEditar   = new Button("Editar");
             final Button btnEliminar = new Button("Eliminar");
             {
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;");
-                btnEliminar.setStyle(
-                        "-fx-background-color: #e94560; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;");
+                btnVer.getStyleClass().add("btn-table-view");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
+                btnVer.setOnAction(e -> {
+                    Compatibilidad c = getTableView()
+                            .getItems().get(getIndex());
+                    abrirModalVer(c);
+                });
                 btnEditar.setOnAction(e -> {
                     Compatibilidad c = getTableView()
                             .getItems().get(getIndex());
@@ -394,7 +394,8 @@ public class CompatibilidadController implements AccesoControlable {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) { setGraphic(null); return; }
-                HBox hbox = new HBox(6, btnEditar, btnEliminar);
+                HBox hbox = new HBox(5, btnVer, btnEditar, btnEliminar);
+                hbox.setAlignment(Pos.CENTER);
                 setGraphic(hbox);
             }
         });
@@ -403,9 +404,43 @@ public class CompatibilidadController implements AccesoControlable {
         tablaCompatibilidad.setItems(listaFiltrada);
     }
 
+    /**
+     * Abre el modal de solo lectura ("Ver") con el mismo estilo visual
+     * del módulo Productos. No permite editar nada: para modificar la
+     * regla el usuario debe usar "Editar" en la tabla, que reutiliza
+     * la tarjeta "Nueva Regla" ya presente en esta misma pantalla.
+     */
+    private void abrirModalVer(Compatibilidad c) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/CompatibilidadVerModal.fxml")
+            );
+            Parent root = loader.load();
+
+            CompatibilidadVerModalController ctrl = loader.getController();
+            ctrl.setDatos(c);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
+            Stage modal = new Stage();
+            modal.setTitle("Detalle de la Regla de Compatibilidad");
+            modal.setScene(scene);
+            modal.initModality(Modality.APPLICATION_MODAL);
+            modal.setResizable(false);
+            modal.showAndWait();
+
+        } catch (Exception ex) {
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
+        }
+    }
+
     private void editarRegla(Compatibilidad c) {
         reglaSeleccionada = c;
         lblTituloForm.setText("✏️ Editar Regla de Compatibilidad");
+        btnGuardarRegla.setText("💾 Actualizar Regla");
 
         // Pre-carga los productos (solo edita estado y restricción)
         cbProducto1.setValue(c.getProducto1());
@@ -424,21 +459,20 @@ public class CompatibilidadController implements AccesoControlable {
     }
 
     private void eliminarRegla(Compatibilidad c) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+        boolean confirmado = CSDialog.confirm(
+                "Eliminar regla",
                 "¿Eliminar la regla entre:\n" +
                         c.getProducto1().getNombre() + "\n" +
                         c.getProducto2().getNombre() + "?",
-                ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.YES) {
-                if (dao.eliminar(c.getIdDetalle())) {
-                    cargarTabla();
-                } else {
-                    new Alert(Alert.AlertType.ERROR,
-                            "No se pudo eliminar la regla.").showAndWait();
-                }
+                "Eliminar", "Cancelar", true, true);
+        if (confirmado) {
+            if (dao.eliminar(c.getIdDetalle())) {
+                CSDialog.success("Regla eliminada", "La regla fue eliminada correctamente.");
+                cargarTabla();
+            } else {
+                CSDialog.error("Error", "No se pudo eliminar la regla.");
             }
-        });
+        }
     }
 
     @FXML
@@ -488,6 +522,7 @@ public class CompatibilidadController implements AccesoControlable {
     @FXML private void mostrarFormulario() {
         reglaSeleccionada = null;
         lblTituloForm.setText("➕ Nueva Regla de Compatibilidad");
+        btnGuardarRegla.setText("💾 Guardar Regla");
         limpiarFormulario();
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
@@ -511,5 +546,11 @@ public class CompatibilidadController implements AccesoControlable {
         // porque pueden haber quedado deshabilitados desde editarRegla()
         cbProducto1.setDisable(false);
         cbProducto2.setDisable(false);
+        // Como reglaSeleccionada queda en null, la tarjeta vuelve a
+        // representar "Nueva Regla" sin importar desde dónde se llamó
+        // (Limpiar durante una edición no debe dejar el título/botón
+        // en estado "Editar/Actualizar" de forma inconsistente).
+        lblTituloForm.setText("➕ Nueva Regla de Compatibilidad");
+        btnGuardarRegla.setText("💾 Guardar Regla");
     }
 }

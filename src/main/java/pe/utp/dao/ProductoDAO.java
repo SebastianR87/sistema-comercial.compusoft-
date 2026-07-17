@@ -152,6 +152,37 @@ public class ProductoDAO {
         return p;
     }
 
+    // Antes no existía ningún chequeo de nombre duplicado para
+    // productos (a diferencia de Categoria/Proveedor/TipoComprobante,
+    // que sí lo tienen) -- se podían registrar dos productos con el
+    // nombre exactamente igual. Además de la confusión obvia, esto
+    // rompe cosas puntuales: el ComboBox de Producto en Venta/Compra
+    // solo muestra el nombre (Producto.toString() = nombre), así que
+    // dos productos iguales se ven IDÉNTICOS en el desplegable y el
+    // usuario podía elegir el que no era sin ninguna forma de
+    // distinguirlos a simple vista.
+    // idExcluir es null al crear (compara contra todos); al editar se
+    // pasa el propio ID para no chocar contra sí mismo.
+    public boolean existeNombre(String nombre, String idExcluir) {
+        String sql;
+        if (idExcluir != null) {
+            sql = "SELECT COUNT(*) FROM producto " +
+                    "WHERE LOWER(nombre) = LOWER(?) AND id_producto != ?";
+        } else {
+            sql = "SELECT COUNT(*) FROM producto WHERE LOWER(nombre) = LOWER(?)";
+        }
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, nombre);
+            if (idExcluir != null) ps.setString(2, idExcluir);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (SQLException e) {
+            System.out.println("Error al verificar nombre de producto: " + e.getMessage());
+        }
+        return false;
+    }
+
     public String obtenerUltimoId(String idCategoria) {
         // El ID del producto incluye la categoría: PROC001, RAM001, etc.
         String sql = QueryHelper.limitar(

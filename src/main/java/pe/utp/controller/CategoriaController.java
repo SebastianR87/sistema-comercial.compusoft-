@@ -3,12 +3,17 @@ package pe.utp.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import pe.utp.dao.CategoriaDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Categoria;
 import pe.utp.util.ResultadoEliminacion;
 import pe.utp.security.PermisoService;
@@ -17,13 +22,11 @@ import pe.utp.security.PermisoUtil;
 public class CategoriaController implements AccesoControlable {
 
     @FXML private Label lblModoConsulta;
-    @FXML private VBox panelFormulario;
+    @FXML private Button btnNuevaCategoria;
     @FXML private TableView<Categoria> tablaCategoria;
     @FXML private TableColumn<Categoria, String> colId;
     @FXML private TableColumn<Categoria, String> colNombre;
     @FXML private TableColumn<Categoria, Void> colAcciones;
-    @FXML private TextField txtId;
-    @FXML private TextField txtNombre;
     @FXML private TextField txtBuscar;
     @FXML private Label lblContador;
 
@@ -31,7 +34,6 @@ public class CategoriaController implements AccesoControlable {
     private ValidacionEliminacionDAO validacion = new ValidacionEliminacionDAO();
     private ObservableList<Categoria> listaCategorias = FXCollections.observableArrayList();
     private javafx.collections.transformation.FilteredList<Categoria> listaFiltrada;
-    private Categoria categoriaSeleccionada = null;
 
     @FXML
     public void initialize() {
@@ -39,16 +41,18 @@ public class CategoriaController implements AccesoControlable {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         configurarColumnaAcciones();
         cargarTabla();
-        generarId();
         aplicarPermisos();
     }
 
     @Override
     public void aplicarPermisos() {
+        // Antes se ocultaba el panel de "Nueva Categoría" completo
+        // (panelFormulario); ahora ese panel ya no existe como tal --
+        // crear es un botón, así que se oculta el botón en su lugar.
         if (!PermisoService.puedeEditarCategoria()) {
             lblModoConsulta.setVisible(true);
             lblModoConsulta.setManaged(true);
-            PermisoUtil.ocultar(panelFormulario);
+            PermisoUtil.ocultar(btnNuevaCategoria);
             PermisoUtil.ocultarColumna(colAcciones);
         }
     }
@@ -79,6 +83,14 @@ public class CategoriaController implements AccesoControlable {
         actualizarContador();
     }
 
+    @FXML
+    private void abrirModalCrear() {
+        if (!PermisoService.puedeEditarCategoria()) {
+            PermisoUtil.denegado();
+            return;
+        }
+        abrirModal(null, CategoriaModalController.MODO_CREAR);
+    }
 
     private void configurarColumnaAcciones() {
         colAcciones.setCellFactory(col -> new TableCell<>() {
@@ -86,22 +98,16 @@ public class CategoriaController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;" +
-                                "-fx-font-size: 12px; -fx-min-width: 60px;");
-
-                btnEliminar.setStyle(
-                        "-fx-background-color: #ef233c; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand;" +
-                                "-fx-font-size: 12px; -fx-min-width: 60px;");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 btnEditar.setOnAction(e -> {
+                    if (!PermisoService.puedeEditarCategoria()) {
+                        PermisoUtil.denegado();
+                        return;
+                    }
                     Categoria c = getTableView().getItems().get(getIndex());
-                    categoriaSeleccionada = c;
-                    txtId.setText(c.getIdCategoria());
-                    txtId.setDisable(true);
-                    txtNombre.setText(c.getNombre());
+                    abrirModal(c, CategoriaModalController.MODO_EDITAR);
                 });
 
                 btnEliminar.setOnAction(e -> {
@@ -112,19 +118,19 @@ public class CategoriaController implements AccesoControlable {
                         validacionElim.mostrarAlerta();
                         return;
                     }
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar categoría",
                             "¿Eliminar " + c.getNombre() + "?",
-                            ButtonType.YES, ButtonType.NO);
-                    alert.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            if (dao.eliminar(c.getIdCategoria())) {
-                                cargarTabla();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo eliminar la categoría").show();
-                            }
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        if (dao.eliminar(c.getIdCategoria())) {
+                            CSDialog.success("Categoría eliminada", "La categoría fue eliminada correctamente.");
+                            cargarTabla();
+                            filtrar();
+                        } else {
+                            CSDialog.error("Error", "No se pudo eliminar la categoría.");
                         }
-                    });
+                    }
                 });
             }
 
@@ -134,84 +140,48 @@ public class CategoriaController implements AccesoControlable {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox hbox = new HBox(8, btnEditar, btnEliminar);
-                    hbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    HBox hbox = new HBox(5, btnEditar, btnEliminar);
+                    hbox.setAlignment(javafx.geometry.Pos.CENTER);
                     setGraphic(hbox);
                 }
             }
         });
     }
 
-    @FXML
-    private void guardar() {
+    /**
+     * Abre el modal de Categoría (Crear o Editar), igual patrón que
+     * ProveedorController.abrirModal(). Para Crear, c es null: el
+     * propio modal genera el ID y arranca con un objeto Categoria vacío.
+     */
+    private void abrirModal(Categoria c, String modo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/CategoriaModal.fxml")
+            );
+            Parent root = loader.load();
 
-        if (!PermisoService.puedeEditarCategoria()) {
-            PermisoUtil.denegado();
-            return;
+            CategoriaModalController ctrl = loader.getController();
+            ctrl.setModo(modo, c);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
+            Stage modal = new Stage();
+            modal.setTitle(modo.equals(CategoriaModalController.MODO_CREAR)
+                    ? "Nueva Categoría"
+                    : "Editar Categoría");
+            modal.setScene(scene);
+            modal.initModality(Modality.APPLICATION_MODAL);
+            modal.setResizable(false);
+            modal.showAndWait();
+
+            cargarTabla();
+            filtrar();
+
+        } catch (Exception ex) {
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
         }
-
-        String id = txtId.getText().trim();
-        String nombre = txtNombre.getText().trim();
-
-        if (id.isEmpty() || nombre.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos").show();
-            return;
-        }
-
-        // VALIDAR CATEGORÍA REPETIDA
-        if (categoriaSeleccionada == null) {
-
-            if (dao.existeNombre(nombre)) {
-                new Alert(Alert.AlertType.WARNING,
-                        "La categoría ya existe.")
-                        .showAndWait();
-                return;
-            }
-
-        } else {
-
-            if (dao.existeNombreExceptoId(nombre, id)) {
-                new Alert(Alert.AlertType.WARNING,
-                        "La categoría ya existe.")
-                        .showAndWait();
-                return;
-            }
-        }
-
-        Categoria c = new Categoria(id, nombre);
-
-        if (categoriaSeleccionada == null) {
-            dao.insertar(c);
-        } else {
-            dao.actualizar(c);
-        }
-
-        cargarTabla();
-        cancelar();
-    }
-
-    @FXML
-    private void cancelar() {
-        txtId.clear();
-        txtId.setDisable(false);
-        txtNombre.clear();
-        categoriaSeleccionada = null;
-        generarId();
-    }
-
-    private void generarId() {
-        String ultimo = dao.obtenerUltimoId();
-
-        if (ultimo == null) {
-            txtId.setText("CAT001");
-        } else {
-            String prefijo = ultimo.replaceAll("[0-9]", "");
-            String numeroStr = ultimo.replaceAll("[^0-9]", "");
-            int numero = Integer.parseInt(numeroStr) + 1;
-            String nuevoId = String.format("%s%03d", prefijo, numero);
-            txtId.setText(nuevoId);
-        }
-        txtId.setDisable(true);
     }
 }

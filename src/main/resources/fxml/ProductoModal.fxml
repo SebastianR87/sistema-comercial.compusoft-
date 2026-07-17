@@ -8,135 +8,132 @@
       fx:controller="pe.utp.controller.ProductoModalController"
       spacing="0"
       style="-fx-background-color: white;"
-      prefWidth="460">
+      prefWidth="640">
 
-    <!-- CABECERA DINÁMICA
-         Azul para VER, verde para EDITAR -->
-    <VBox fx:id="panelCabecera" spacing="4" alignment="CENTER_LEFT"
-          style="-fx-background-color: #4361ee; -fx-padding: 20 24;">
+    <!-- CABECERA: barra de marca + título chico / nombre grande -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
+        <Region prefWidth="4" minHeight="40"
+                style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
 
-        <Label fx:id="lblTituloCabecera" text="DETALLE DE PRODUCTO"
-               style="-fx-font-size: 11px; -fx-font-weight: bold;
-                      -fx-text-fill: rgba(255,255,255,0.7);
-                      -fx-letter-spacing: 1px;"/>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTituloCabecera" text="DETALLE DE PRODUCTO"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Label fx:id="lblNombreCabecera" text="Nombre del producto"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+        </VBox>
+    </HBox>
 
-        <Label fx:id="lblNombreCabecera"
-               style="-fx-font-size: 20px; -fx-font-weight: bold;
-                      -fx-text-fill: white;"/>
-
-        <!-- Categoría como subtítulo -->
-        <Label fx:id="lblCategoriaCabecera"
-               style="-fx-font-size: 12px;
-                      -fx-text-fill: rgba(255,255,255,0.75);"/>
-    </VBox>
-
-    <!-- CUERPO CON LOS CAMPOS -->
+    <!-- CUERPO CON LOS CAMPOS, en 2 columnas -->
     <ScrollPane fitToWidth="true"
                 style="-fx-background-color: white; -fx-background: white;
                        -fx-border-color: transparent;"
                 VBox.vgrow="ALWAYS">
-        <VBox spacing="14" style="-fx-padding: 20;">
+        <VBox spacing="18" style="-fx-padding: 22 24;">
 
-            <!-- SECCIÓN: Información general -->
-            <Label text="📋 INFORMACIÓN GENERAL"
-                   style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #4361ee; -fx-letter-spacing: 1px;"/>
+            <!-- SECCIÓN: Datos del producto -->
+            <Label text="DATOS DEL PRODUCTO"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
 
-            <VBox spacing="4">
-                <Label text="ID Producto" styleClass="label-field"/>
-                <TextField fx:id="txtId" disable="true"
-                           style="-fx-background-color: #f0f0f0;
-                          -fx-text-fill: #6c757d;"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="ID Producto" styleClass="label-field"/>
+                    <TextField fx:id="txtId" disable="true" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="280"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Estado" styleClass="label-field"/>
+                    <ComboBox fx:id="cbEstado" maxWidth="Infinity" minWidth="0" prefWidth="280" promptText="Selecciona"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
-                <Label text="Nombre" styleClass="label-field"/>
-                <TextField fx:id="txtNombre" promptText="Nombre del producto"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Nombre" styleClass="label-field"/>
+                    <TextField fx:id="txtNombre" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="280" promptText="Nombre del producto"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Precio Venta" styleClass="label-field"/>
+                    <TextField fx:id="txtPrecioVenta" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="280" promptText="0.00"/>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="4">
+            <VBox spacing="6">
                 <Label text="Descripción" styleClass="label-field"/>
-                <TextArea fx:id="txtDescripcion"
+                <TextArea fx:id="txtDescripcion" styleClass="campo-input"
                           promptText="Describe características, modelo, marca..."
                           prefRowCount="3" wrapText="true"/>
             </VBox>
 
-            <Separator style="-fx-padding: 4 0;"/>
-
-            <!-- SECCIÓN: Precios -->
-            <Label text="💰 PRECIOS"
-                   style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #2dc653; -fx-letter-spacing: 1px;"/>
-
-            <HBox spacing="10">
-                <!-- Precio compra: SOLO LECTURA, lo actualiza Compra (CPP) -->
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label text="Precio Compra (CPP)" styleClass="label-field"/>
-                    <TextField fx:id="txtPrecioCompra" disable="true"
-                               style="-fx-background-color: #f0f0f0;
-                              -fx-text-fill: #6c757d;"/>
-                </VBox>
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label text="Precio Venta" styleClass="label-field"/>
-                    <TextField fx:id="txtPrecioVenta" promptText="0.00"/>
-                </VBox>
-            </HBox>
-
-            <Separator style="-fx-padding: 4 0;"/>
+            <Separator style="-fx-padding: 6 0;"/>
 
             <!-- SECCIÓN: Inventario -->
-            <Label text="📦 INVENTARIO"
-                   style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: #f72585; -fx-letter-spacing: 1px;"/>
+            <Label text="INVENTARIO"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+              -fx-text-fill: #2DC653; -fx-letter-spacing: 1px;"/>
 
-            <HBox spacing="10">
-                <VBox spacing="4" prefWidth="80" minWidth="80" maxWidth="80">
-                    <Label text="Stock actual" styleClass="label-field"/>
-                    <TextField fx:id="txtStock" disable="true"
-                               style="-fx-background-color: #f0f0f0;
-                          -fx-text-fill: #6c757d;
-                          -fx-alignment: CENTER;"/>
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Stock" styleClass="label-field"/>
+                    <TextField fx:id="txtStock" disable="true" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="180"/>
                 </VBox>
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label text="Estado" styleClass="label-field"/>
-                    <ComboBox fx:id="cbEstado" maxWidth="Infinity"
-                              promptText="Selecciona"/>
-                </VBox>
-            </HBox>
-
-            <!-- Stock mínimo y máximo en fila separada -->
-            <HBox spacing="10">
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
                     <Label text="Stock Mínimo" styleClass="label-field"/>
-                    <TextField fx:id="txtStockMinimo" promptText="0"/>
+                    <TextField fx:id="txtStockMinimo" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="180" promptText="0"/>
                 </VBox>
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
                     <Label text="Stock Máximo" styleClass="label-field"/>
-                    <TextField fx:id="txtStockMaximo" promptText="0"/>
+                    <TextField fx:id="txtStockMaximo" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="180" promptText="0"/>
                 </VBox>
             </HBox>
+
+            <Separator style="-fx-padding: 6 0;"/>
+
+            <!-- SECCIÓN: Lotes (costeo FIFO) -->
+            <Label text="LOTES DISPONIBLES"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+              -fx-text-fill: #4361EE; -fx-letter-spacing: 1px;"/>
+
+            <TableView fx:id="tablaLotes" maxHeight="200">
+                <columns>
+                    <TableColumn fx:id="colLoteFecha" text="Fecha" prefWidth="100"/>
+                    <TableColumn fx:id="colLoteCantidad" text="Cantidad" prefWidth="80"/>
+                    <TableColumn fx:id="colLoteCosto" text="Costo unit." prefWidth="90"/>
+                    <TableColumn fx:id="colLoteSubtotal" text="Subtotal" prefWidth="90"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+
+            <Label fx:id="lblValorInventario" text="Valor total en inventario: S/ 0.00"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
         </VBox>
     </ScrollPane>
 
     <!-- PIE DEL MODAL -->
     <HBox spacing="10" alignment="CENTER_RIGHT"
-          style="-fx-padding: 14 20;
-                 -fx-background-color: #f8f9fa;
-                 -fx-border-color: #e0e0e0 transparent transparent transparent;
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
                  -fx-border-width: 1;">
 
-        <Button fx:id="btnCancelar" text="✖ Cerrar"
+        <Button fx:id="btnCancelar" text="Cancelar"
                 onAction="#cancelar"
-                style="-fx-background-color: #6c757d; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+                style="-fx-background-color: white; -fx-text-fill: #334155;
+                       -fx-border-color: #CBD5E1; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-padding: 9 18; -fx-font-size: 13px;"/>
 
-        <Button fx:id="btnGuardar" text="💾 Guardar cambios"
-                onAction="#guardar"
-                style="-fx-background-color: #4361ee; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;
-                       -fx-font-weight: bold;"/>
+        <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                onAction="#guardar"/>
     </HBox>
 
 </VBox>

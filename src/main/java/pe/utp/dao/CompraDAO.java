@@ -28,8 +28,17 @@ public class CompraDAO {
         return avisos;
     }
 
-    /** Registra la compra completa en una sola transacción. Una transacción garantiza que si algo falla en el medio,
-     ningún cambio queda guardado a medias.
+    /**
+     * Registra la compra completa en una sola transacción. Una transacción
+     * garantiza que si algo falla en el medio, ningún cambio queda guardado
+     * a medias.
+     *
+     * Costeo por lotes (FIFO): cada línea de compra crea su propio lote
+     * en lote_compra, con su costo real e independiente -- ya no se
+     * calcula un Costo Promedio Ponderado (CPP) que mezcle precios de
+     * compras distintas. Esto evita que una diferencia fuerte de precio
+     * entre dos compras del mismo producto distorsione el costo real
+     * usado luego para decidir el precio de venta.
      */
     public boolean registrarCompra(Compra compra,
                                    List<DetalleCompra> detalles) {
@@ -38,6 +47,7 @@ public class CompraDAO {
             // Sin esto cada INSERT haría su propio commit automáticamente
             conexion.setAutoCommit(false);
             avisos.clear();
+            LoteDAO loteDAO = new LoteDAO(conexion);
 
             // Paso 1: inserta la cabecera de la compra
             String sqlCompra = "INSERT INTO compra " +
@@ -55,74 +65,77 @@ public class CompraDAO {
             psCompra.setDouble(6, compra.getTotal());
             psCompra.executeUpdate();
 
-            // Paso 2 y 3: para cada producto en el detalle
+            // Paso 2: por cada producto comprado, inserta el detalle
+            // y crea su propio lote independiente
             String sqlDetalle = "INSERT INTO detallecompra " +
                     "(id_detallecompra, id_compra, " +
-                    "id_producto, cantidad, precio, costo_anterior) " +
-                    "VALUES (?,?,?,?,?,?)";
+                    "id_producto, cantidad, precio) " +
+                    "VALUES (?,?,?,?,?)";
 
-            // Antes de actualizar necesitamos leer stock y precio_compra
-            // actuales del producto para calcular el Costo Promedio Ponderado
-            String sqlLeerProducto = "SELECT stock, precio_compra, " +
-                    "stock_maximo, nombre " +
+            String sqlLeerProducto = "SELECT stock, stock_maximo, nombre " +
                     "FROM producto WHERE id_producto = ?";
 
-            String sqlActualizarProducto = "UPDATE producto " +
-                    "SET stock = ?, precio_compra = ? " +
-                    "WHERE id_producto = ?";
+            // Antes esto era "SET stock = ?" (absoluto): se leía el
+            // stock, se sumaba en Java y se sobrescribía. Si dos
+            // compras del mismo producto corrían casi al mismo tiempo,
+            // ambas podían leer el mismo stockActual y la segunda
+            // escritura pisaba a la primera (se perdía un incremento).
+            // Ahora es relativo a nivel SQL ("stock = stock + ?"), así
+            // que cada compra suma sobre el valor real que haya en ese
+            // instante, sin importar el orden de ejecución.
+            String sqlActualizarStock = "UPDATE producto " +
+                    "SET stock = stock + ? WHERE id_producto = ?";
 
-            PreparedStatement psDetalle =
-                    conexion.prepareStatement(sqlDetalle);
-            PreparedStatement psLeer =
-                    conexion.prepareStatement(sqlLeerProducto);
-            PreparedStatement psActualizar =
-                    conexion.prepareStatement(sqlActualizarProducto);
+            PreparedStatement psDetalle = conexion.prepareStatement(sqlDetalle);
+            PreparedStatement psLeer = conexion.prepareStatement(sqlLeerProducto);
+            PreparedStatement psActualizar = conexion.prepareStatement(sqlActualizarStock);
 
             for (DetalleCompra detalle : detalles) {
-                // Lee el stock y precio_compra actuales del producto
-                // ANTES de insertar el detalle, para guardar el costo previo
+                // Lee el stock actual solo para el nombre/máximo (aviso
+                // informativo); ya no se usa para calcular el nuevo stock
                 psLeer.setString(1, detalle.getProducto().getIdProducto());
                 ResultSet rsProd = psLeer.executeQuery();
 
-                int stockActual   = 0;
-                double precioActual = 0;
-                int stockMaximo   = 0;
+                int stockMaximo = 0;
                 String nombreProd = "";
                 if (rsProd.next()) {
-                    stockActual   = rsProd.getInt("stock");
-                    precioActual  = rsProd.getDouble("precio_compra");
-                    stockMaximo   = rsProd.getInt("stock_maximo");
-                    nombreProd    = rsProd.getString("nombre");
+                    stockMaximo = rsProd.getInt("stock_maximo");
+                    nombreProd  = rsProd.getString("nombre");
                 }
                 rsProd.close();
 
-                // Inserta la línea del detalle, guardando el costo previo
-                // como "foto" para poder revertir el CPP si se anula la compra
+                // Inserta la línea del detalle
                 psDetalle.setString(1, detalle.getIdDetalleCompra());
                 psDetalle.setString(2, compra.getIdCompra());
                 psDetalle.setString(3, detalle.getProducto().getIdProducto());
                 psDetalle.setInt(4, detalle.getCantidad());
                 psDetalle.setDouble(5, detalle.getPrecio());
-                psDetalle.setDouble(6, precioActual);
                 psDetalle.executeUpdate();
 
-                int cantidadNueva  = detalle.getCantidad();
-                double precioNuevo = detalle.getPrecio();
-                int stockTotal = stockActual + cantidadNueva;
+                // Crea el lote de esta línea de compra: costo propio,
+                // sin mezclarse con el costo de compras anteriores
+                String idLote = "LOTE-" + detalle.getIdDetalleCompra();
+                loteDAO.crearLote(idLote, detalle.getProducto().getIdProducto(),
+                        detalle.getIdDetalleCompra(),
+                        detalle.getCantidad(), detalle.getPrecio());
 
-                // Costo Promedio Ponderado (CPP):
-                // promedia el costo de lo que ya tenías con lo que
-                // compraste ahora, pesando cada precio por su cantidad
-                double nuevoCosto = stockTotal == 0
-                        ? precioNuevo
-                        : ((stockActual * precioActual) +
-                           (cantidadNueva * precioNuevo)) / stockTotal;
-
-                // Actualiza stock total y nuevo costo promedio
-                psActualizar.setInt(1, stockTotal);
-                psActualizar.setDouble(2, nuevoCosto);
-                psActualizar.setString(3, detalle.getProducto().getIdProducto());
+                // El stock total del producto sigue siendo la suma de
+                // todos sus lotes; se mantiene como columna actualizada
+                // en cada transacción para no recalcular con SUM() en
+                // cada lectura (Venta, alertas de stock mínimo/máximo, etc.)
+                psActualizar.setInt(1, detalle.getCantidad());
+                psActualizar.setString(2, detalle.getProducto().getIdProducto());
                 psActualizar.executeUpdate();
+
+                // Vuelve a leer el stock ya actualizado (dentro de la
+                // misma transacción) solo para el mensaje de aviso
+                psLeer.setString(1, detalle.getProducto().getIdProducto());
+                ResultSet rsProdActualizado = psLeer.executeQuery();
+                int stockTotal = 0;
+                if (rsProdActualizado.next()) {
+                    stockTotal = rsProdActualizado.getInt("stock");
+                }
+                rsProdActualizado.close();
 
                 // Verifica si el nuevo stock supera el máximo definido.
                 if (stockMaximo > 0 && stockTotal > stockMaximo) {
@@ -132,7 +145,7 @@ public class CompraDAO {
                 }
             }
 
-            // todoo salió bien, confirma todos los cambios
+            // todo salió bien, confirma todos los cambios
             conexion.commit();
             return true;
 
@@ -158,25 +171,28 @@ public class CompraDAO {
     }
 
     /**
-     * Anula una compra ya registrada: revierte el stock y el costo
-     * promedio (CPP) de cada producto a su valor anterior a la compra,
-     * y marca la compra como ANULADA. No borra ningún registro.
+     * Anula una compra ya registrada: anula el/los lotes que generó y
+     * revierte el stock del producto, marcando la compra como ANULADA.
+     * No borra ningún registro.
      *
-     * Solo se permite anular si el stock actual de cada producto
-     * alcanza para revertir la cantidad comprada (es decir, que no
-     * se haya vendido ya parte de ese stock).
+     * Solo se permite anular si el/los lotes generados por esta compra
+     * siguen completos (cantidad_restante == cantidad_original), es decir,
+     * que no se haya vendido ya nada de ese lote específico. A diferencia
+     * del esquema anterior con CPP, la validación ya no depende del stock
+     * general del producto sino del lote puntual de esta compra.
      *
      * Flujo:
      * 1. Verifica que la compra exista y no esté ya anulada
-     * 2. Trae el detalle (cantidades y costo_anterior guardado)
-     * 3. Valida que el stock actual alcance para revertir cada línea
-     * 4. Revierte stock y precio_compra de cada producto
+     * 2. Trae el detalle de la compra
+     * 3. Valida que cada lote generado siga intacto
+     * 4. Revierte el stock del producto y anula los lotes
      * 5. Marca la compra como ANULADA
      * 6. COMMIT si todo salió bien, ROLLBACK si algo falló
      */
     public String anularCompra(String idCompra) {
         try {
             conexion.setAutoCommit(false);
+            LoteDAO loteDAO = new LoteDAO(conexion);
 
             // Paso 1: verifica estado actual
             String sqlEstado = "SELECT estado FROM compra WHERE id_compra = ?";
@@ -198,43 +214,41 @@ public class CompraDAO {
                 return "YA_ANULADA";
             }
 
-            // Paso 2: trae el detalle con el costo_anterior guardado
-            List<DetalleCompra> detalles = listarDetalleConCosto(idCompra);
+            // Paso 2: trae el detalle de la compra
+            List<DetalleCompra> detalles = listarDetalle(idCompra);
 
-            // Paso 3: valida que el stock actual alcance para revertir
-            String sqlStockActual = "SELECT stock, nombre FROM producto WHERE id_producto = ?";
-            PreparedStatement psStock = conexion.prepareStatement(sqlStockActual);
+            // Paso 3: valida que cada lote generado por esta compra
+            // siga con su cantidad completa (nada vendido todavía)
+            String sqlLote = "SELECT cantidad_restante, cantidad_original " +
+                    "FROM lote_compra WHERE id_detallecompra = ?";
+            PreparedStatement psLote = conexion.prepareStatement(sqlLote);
 
             for (DetalleCompra d : detalles) {
-                psStock.setString(1, d.getProducto().getIdProducto());
-                ResultSet rs = psStock.executeQuery();
-                int stockActual = 0;
-                String nombre = "";
+                psLote.setString(1, d.getIdDetalleCompra());
+                ResultSet rs = psLote.executeQuery();
                 if (rs.next()) {
-                    stockActual = rs.getInt("stock");
-                    nombre = rs.getString("nombre");
+                    int restante = rs.getInt("cantidad_restante");
+                    int original = rs.getInt("cantidad_original");
+                    if (restante < original) {
+                        rs.close();
+                        conexion.rollback();
+                        conexion.setAutoCommit(true);
+                        return "STOCK_INSUFICIENTE:" + d.getProducto().getNombre() + ":" + restante;
+                    }
                 }
                 rs.close();
-
-                if (stockActual < d.getCantidad()) {
-                    conexion.rollback();
-                    conexion.setAutoCommit(true);
-                    return "STOCK_INSUFICIENTE:" + nombre + ":" + stockActual;
-                }
             }
 
-            // Paso 4: revierte stock y precio_compra de cada producto
-            String sqlRevertir = "UPDATE producto " +
-                    "SET stock = stock - ?, precio_compra = ? " +
-                    "WHERE id_producto = ?";
-            PreparedStatement psRevertir = conexion.prepareStatement(sqlRevertir);
+            // Paso 4: revierte el stock del producto y anula los lotes
+            String sqlStock = "UPDATE producto SET stock = stock - ? WHERE id_producto = ?";
+            PreparedStatement psStock = conexion.prepareStatement(sqlStock);
 
             for (DetalleCompra d : detalles) {
-                psRevertir.setInt(1, d.getCantidad());
-                psRevertir.setDouble(2, d.getCostoAnterior());
-                psRevertir.setString(3, d.getProducto().getIdProducto());
-                psRevertir.executeUpdate();
+                psStock.setInt(1, d.getCantidad());
+                psStock.setString(2, d.getProducto().getIdProducto());
+                psStock.executeUpdate();
             }
+            loteDAO.anularLotesDeCompra(idCompra);
 
             // Paso 5: marca la compra como anulada
             String sqlAnular = "UPDATE compra SET estado = 'ANULADA' WHERE id_compra = ?";
@@ -257,36 +271,6 @@ public class CompraDAO {
                 System.out.println("Error al restaurar autocommit: " + e.getMessage());
             }
         }
-    }
-
-    /** Igual que listarDetalle, pero además trae costo_anterior (necesario para anular). */
-    private List<DetalleCompra> listarDetalleConCosto(String idCompra) {
-        List<DetalleCompra> lista = new ArrayList<>();
-        String sql = "SELECT dc.*, pr.nombre as nombre_producto " +
-                "FROM detallecompra dc " +
-                "INNER JOIN producto pr ON dc.id_producto = pr.id_producto " +
-                "WHERE dc.id_compra = ?";
-        try {
-            PreparedStatement ps = conexion.prepareStatement(sql);
-            ps.setString(1, idCompra);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                DetalleCompra d = new DetalleCompra();
-                d.setIdDetalleCompra(rs.getString("id_detallecompra"));
-                d.setCantidad(rs.getInt("cantidad"));
-                d.setPrecio(rs.getDouble("precio"));
-                d.setCostoAnterior(rs.getDouble("costo_anterior"));
-
-                pe.utp.model.Producto prod = new pe.utp.model.Producto();
-                prod.setIdProducto(rs.getString("id_producto"));
-                prod.setNombre(rs.getString("nombre_producto"));
-                d.setProducto(prod);
-                lista.add(d);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error al listar detalle con costo: " + e.getMessage());
-        }
-        return lista;
     }
 
     /** Lista todas las compras con JOIN a proveedor y empleado para mostrar sus nombres en la tabla. */
@@ -314,7 +298,7 @@ public class CompraDAO {
     }
 
     /** Trae el detalle de una compra específica por su ID. Se usa para mostrar el detalle cuando el usuario
-     * hace clic en Ver de una compra existente.
+     * hace clic en Ver de una compra existente, y también para anular (ya no necesita costo_anterior).
      */
     public List<DetalleCompra> listarDetalle(String idCompra) {
         List<DetalleCompra> lista = new ArrayList<>();

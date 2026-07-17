@@ -8,107 +8,96 @@
       fx:controller="pe.utp.controller.ClienteModalController"
       spacing="0"
       style="-fx-background-color: white;"
-      prefWidth="440">
+      prefWidth="560">
 
-    <!-- CABECERA DINÁMICA
-         Azul en modo VER, verde en modo EDITAR
-         fx:id para cambiar color y texto desde Java -->
-    <VBox fx:id="panelCabecera" spacing="4" alignment="CENTER_LEFT"
-          style="-fx-background-color: #4361ee; -fx-padding: 20 24;">
+    <!-- CABECERA: barra de marca + título chico / nombre grande -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
+        <Region prefWidth="4" minHeight="40"
+                style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
 
-        <Label fx:id="lblTituloCabecera" text="DETALLE DE CLIENTE"
-               style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: rgba(255,255,255,0.7);
-                  -fx-letter-spacing: 1px;"/>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTituloCabecera" text="DETALLE DE CLIENTE"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Label fx:id="lblNombreCabecera" text="Nombre del cliente"
+                   style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+            <Label fx:id="lblSubtituloCabecera"
+                   style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"/>
+        </VBox>
+    </HBox>
 
-        <!-- Agrega estos dos labels nuevos -->
-        <Label fx:id="lblNombreCabecera"
-               style="-fx-font-size: 20px; -fx-font-weight: bold;
-                  -fx-text-fill: white;"/>
+    <!-- CUERPO CON LOS CAMPOS, en 2 columnas.
+         Sin ScrollPane: los campos de Cliente son pocos y siempre
+         entran completos, un scroll aquí se vería fuera de lugar. -->
+    <VBox spacing="16" style="-fx-padding: 22 24;">
 
-        <Label fx:id="lblSubtituloCabecera"
-               style="-fx-font-size: 12px;
-                  -fx-text-fill: rgba(255,255,255,0.75);"/>
+        <Label text="DATOS PERSONALES"
+               style="-fx-font-size: 12px; -fx-font-weight: bold;
+              -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+
+        <HBox spacing="16">
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="ID Cliente" styleClass="label-field"/>
+                <TextField fx:id="txtId" disable="true" styleClass="campo-input"
+                           maxWidth="Infinity" prefWidth="248"/>
+            </VBox>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Tipo de documento" styleClass="label-field"/>
+                <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity" minWidth="0" prefWidth="248"
+                          promptText="Selecciona tipo" onAction="#actualizarPlaceholder"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="16">
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Nombre completo" styleClass="label-field"/>
+                <TextField fx:id="txtNombre" styleClass="campo-input"
+                           maxWidth="Infinity" prefWidth="248" promptText="Nombre completo"/>
+            </VBox>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Número de documento" styleClass="label-field"/>
+                <TextField fx:id="txtNumeroDocumento" styleClass="campo-input"
+                           maxWidth="Infinity" prefWidth="248" promptText="Selecciona un tipo primero"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="16">
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Teléfono" styleClass="label-field"/>
+                <TextField fx:id="txtTelefono" styleClass="campo-input"
+                           maxWidth="Infinity" prefWidth="248" promptText="Ej: 987654321"/>
+            </VBox>
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Correo electrónico" styleClass="label-field"/>
+                <TextField fx:id="txtCorreo" styleClass="campo-input"
+                           maxWidth="Infinity" prefWidth="248" promptText="correo@email.com"/>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="6">
+            <Label text="Dirección" styleClass="label-field"/>
+            <TextField fx:id="txtDireccion" styleClass="campo-input" promptText="Ej: Av. Lima 123"/>
+        </VBox>
+
     </VBox>
 
-    <!-- CUERPO CON LOS CAMPOS
-         ScrollPane para pantallas pequeñas -->
-    <ScrollPane fitToWidth="true"
-                style="-fx-background-color: white; -fx-background: white;
-                       -fx-border-color: transparent;"
-                VBox.vgrow="ALWAYS">
-        <VBox spacing="12" style="-fx-padding: 20;">
-
-            <!-- ID: siempre deshabilitado -->
-            <VBox spacing="4">
-                <Label text="ID Cliente" styleClass="label-field"/>
-                <TextField fx:id="txtId" disable="true"
-                           style="-fx-background-color: #f0f0f0;
-                                  -fx-text-fill: #6c757d;"/>
-            </VBox>
-
-            <!-- Nombre completo -->
-            <VBox spacing="4">
-                <Label text="Nombre completo" styleClass="label-field"/>
-                <TextField fx:id="txtNombre" promptText="Nombre completo"/>
-            </VBox>
-
-            <VBox spacing="4">
-                <Label text="Tipo de documento" styleClass="label-field"/>
-                <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity"
-                          promptText="Selecciona tipo"
-                          onAction="#actualizarPlaceholder"/>
-            </VBox>
-
-            <!-- Número de documento: su hint cambia según el tipo -->
-            <VBox spacing="4">
-                <Label text="Número de documento" styleClass="label-field"/>
-                <TextField fx:id="txtNumeroDocumento"
-                           promptText="Selecciona un tipo primero"/>
-            </VBox>
-
-            <!-- Teléfono -->
-            <VBox spacing="4">
-                <Label text="Teléfono" styleClass="label-field"/>
-                <TextField fx:id="txtTelefono" promptText="Ej: 987654321"/>
-            </VBox>
-
-            <!-- Correo electrónico -->
-            <VBox spacing="4">
-                <Label text="Correo electrónico" styleClass="label-field"/>
-                <TextField fx:id="txtCorreo" promptText="correo@email.com"/>
-            </VBox>
-
-            <!-- Dirección -->
-            <VBox spacing="4">
-                <Label text="Dirección" styleClass="label-field"/>
-                <TextField fx:id="txtDireccion" promptText="Ej: Av. Lima 123"/>
-            </VBox>
-
-        </VBox>
-    </ScrollPane>
-
-    <!-- PIE DEL MODAL
-         btnGuardar se oculta en modo VER
-         btnCancelar cambia texto según el modo -->
+    <!-- PIE DEL MODAL -->
     <HBox fx:id="panelBotones" spacing="10" alignment="CENTER_RIGHT"
-          style="-fx-padding: 14 20;
-                 -fx-background-color: #f8f9fa;
-                 -fx-border-color: #e0e0e0 transparent transparent transparent;
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
                  -fx-border-width: 1;">
 
-        <Button fx:id="btnCancelar" text="✖ Cerrar"
+        <Button fx:id="btnCancelar" text="Cancelar"
                 onAction="#cancelar"
-                style="-fx-background-color: #6c757d; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+                style="-fx-background-color: white; -fx-text-fill: #334155;
+                       -fx-border-color: #CBD5E1; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-padding: 9 18; -fx-font-size: 13px;"/>
 
-        <Button fx:id="btnGuardar" text="💾 Guardar cambios"
-                onAction="#guardar"
-                style="-fx-background-color: #4361ee; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;
-                       -fx-font-weight: bold;"/>
+        <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                onAction="#guardar"/>
     </HBox>
 
 </VBox>

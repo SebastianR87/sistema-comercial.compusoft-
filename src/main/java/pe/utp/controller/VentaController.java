@@ -16,11 +16,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.*;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.*;
 import javafx.scene.layout.HBox;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 import pe.utp.security.Sesion;
+import pe.utp.util.FormatoMoneda;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -325,9 +327,11 @@ public class VentaController implements AccesoControlable {
         colPrecioUnit.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecio()).asObject()
         );
+        colPrecioUnit.setCellFactory(FormatoMoneda.celda());
         colSubtotal.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getSubtotal()).asObject()
         );
+        colSubtotal.setCellFactory(FormatoMoneda.celda());
 
         colQuitarDet.setCellFactory(col -> new TableCell<>() {
             final Button btnQuitar = new Button("✕");
@@ -366,10 +370,8 @@ public class VentaController implements AccesoControlable {
         String precioStr = txtPrecioUnitario.getText().trim();
 
         if (producto == null || cantStr.isEmpty() || precioStr.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un producto de la lista.\n" +
-                            "Escribe para buscar y luego haz clic en la opción.")
-                    .showAndWait();
+            CSDialog.warning("Producto no seleccionado",
+                    "Selecciona un producto de la lista. Escribe para buscar y luego haz clic en la opción.");
             return;
         }
 
@@ -378,13 +380,11 @@ public class VentaController implements AccesoControlable {
             double precio = Double.parseDouble(precioStr.replace(",", "."));
 
             if (cantidad <= 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "La cantidad debe ser mayor a cero").showAndWait();
+                CSDialog.warning("Cantidad inválida", "La cantidad debe ser mayor a cero.");
                 return;
             }
             if (precio <= 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El precio debe ser mayor a cero").showAndWait();
+                CSDialog.warning("Precio inválido", "El precio debe ser mayor a cero.");
                 return;
             }
 
@@ -397,18 +397,21 @@ public class VentaController implements AccesoControlable {
 
             // Valida contra el stock real del producto
             if (cantidadEnCarrito + cantidad > producto.getStock()) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Stock insuficiente para \"" + producto.getNombre() + "\".\n" +
-                                "Disponible: " + producto.getStock() + " unidades.\n" +
-                                "Ya tienes " + cantidadEnCarrito + " en el carrito.")
-                        .showAndWait();
+                CSDialog.warning("Stock insuficiente",
+                        "Stock insuficiente para \"" + producto.getNombre() + "\". " +
+                                "Disponible: " + producto.getStock() + " unidades. " +
+                                "Ya tienes " + cantidadEnCarrito + " en el carrito.");
                 return;
             }
 
-            // Si el producto ya está en el detalle, suma la cantidad
+            // Si el producto ya está en el detalle CON EL MISMO PRECIO,
+            // suma la cantidad. Si el precio es distinto, se agrega como
+            // línea nueva (ej: descuento manual a una unidad puntual) --
+            // así cada línea refleja el precio real al que se vendió.
             for (DetalleVenta det : detalleActual) {
                 if (det.getProducto().getIdProducto()
-                        .equals(producto.getIdProducto())) {
+                        .equals(producto.getIdProducto())
+                        && Math.abs(det.getPrecio() - precio) < 0.001) {
                     det.setCantidad(det.getCantidad() + cantidad);
                     tablaDetalle.refresh();
                     actualizarTotal();
@@ -423,8 +426,7 @@ public class VentaController implements AccesoControlable {
             limpiarFormProducto();
 
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Cantidad y precio deben ser números válidos").showAndWait();
+            CSDialog.warning("Datos inválidos", "Cantidad y precio deben ser números válidos.");
         }
     }
 
@@ -513,23 +515,18 @@ public class VentaController implements AccesoControlable {
 
         // Validación 1: campos obligatorios de la cabecera
         if (cliente == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona un cliente del listado.\n" +
-                            "Escribe el nombre o documento y haz clic en una opción.")
-                    .showAndWait();
+            CSDialog.warning("Cliente no seleccionado",
+                    "Selecciona un cliente del listado. Escribe el nombre o documento y haz clic en una opción.");
             return;
         }
         if (tipoComp == null || metodoPago == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Selecciona el tipo de comprobante y método de pago")
-                    .showAndWait();
+            CSDialog.warning("Campos incompletos", "Selecciona el tipo de comprobante y método de pago.");
             return;
         }
 
         // Validación 2: al menos un producto
         if (detalleActual.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Agrega al menos un producto al detalle").showAndWait();
+            CSDialog.warning("Detalle vacío", "Agrega al menos un producto al detalle.");
             return;
         }
 
@@ -538,11 +535,10 @@ public class VentaController implements AccesoControlable {
             String tipoDoc = cliente.getTipoDocumento() != null
                     ? cliente.getTipoDocumento().getDocumento() : "";
             if (!tipoDoc.equalsIgnoreCase("RUC")) {
-                new Alert(Alert.AlertType.WARNING,
-                        "La Factura solo puede emitirse a clientes con RUC.\n" +
-                                "El cliente seleccionado tiene " + tipoDoc + ".\n\n" +
-                                "Selecciona Boleta o elige un cliente con RUC.")
-                        .showAndWait();
+                CSDialog.warning("Comprobante inválido",
+                        "La Factura solo puede emitirse a clientes con RUC. " +
+                                "El cliente seleccionado tiene " + tipoDoc + ". " +
+                                "Selecciona Boleta o elige un cliente con RUC.");
                 return;
             }
         }
@@ -556,7 +552,17 @@ public class VentaController implements AccesoControlable {
                     txtDescuento.getText().trim().replace(",", ".")
             );
         } catch (NumberFormatException ignored) {}
-        if (descuento < 0 || descuento > subtotal) descuento = 0;
+        // Antes, si el descuento superaba el subtotal, aquí se
+        // reseteaba a 0 (cobrando el subtotal COMPLETO), mientras que
+        // actualizarTotal() -- la vista previa en pantalla que el
+        // vendedor ve antes de guardar -- lo recorta al subtotal
+        // (mostrando total S/0.00). Es decir: la pantalla mostraba un
+        // total y el guardado real cobraba OTRO mayor, sin avisar.
+        // Ahora ambos usan el mismo recorte (clamp al subtotal), para
+        // que lo que se ve en pantalla sea exactamente lo que se
+        // guarda.
+        if (descuento < 0) descuento = 0;
+        if (descuento > subtotal) descuento = subtotal;
 
         double total = subtotal - descuento;
 
@@ -578,19 +584,16 @@ public class VentaController implements AccesoControlable {
                 );
                 // Validación: el monto pagado no puede ser menor al total
                 if (pagado < total) {
-                    new Alert(Alert.AlertType.WARNING,
+                    CSDialog.warning("Monto insuficiente",
                             "El monto pagado (S/ " + String.format("%.2f", pagado) +
-                                    ") es menor al total (S/ " + String.format("%.2f", total) + ").\n" +
-                                    "Por favor ingresa el monto correcto.")
-                            .showAndWait();
+                                    ") es menor al total (S/ " + String.format("%.2f", total) + "). " +
+                                    "Por favor ingresa el monto correcto.");
                     return;
                 }
                 venta.setMontoPagado(pagado);
                 venta.setVuelto(pagado - total);
             } catch (NumberFormatException e) {
-                new Alert(Alert.AlertType.WARNING,
-                        "Ingresa el monto pagado por el cliente.")
-                        .showAndWait();
+                CSDialog.warning("Monto pagado requerido", "Ingresa el monto pagado por el cliente.");
                 return;
             }
         } else {
@@ -634,23 +637,20 @@ public class VentaController implements AccesoControlable {
                         "\nConsidera realizar una compra pronto.";
             }
 
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+            CSDialog.success("Venta registrada", msg);
             limpiarFormulario();
             cargarHistorial();
 
         } else if (resultado.startsWith("STOCK_INSUFICIENTE:")) {
             String[] partes = resultado.split(":");
-            new Alert(Alert.AlertType.WARNING,
-                    "Stock insuficiente para \"" + partes[1] + "\".\n" +
+            CSDialog.warning("Stock insuficiente",
+                    "Stock insuficiente para \"" + partes[1] + "\". " +
                             "Disponible: " + partes[2] + " unidades.\n\n" +
-                            "Otro usuario pudo haber vendido este producto.\n" +
-                            "Actualiza el carrito e intenta nuevamente.")
-                    .showAndWait();
+                            "Otro usuario pudo haber vendido este producto. " +
+                            "Actualiza el carrito e intenta nuevamente.");
             limpiarFormulario();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar la venta.\n" +
-                            "Revisa la consola para más detalles.").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar la venta. Revisa la consola para más detalles.");
         }
     }
 
@@ -685,6 +685,7 @@ public class VentaController implements AccesoControlable {
                 )
         );
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+        colTotal.setCellFactory(FormatoMoneda.celda());
 
         // Columna de estado, pintada según el valor
         colEstado.setCellValueFactory(data ->
@@ -716,19 +717,13 @@ public class VentaController implements AccesoControlable {
             final Button btnAnular = new Button("Anular");
             final HBox contenedor = new HBox(6, btnVer, btnAnular);
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
+                btnVer.getStyleClass().add("btn-table-view");
                 btnVer.setOnAction(e -> {
                     Venta v = getTableView().getItems().get(getIndex());
                     mostrarDetalleVenta(v);
                 });
 
-                btnAnular.setStyle(
-                        "-fx-background-color: #fcebeb; -fx-text-fill: #a32d2d;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
+                btnAnular.getStyleClass().add("btn-table-delete");
                 btnAnular.setOnAction(e -> {
                     Venta v = getTableView().getItems().get(getIndex());
                     confirmarYAnular(v);
@@ -749,6 +744,7 @@ public class VentaController implements AccesoControlable {
                 btnAnular.setManaged(puedeAnular);
                 btnAnular.setDisable(yaAnulada);
 
+                contenedor.setAlignment(javafx.geometry.Pos.CENTER);
                 setGraphic(contenedor);
             }
         });
@@ -769,16 +765,20 @@ public class VentaController implements AccesoControlable {
             VentaDetalleModalController ctrl = loader.getController();
             ctrl.cargarDatos(v, detalle, IGV);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle("Comprobante de Venta");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
             modal.showAndWait();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir el detalle: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir el detalle: " + ex.getMessage());
         }
     }
 
@@ -789,37 +789,30 @@ public class VentaController implements AccesoControlable {
         }
 
         if ("ANULADA".equalsIgnoreCase(v.getEstado())) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Esta venta ya está anulada.").showAndWait();
+            CSDialog.info("Venta anulada", "Esta venta ya está anulada.");
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+        boolean confirmado = CSDialog.confirm(
+                "Confirmar anulación",
                 "¿Anular la venta " + v.getNumeroComprobante() + "?\n\n" +
-                        "Esta acción devolverá el stock de los productos vendidos.\n" +
+                        "Esta acción devolverá el stock de los productos vendidos. " +
                         "La venta quedará marcada como ANULADA y no se eliminará del historial.",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Confirmar anulación");
-        confirm.showAndWait();
-
-        if (confirm.getResult() != ButtonType.YES) return;
+                "Anular", "Cancelar", true, true);
+        if (!confirmado) return;
 
         String resultado = ventaDAO.anularVenta(v.getIdVenta());
 
         switch (resultado) {
             case "OK" -> {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Venta " + v.getNumeroComprobante() + " anulada correctamente.\n" +
-                                "El stock ha sido devuelto.").showAndWait();
+                CSDialog.success("Venta anulada",
+                        "Venta " + v.getNumeroComprobante() + " anulada correctamente. " +
+                                "El stock ha sido devuelto.");
                 cargarHistorial();
             }
-            case "YA_ANULADA" -> new Alert(Alert.AlertType.WARNING,
-                    "Esta venta ya estaba anulada.").showAndWait();
-            case "NO_EXISTE" -> new Alert(Alert.AlertType.ERROR,
-                    "No se encontró la venta.").showAndWait();
-            default -> new Alert(Alert.AlertType.ERROR,
-                    "No se pudo anular la venta.\nRevisa la consola para más detalles.")
-                    .showAndWait();
+            case "YA_ANULADA" -> CSDialog.warning("Venta anulada", "Esta venta ya estaba anulada.");
+            case "NO_EXISTE" -> CSDialog.error("Error", "No se encontró la venta.");
+            default -> CSDialog.error("Error", "No se pudo anular la venta. Revisa la consola para más detalles.");
         }
     }
 
@@ -957,13 +950,12 @@ public class VentaController implements AccesoControlable {
                   "Verifica si usar el precio cotizado o el actual."
                 : "";
 
-        new Alert(Alert.AlertType.INFORMATION,
+        CSDialog.info("Cotización cargada",
                 "Cotización " + cotizacion.getIdCotizacion() + " cargada.\n\n" +
                         "Productos y cliente pre-cargados.\n" +
                         "Solo falta seleccionar:\n" +
                         "  • Tipo de comprobante (Boleta/Factura)\n" +
                         "  • Método de pago\n" +
-                        avisoPrecios)
-                .showAndWait();
+                        avisoPrecios);
     }
 }

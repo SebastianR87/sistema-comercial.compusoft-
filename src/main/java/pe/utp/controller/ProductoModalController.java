@@ -1,12 +1,18 @@
 package pe.utp.controller;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import pe.utp.dao.ProductoDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.model.Producto;
+import javafx.beans.property.SimpleStringProperty;
+import pe.utp.dao.LoteDAO;
+import pe.utp.model.Lote;
+import pe.utp.Conexion.ConexionDB;
+import java.time.format.DateTimeFormatter;
 
 public class ProductoModalController {
 
@@ -14,16 +20,19 @@ public class ProductoModalController {
     public static final String MODO_EDITAR = "EDITAR";
 
     // Cabecera
-    @FXML private VBox panelCabecera;
     @FXML private Label lblTituloCabecera;
     @FXML private Label lblNombreCabecera;
-    @FXML private Label lblCategoriaCabecera;
 
     // Campos
     @FXML private TextField txtId;
     @FXML private TextField txtNombre;
     @FXML private TextArea txtDescripcion;
-    @FXML private TextField txtPrecioCompra;
+    @FXML private TableView<Lote> tablaLotes;
+    @FXML private TableColumn<Lote, String> colLoteFecha;
+    @FXML private TableColumn<Lote, String> colLoteCantidad;
+    @FXML private TableColumn<Lote, String> colLoteCosto;
+    @FXML private TableColumn<Lote, String> colLoteSubtotal;
+    @FXML private Label lblValorInventario;
     @FXML private TextField txtPrecioVenta;
     @FXML private TextField txtStock;
     @FXML private TextField txtStockMinimo;
@@ -37,14 +46,23 @@ public class ProductoModalController {
     private ProductoDAO dao = new ProductoDAO();
     private Producto producto;
 
-    @FXML
-    public void initialize() {
-        // Carga las opciones del estado
+    @FXML public void initialize() {
         cbEstado.setItems(FXCollections.observableArrayList(
                 "Activo", "Inactivo"
         ));
-    }
 
+        colLoteFecha.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getFecha().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                ));
+        colLoteCantidad.setCellValueFactory(data ->
+                new SimpleStringProperty(String.valueOf(data.getValue().getCantidadRestante())));
+        colLoteCosto.setCellValueFactory(data ->
+                new SimpleStringProperty(String.format("S/ %.2f", data.getValue().getCostoUnitario())));
+        colLoteSubtotal.setCellValueFactory(data ->
+                new SimpleStringProperty(String.format("S/ %.2f", data.getValue().getValorRestante())));
+    }
 
     public void setModo(String modo, Producto p) {
         this.producto = p;
@@ -59,26 +77,12 @@ public class ProductoModalController {
 
     private void cargarDatos(Producto p) {
         lblNombreCabecera.setText(p.getNombre());
-        lblCategoriaCabecera.setText(
-                p.getCategoria() != null
-                        ? p.getCategoria().getNombre()
-                        : ""
-        );
 
         txtId.setText(p.getIdProducto());
         txtNombre.setText(p.getNombre());
         txtDescripcion.setText(
                 p.getDescripcion() != null ? p.getDescripcion() : ""
         );
-        // Si precio_compra es 0, el producto aún no tiene
-        // ninguna compra registrada
-        if (p.getPrecioCompra() == 0) {
-            txtPrecioCompra.setText("Sin compras registradas");
-        } else {
-            txtPrecioCompra.setText(
-                    String.format("%.2f", p.getPrecioCompra())
-            );
-        }
         txtPrecioVenta.setText(
                 String.format("%.2f", p.getPrecioVenta())
         );
@@ -86,53 +90,85 @@ public class ProductoModalController {
         txtStockMinimo.setText(String.valueOf(p.getStockMinimo()));
         txtStockMaximo.setText(String.valueOf(p.getStockMaximo()));
         cbEstado.setValue(p.getEstado());
+
+        cargarLotes(p.getIdProducto());
+    }
+
+    /** Carga los lotes activos del producto (orden FIFO) y el valor total en inventario. */
+    private void cargarLotes(String idProducto) {
+        LoteDAO loteDAO = new LoteDAO(ConexionDB.getConexion());
+        var lotes = loteDAO.listarLotesDisponibles(idProducto);
+        tablaLotes.setItems(FXCollections.observableArrayList(lotes));
+
+        // Altura dinámica: crece según la cantidad real de lotes,
+        // con un tope de 5 filas visibles (de ahí en adelante, scroll)
+        double alturaFila = 28;
+        double alturaHeader = 28;
+        int filasVisibles = Math.min(Math.max(lotes.size(), 1), 5);
+        tablaLotes.setPrefHeight(alturaHeader + (filasVisibles * alturaFila));
+        tablaLotes.setFixedCellSize(alturaFila);
+
+        // Mensaje cuando no hay lotes (producto sin compras registradas)
+        if (lotes.isEmpty()) {
+            tablaLotes.setPlaceholder(new Label("Sin lotes disponibles"));
+        }
+
+        double valorTotal = lotes.stream().mapToDouble(Lote::getValorRestante).sum();
+        lblValorInventario.setText(String.format("Valor total en inventario: S/ %.2f", valorTotal));
     }
 
     /**
-     * Modo VER: campos de solo lectura, sin botón guardar.
-     * Cabecera azul.
+     * Modo VER: deshabilita los campos editables (quedan grises,
+     * de solo lectura) mediante setDisable, apoyado en el estilo
+     * :disabled de la clase "campo-input" en el CSS global.
      */
     private void configurarModoVer() {
-        panelCabecera.setStyle(
-                "-fx-background-color: #4361ee; -fx-padding: 20 24;"
-        );
         lblTituloCabecera.setText("DETALLE DE PRODUCTO");
 
-        // Deshabilita todos los campos
-        txtNombre.setEditable(false);
-        txtDescripcion.setEditable(false);
-        txtPrecioCompra.setEditable(false);
-        txtPrecioVenta.setEditable(false);
-        txtStock.setEditable(false);
-        txtStockMinimo.setEditable(false);
-        txtStockMaximo.setEditable(false);
+        txtNombre.setDisable(true);
+        txtDescripcion.setDisable(true);
+        txtPrecioVenta.setDisable(true);
+        txtStockMinimo.setDisable(true);
+        txtStockMaximo.setDisable(true);
         cbEstado.setDisable(true);
 
         // Oculta el botón guardar
         btnGuardar.setVisible(false);
         btnGuardar.setManaged(false);
-        btnCancelar.setText("✖ Cerrar");
+
+        // En modo Ver, el único botón visible (Cerrar) toma el
+        // color de marca, ya que es la acción principal disponible
+        btnCancelar.setText("Cerrar");
+        btnCancelar.getStyleClass().setAll("btn-primary");
+        btnCancelar.setStyle("");
     }
 
     /**
-     * Modo EDITAR: campos editables, botón guardar visible.
-     * Cabecera verde.
+     * Modo EDITAR: habilita los campos editables, muestra el
+     * botón Guardar.
      */
     private void configurarModoEditar() {
-        panelCabecera.setStyle(
-                "-fx-background-color: #2dc653; -fx-padding: 20 24;"
-        );
         lblTituloCabecera.setText("EDITAR PRODUCTO");
 
-        txtNombre.setEditable(true);
-        txtDescripcion.setEditable(true);
-        txtPrecioVenta.setEditable(true);
-        txtStockMinimo.setEditable(true);
-        txtStockMaximo.setEditable(true);
+        txtNombre.setDisable(false);
+        txtDescripcion.setDisable(false);
+        txtPrecioVenta.setDisable(false);
+        txtStockMinimo.setDisable(false);
+        txtStockMaximo.setDisable(false);
         cbEstado.setDisable(false);
+
         btnGuardar.setVisible(true);
         btnGuardar.setManaged(true);
-        btnCancelar.setText("✖ Cancelar");
+
+        // En modo Editar, Cancelar vuelve a su estilo neutro
+        // (blanco con borde), y Guardar es el que lleva el color
+        btnCancelar.setText("Cancelar");
+        btnCancelar.getStyleClass().remove("btn-primary");
+        btnCancelar.setStyle(
+                "-fx-background-color: white; -fx-text-fill: #334155;" +
+                        "-fx-border-color: #CBD5E1; -fx-border-radius: 8;" +
+                        "-fx-background-radius: 8; -fx-cursor: hand;" +
+                        "-fx-padding: 9 18; -fx-font-size: 13px;");
     }
 
     @FXML
@@ -142,12 +178,9 @@ public class ProductoModalController {
         String estado = cbEstado.getValue();
 
         // Validación 1: campos obligatorios
-        // txtPrecioCompra NO se valida porque es solo lectura
-        // (lo actualiza el CPP desde CompraDAO, no el usuario)
         if (nombre.isEmpty() || txtPrecioVenta.getText().isEmpty()
                 || estado == null) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos obligatorios").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos obligatorios.");
             return;
         }
 
@@ -158,30 +191,46 @@ public class ProductoModalController {
 
             // Validación 2: precio no negativo
             if (precioVenta < 0) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El precio de venta no puede ser negativo")
-                        .showAndWait();
+                CSDialog.warning("Precio inválido", "El precio de venta no puede ser negativo.");
                 return;
             }
 
             // Stock mínimo y máximo: valores de alerta definidos
-            // por el administrador, no calculados automáticamente
-            int stockMinimo = 0;
-            int stockMaximo = 0;
+            // por el administrador, no calculados automáticamente.
+            // Antes un texto no numérico aquí (ej. dejar "abc" o un
+            // espacio) se atrapaba en silencio y el producto quedaba
+            // guardado con mínimo/máximo en 0 sin avisar al usuario --
+            // en un producto YA EXISTENTE esto podía borrar valores de
+            // alerta configurados antes, sin que nadie lo notara.
+            int stockMinimo;
+            int stockMaximo;
             try {
                 stockMinimo = Integer.parseInt(
                         txtStockMinimo.getText().trim());
                 stockMaximo = Integer.parseInt(
                         txtStockMaximo.getText().trim());
-            } catch (NumberFormatException ignored) {
-                // Si no ingresaron número válido queda en 0
+            } catch (NumberFormatException ex) {
+                CSDialog.warning("Stock inválido",
+                        "El stock mínimo y máximo deben ser números enteros válidos.");
+                return;
+            }
+
+            if (stockMinimo < 0 || stockMaximo < 0) {
+                CSDialog.warning("Stock inválido",
+                        "El stock mínimo y máximo no pueden ser negativos.");
+                return;
             }
 
             // Validación 3: mínimo no mayor que máximo
             if (stockMaximo > 0 && stockMinimo > stockMaximo) {
-                new Alert(Alert.AlertType.WARNING,
-                        "El stock mínimo no puede ser mayor al máximo.")
-                        .showAndWait();
+                CSDialog.warning("Stock inválido", "El stock mínimo no puede ser mayor al máximo.");
+                return;
+            }
+
+            // Verifica que el nombre no esté repetido con otro
+            // producto (excluyendo al propio, ver ProductoDAO.existeNombre)
+            if (dao.existeNombre(nombre, producto.getIdProducto())) {
+                CSDialog.warning("Producto duplicado", "Ya existe otro producto con ese nombre.");
                 return;
             }
 
@@ -196,18 +245,19 @@ public class ProductoModalController {
 
             boolean exito = dao.actualizar(producto);
             if (exito) {
-                new Alert(Alert.AlertType.INFORMATION,
-                        "Producto actualizado correctamente").showAndWait();
+                // Cierra el modal y difiere el mensaje con Platform.runLater
+                // (ver comentario detallado en ClienteModalController.guardar()):
+                // cerrar este modal y abrir el diálogo en el mismo pulso hacía
+                // que el diálogo quedara "abierto" pero sin pintarse.
                 cerrarModal();
+                Platform.runLater(() ->
+                        CSDialog.success("Producto actualizado", "El producto fue actualizado correctamente."));
             } else {
-                new Alert(Alert.AlertType.ERROR,
-                        "No se pudo actualizar el producto").showAndWait();
+                CSDialog.error("Error", "No se pudo actualizar el producto.");
             }
 
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El precio debe ser un número válido.\n" +
-                            "Ejemplo: 150.50").showAndWait();
+            CSDialog.warning("Precio inválido", "El precio debe ser un número válido. Ejemplo: 150.50");
         }
     }
 

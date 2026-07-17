@@ -10,12 +10,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import pe.utp.dao.EmpleadoDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.util.ResultadoEliminacion;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.model.Empleado;
 import pe.utp.security.Modulo;
 import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
+import pe.utp.security.Sesion;
 import pe.utp.model.TipoDocumento;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -94,6 +96,11 @@ public class EmpleadoController implements AccesoControlable {
         cargarTabla();
         aplicarEstiloFiltros();
         aplicarPermisos();
+
+        // Tooltip con la dirección completa al pasar el mouse
+        Tooltip ttDireccion = new Tooltip();
+        ttDireccion.textProperty().bind(txtDireccion.textProperty());
+        txtDireccion.setTooltip(ttDireccion);
     }
 
     @Override
@@ -230,17 +237,9 @@ public class EmpleadoController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #2dc653; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
-
-                btnEliminar.setStyle(
-                        "-fx-background-color: #ef233c; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
+                btnVer.getStyleClass().add("btn-table-view");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 btnVer.setOnAction(e -> {
                     Empleado emp = getTableView().getItems().get(getIndex());
@@ -249,47 +248,87 @@ public class EmpleadoController implements AccesoControlable {
                 // Botón Editar: abre el modal en modo EDITAR
                 // Solo habilitado si el empleado está ACTIVO
                 btnEditar.setOnAction(e -> {
+                    // Antes solo guardar() (alta) verificaba el permiso
+                    // de Modulo.EMPLEADOS -- editar/desactivar/eliminar
+                    // no lo comprobaban en código, dependían solo de que
+                    // el menú ocultara la pantalla para otros roles. Se
+                    // agrega aquí como segunda capa de defensa.
+                    if (!PermisoService.puedeAcceder(Modulo.EMPLEADOS)) {
+                        PermisoUtil.denegado();
+                        return;
+                    }
                     Empleado emp = getTableView().getItems().get(getIndex());
                     abrirModal(emp, EmpleadoModalController.MODO_EDITAR);
                 });
 
                 // Botón dinámico: Desactivar o Reactivar según estado
                 btnEstado.setOnAction(e -> {
+                    if (!PermisoService.puedeAcceder(Modulo.EMPLEADOS)) {
+                        PermisoUtil.denegado();
+                        return;
+                    }
                     Empleado emp = getTableView().getItems().get(getIndex());
                     boolean estaActivo = emp.getEstado().equals("ACTIVO");
 
+                    // Solo al DESACTIVAR hace falta protegerse: reactivar
+                    // nunca deja al sistema en un estado peor.
+                    if (estaActivo) {
+                        // Guard 1: no permitir que el usuario se
+                        // desactive a sí mismo -- perdería acceso al
+                        // sistema de inmediato (y si es el único admin,
+                        // nadie más podría revertirlo).
+                        if (esUsuarioDeLaSesionActual(emp)) {
+                            CSDialog.warning("No se puede desactivar",
+                                    "No puedes desactivar tu propio usuario mientras tienes " +
+                                            "la sesión abierta. Pide a otro administrador que lo haga.");
+                            return;
+                        }
+                        // Guard 2: no dejar el sistema sin NINGÚN
+                        // administrador activo, sin importar de quién
+                        // se trate.
+                        if ("Administrador".equals(emp.getCargo())
+                                && dao.contarAdministradoresActivos() <= 1) {
+                            CSDialog.warning("No se puede desactivar",
+                                    "\"" + emp.getNombre() + "\" es el único administrador activo. " +
+                                            "Activa o registra otro administrador antes de desactivar este.");
+                            return;
+                        }
+                    }
+
                     // Mensaje de confirmación descriptivo según la acción
-                    String accion  = estaActivo ? "desactivar" : "reactivar";
+                    String accion  = estaActivo ? "Desactivar" : "Reactivar";
                     String mensaje = estaActivo
                             ? "¿Desactivar a " + emp.getNombre() + "?\n" +
                               "Ya no podrá ingresar al sistema."
                             : "¿Reactivar a " + emp.getNombre() + "?\n" +
                               "Podrá volver a ingresar al sistema.";
 
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                            mensaje, ButtonType.YES, ButtonType.NO);
-                    confirm.setTitle(accion.substring(0,1).toUpperCase()
-                            + accion.substring(1) + " empleado");
-                    confirm.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            // Cambia al estado opuesto del actual
-                            String nuevoEstado = estaActivo ? "INACTIVO" : "ACTIVO";
-                            boolean exito = dao.cambiarEstado(
-                                    emp.getIdEmpleado(), nuevoEstado);
-                            if (exito) {
-                                // Recarga la tabla para reflejar el cambio
-                                cargarTabla();
-                                filtrar();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo cambiar el estado").show();
-                            }
+                    // peligroso = estaActivo: solo DESACTIVAR se pinta en
+                    // rojo (es la acción riesgosa); reactivar usa el navy
+                    // neutro porque nunca deja al sistema en peor estado.
+                    boolean confirmado = CSDialog.confirm(
+                            accion + " empleado", mensaje, accion, "Cancelar", estaActivo, estaActivo);
+                    if (confirmado) {
+                        // Cambia al estado opuesto del actual
+                        String nuevoEstado = estaActivo ? "INACTIVO" : "ACTIVO";
+                        boolean exito = dao.cambiarEstado(
+                                emp.getIdEmpleado(), nuevoEstado);
+                        if (exito) {
+                            // Recarga la tabla para reflejar el cambio
+                            cargarTabla();
+                            filtrar();
+                        } else {
+                            CSDialog.error("Error", "No se pudo cambiar el estado.");
                         }
-                    });
+                    }
                 });
 
 
                 btnEliminar.setOnAction(e -> {
+                    if (!PermisoService.puedeAcceder(Modulo.EMPLEADOS)) {
+                        PermisoUtil.denegado();
+                        return;
+                    }
                     Empleado emp = getTableView().getItems().get(getIndex());
 
                     ResultadoEliminacion validacionElim = validacion.validarEmpleado(
@@ -299,30 +338,41 @@ public class EmpleadoController implements AccesoControlable {
                         return;
                     }
 
-                    // Sin movimientos: pide confirmación antes de eliminar
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                    confirm.setTitle("Eliminar empleado");
-                    confirm.setHeaderText("¿Eliminar a " + emp.getNombre() + "?");
-                    confirm.setContentText(
-                            "Esta acción eliminará al empleado permanentemente\n" +
-                                    "y no se puede deshacer."
-                    );
-                    confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+                    // Mismos dos resguardos que Desactivar: eliminar es
+                    // aún más grave (es irreversible), así que aplican
+                    // con más razón.
+                    if (esUsuarioDeLaSesionActual(emp)) {
+                        CSDialog.warning("No se puede eliminar",
+                                "No puedes eliminar tu propio usuario mientras tienes " +
+                                        "la sesión abierta. Pide a otro administrador que lo haga.");
+                        return;
+                    }
+                    if ("Administrador".equals(emp.getCargo())
+                            && "ACTIVO".equals(emp.getEstado())
+                            && dao.contarAdministradoresActivos() <= 1) {
+                        CSDialog.warning("No se puede eliminar",
+                                "\"" + emp.getNombre() + "\" es el único administrador activo. " +
+                                        "Activa o registra otro administrador antes de eliminar este.");
+                        return;
+                    }
 
-                    confirm.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            boolean exito = dao.eliminar(emp.getIdEmpleado());
-                            if (exito) {
-                                new Alert(Alert.AlertType.INFORMATION,
-                                        "Empleado eliminado correctamente").showAndWait();
-                                cargarTabla();
-                                filtrar();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo eliminar el empleado").showAndWait();
-                            }
+                    // Sin movimientos: pide confirmación antes de eliminar
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar empleado",
+                            "¿Eliminar a " + emp.getNombre() + "?\n" +
+                                    "Esta acción eliminará al empleado permanentemente " +
+                                    "y no se puede deshacer.",
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        boolean exito = dao.eliminar(emp.getIdEmpleado());
+                        if (exito) {
+                            CSDialog.success("Empleado eliminado", "El empleado fue eliminado correctamente.");
+                            cargarTabla();
+                            filtrar();
+                        } else {
+                            CSDialog.error("Error", "No se pudo eliminar el empleado.");
                         }
-                    });
+                    }
                 });
             }
 
@@ -346,8 +396,12 @@ public class EmpleadoController implements AccesoControlable {
                 // Botón dinámico cambia texto y color según estado
                 if (activo) {
                     btnEstado.setText("Desactivar");
+                    // Naranja "Condicional" del módulo de Compatibilidad
+                    // (#e67e00), para que el usuario asocie el mismo
+                    // color con "estado intermedio / hay que revisar".
                     btnEstado.setStyle(
-                            "-fx-background-color: #343a40; -fx-text-fill: white;" +
+                            "-fx-background-color: #e67e00; -fx-text-fill: white;" +
+                                    "-fx-font-weight: bold; -fx-padding: 5 12;" +
                                     "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
                     );
                 } else {
@@ -366,10 +420,21 @@ public class EmpleadoController implements AccesoControlable {
                 btnEliminar.setDisable(tieneMov);
                 btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEstado, btnEliminar);
-                hbox.setStyle("-fx-alignment: CENTER-LEFT;");
+                hbox.setAlignment(javafx.geometry.Pos.CENTER);
                 setGraphic(hbox);
             }
         });
+    }
+
+    /**
+     * true si "emp" es el mismo empleado que tiene la sesión abierta
+     * ahora mismo. Se usa para bloquear que alguien se desactive o se
+     * elimine a sí mismo por accidente (perdería acceso de inmediato,
+     * y si era el único administrador, nadie más podría revertirlo).
+     */
+    private boolean esUsuarioDeLaSesionActual(Empleado emp) {
+        Empleado actual = Sesion.getEmpleado();
+        return actual != null && actual.getIdEmpleado().equals(emp.getIdEmpleado());
     }
 
     private void abrirModal(Empleado emp, String modo) {
@@ -382,13 +447,19 @@ public class EmpleadoController implements AccesoControlable {
             EmpleadoModalController ctrl = loader.getController();
             ctrl.setModo(modo, emp);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle(modo.equals(EmpleadoModalController.MODO_VER)
                     ? "Detalle del Empleado"
                     : "Editar Empleado");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
+            modal.setHeight(620);
             modal.showAndWait();
 
             // Recarga y mantiene el filtro activo después de cerrar el modal
@@ -396,8 +467,7 @@ public class EmpleadoController implements AccesoControlable {
             filtrar();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir la ventana: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
         }
     }
 
@@ -423,8 +493,7 @@ public class EmpleadoController implements AccesoControlable {
         if (id.isEmpty() || nombre.isEmpty() || cargo == null ||
                 tipoDoc == null || numeroDocumento.isEmpty() ||
                 usuario.isEmpty() || password.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos obligatorios").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos obligatorios.");
             return;
         }
 
@@ -432,71 +501,67 @@ public class EmpleadoController implements AccesoControlable {
         // [a-zA-ZáéíóúÁÉÍÓÚñÑ]+ = es un formato una o más letras incluyendo tildes y ñ
         // (\\s[a-zA-Z...]+)* = seguido de cero o más grupos (espacio + letras)
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(\\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre solo debe contener letras").showAndWait();
+            CSDialog.warning("Nombre inválido", "El nombre solo debe contener letras.");
             return;
         }
 
         if (usuario.contains(" ")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El usuario no debe contener espacios").showAndWait();
+            CSDialog.warning("Usuario inválido", "El usuario no debe contener espacios.");
             return;
         }
 
         // Solo letras, números y guiones bajos
         // \\w = [a-zA-Z0-9_], {4,20} = entre 4 y 20 caracteres
         if (!usuario.matches("\\w{4,20}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El usuario debe tener entre 4 y 20 caracteres " +
-                            "y solo letras, números o guión bajo").showAndWait();
+            CSDialog.warning("Usuario inválido",
+                    "El usuario debe tener entre 4 y 20 caracteres y solo letras, números o guión bajo.");
             return;
         }
 
+        // RUC corregido a 11 dígitos (antes exigía 9, que es el
+        // formato de Carnet de Extranjería -- probable copia/pega; el
+        // mensaje de error ya decía "11 dígitos" pero la validación
+        // real pedía 9, así que un RUC válido de 11 dígitos nunca
+        // pasaba este formulario).
         switch (tipoDoc.getDocumento()) {
             case "DNI":
                 if (!numeroDocumento.matches("\\d{8}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El DNI debe tener exactamente 8 dígitos numéricos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido", "El DNI debe tener exactamente 8 dígitos numéricos.");
                     return;
                 }
                 break;
             case "RUC":
-                if (!numeroDocumento.matches("\\d{9}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El RUC debe tener exactamente 11 dígitos numéricos")
-                            .showAndWait();
+                if (!numeroDocumento.matches("\\d{11}")) {
+                    CSDialog.warning("Documento inválido", "El RUC debe tener exactamente 11 dígitos numéricos.");
                     return;
                 }
                 break;
             case "Carnet de Extranjería":
                 if (!numeroDocumento.matches("\\d{9}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El Carnet de Extranjería debe tener exactamente 9 dígitos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido", "El Carnet de Extranjería debe tener exactamente 9 dígitos.");
                     return;
                 }
                 break;
             case "Pasaporte":
                 if (!numeroDocumento.matches("[a-zA-Z0-9]{6,12}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido",
+                            "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.");
                     return;
                 }
                 break;
         }
 
         if (dao.existeNumeroDocumento(numeroDocumento, null)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un empleado con ese número de documento").showAndWait();
+            CSDialog.warning("Documento duplicado", "Ya existe un empleado con ese número de documento.");
             return;
         }
 
+        // Rango 7-15 dígitos: no asumir solo números peruanos (9 dígitos),
+        // hay formatos internacionales válidos más cortos (ej. fijos de
+        // 7-8 dígitos en otros países), con "+" de prefijo opcional.
         if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).")
-                    .showAndWait();
+            CSDialog.warning("Teléfono inválido",
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).");
             return;
         }
 
@@ -506,14 +571,12 @@ public class EmpleadoController implements AccesoControlable {
 
         boolean exito = dao.insertar(e);
         if (exito) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Empleado registrado correctamente").showAndWait();
+            CSDialog.success("Empleado registrado", "El empleado fue registrado correctamente.");
             cargarTabla();
             filtrar();
             limpiar();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar el empleado").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar el empleado.");
         }
     }
 

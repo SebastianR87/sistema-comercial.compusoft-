@@ -20,17 +20,15 @@
 
     <!-- Botones fuera del área imprimible -->
     <HBox spacing="10" alignment="CENTER_RIGHT"
-          style="-fx-padding: 12 20;
-                 -fx-background-color: #f8f9fa;
-                 -fx-border-color: #e0e0e0 transparent transparent transparent;
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
                  -fx-border-width: 1;">
-        <Button text="🖨 Imprimir" onAction="#imprimir"
-                style="-fx-background-color: #1a1a2e; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
-        <Button text="✖ Cerrar" onAction="#cerrar"
-                style="-fx-background-color: #6c757d; -fx-text-fill: white;
-                       -fx-background-radius: 6; -fx-cursor: hand;
-                       -fx-padding: 8 16; -fx-font-size: 13px;"/>
+        <Button text="Cerrar" onAction="#cerrar"
+                style="-fx-background-color: white; -fx-text-fill: #334155;
+                       -fx-border-color: #CBD5E1; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-padding: 9 18; -fx-font-size: 13px;"/>
+        <Button text="Imprimir" onAction="#imprimir" styleClass="btn-primary"/>
     </HBox>
 </VBox>

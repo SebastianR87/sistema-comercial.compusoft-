@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import pe.utp.dao.ClienteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.Cliente;
 import pe.utp.model.TipoDocumento;
@@ -23,7 +24,6 @@ import pe.utp.security.PermisoService;
 import pe.utp.security.PermisoUtil;
 
 public class ClienteController implements AccesoControlable {
-
 
     @FXML private TableView<Cliente> tablaCliente;
     @FXML private TableColumn<Cliente, String>  colId;
@@ -85,6 +85,11 @@ public class ClienteController implements AccesoControlable {
         cargarTabla();
         aplicarEstiloFiltros();
         aplicarPermisos();
+
+        // Tooltip con la dirección completa al pasar el mouse
+        Tooltip ttDireccion = new Tooltip();
+        ttDireccion.textProperty().bind(txtDireccion.textProperty());
+        txtDireccion.setTooltip(ttDireccion);
     }
 
     @Override
@@ -105,10 +110,10 @@ public class ClienteController implements AccesoControlable {
         // Determina qué tipo de documento está filtrando
         // Si ninguno específico está activo, muestra todos
         String filtroTipo = "TODOS";
-        if (btnDni.isSelected())       filtroTipo = "DNI";
-        if (btnRuc.isSelected())       filtroTipo = "RUC";
+        if (btnDni.isSelected()) filtroTipo = "DNI";
+        if (btnRuc.isSelected()) filtroTipo = "RUC";
         if (btnPasaporte.isSelected()) filtroTipo = "Pasaporte";
-        if (btnCarnet.isSelected())    filtroTipo = "Carnet de Extranjería";
+        if (btnCarnet.isSelected()) filtroTipo = "Carnet de Extranjería";
 
         final String tipoFinal = filtroTipo;
 
@@ -168,18 +173,9 @@ public class ClienteController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnVer.setStyle(
-                        "-fx-background-color: #2dc653; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
-                btnEliminar.setStyle(
-                        "-fx-background-color: #343a40; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 11px;"
-                );
+                btnVer.getStyleClass().add("btn-table-view");
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 btnVer.setOnAction(e -> {
                     Cliente c = getTableView().getItems().get(getIndex());
@@ -203,29 +199,22 @@ public class ClienteController implements AccesoControlable {
                     }
 
                     // Sin movimientos: pide confirmación y elimina
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                    confirm.setTitle("Eliminar cliente");
-                    confirm.setHeaderText("¿Eliminar a " + c.getNombre() + "?");
-                    confirm.setContentText(
-                            "Esta acción eliminará al cliente permanentemente\n" +
-                                    "y no se puede deshacer."
-                    );
-                    confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
-                    confirm.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            boolean exito = dao.eliminar(c.getIdCliente());
-                            if (exito) {
-                                new Alert(Alert.AlertType.INFORMATION,
-                                        "Cliente eliminado correctamente").showAndWait();
-                                cargarTabla();
-                                filtrar();
-                            } else {
-                                new Alert(Alert.AlertType.ERROR,
-                                        "No se pudo eliminar el cliente").showAndWait();
-                            }
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar cliente",
+                            "¿Eliminar a " + c.getNombre() + "?\n" +
+                                    "Esta acción eliminará al cliente permanentemente " +
+                                    "y no se puede deshacer.",
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        boolean exito = dao.eliminar(c.getIdCliente());
+                        if (exito) {
+                            CSDialog.success("Cliente eliminado", "El cliente fue eliminado correctamente.");
+                            cargarTabla();
+                            filtrar();
+                        } else {
+                            CSDialog.error("Error", "No se pudo eliminar el cliente.");
                         }
-                    });
+                    }
                 });
             }
 
@@ -246,7 +235,7 @@ public class ClienteController implements AccesoControlable {
                 btnEliminar.setDisable(tieneMov);
                 btnEliminar.setOpacity(tieneMov ? 0.4 : 1.0);
                 HBox hbox = new HBox(5, btnVer, btnEditar, btnEliminar);
-                hbox.setStyle("-fx-alignment: CENTER-LEFT;");
+                hbox.setAlignment(javafx.geometry.Pos.CENTER);
                 setGraphic(hbox);
             }
         });
@@ -262,13 +251,20 @@ public class ClienteController implements AccesoControlable {
             ClienteModalController ctrl = loader.getController();
             ctrl.setModo(modo, c);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/styles/style.css").toExternalForm()
+            );
+
             Stage modal = new Stage();
             modal.setTitle(modo.equals(ClienteModalController.MODO_VER)
                     ? "Detalle del Cliente"
                     : "Editar Cliente");
-            modal.setScene(new Scene(root));
+            modal.setScene(scene);
             modal.initModality(Modality.APPLICATION_MODAL);
             modal.setResizable(false);
+            // Sin ScrollPane en este modal, el alto ideal lo determina
+            // el propio contenido -- no forzamos un alto fijo aquí.
             modal.showAndWait();
 
             // Recarga y mantiene el filtro después de cerrar el modal
@@ -276,8 +272,7 @@ public class ClienteController implements AccesoControlable {
             filtrar();
 
         } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo abrir la ventana: " + ex.getMessage()).show();
+            CSDialog.error("Error", "No se pudo abrir la ventana: " + ex.getMessage());
         }
     }
 
@@ -319,21 +314,20 @@ public class ClienteController implements AccesoControlable {
         String correo = txtCorreo.getText().trim();
         String direccion = txtDireccion.getText().trim();
 
-        // Validación 1: campos obligatorios
+        // Validación 1: campos obligatorios. El correo NO va aquí:
+        // el propio FXML lo documenta como opcional ("Correo:
+        // opcional pero validado si se ingresa", Cliente.fxml)
         if (id.isEmpty() || nombre.isEmpty() ||
-                tipoDoc == null || numeroDocumento.isEmpty() ||
-                correo.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa los campos obligatorios: nombre, tipo y número de documento")
-                    .showAndWait();
+                tipoDoc == null || numeroDocumento.isEmpty()) {
+            CSDialog.warning("Campos incompletos",
+                    "Completa los campos obligatorios: nombre, tipo y número de documento.");
             return;
         }
 
         // Validación 2: nombre solo letras y espacios
         if (!nombre.matches(
                 "[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(\\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre solo debe contener letras").showAndWait();
+            CSDialog.warning("Nombre inválido", "El nombre solo debe contener letras.");
             return;
         }
 
@@ -341,68 +335,57 @@ public class ClienteController implements AccesoControlable {
         switch (tipoDoc.getDocumento()) {
             case "DNI":
                 if (!numeroDocumento.matches("\\d{8}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El DNI debe tener exactamente 8 dígitos numéricos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido", "El DNI debe tener exactamente 8 dígitos numéricos.");
                     return;
                 }
                 break;
             case "RUC":
                 if (!numeroDocumento.matches("\\d{11}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El RUC debe tener exactamente 11 dígitos numéricos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido", "El RUC debe tener exactamente 11 dígitos numéricos.");
                     return;
                 }
                 break;
             case "Carnet de Extranjería":
                 if (!numeroDocumento.matches("\\d{9}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El Carnet de Extranjería debe tener exactamente 9 dígitos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido", "El Carnet de Extranjería debe tener exactamente 9 dígitos.");
                     return;
                 }
                 break;
             case "Pasaporte":
                 if (!numeroDocumento.matches("[a-zA-Z0-9]{6,12}")) {
-                    new Alert(Alert.AlertType.WARNING,
-                            "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos")
-                            .showAndWait();
+                    CSDialog.warning("Documento inválido",
+                            "El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.");
                     return;
                 }
                 break;
         }
 
-        // Validación 4: teléfono opcional pero validado si se ingresa
+        // Validación 4: teléfono opcional pero validado si se ingresa.
+        // Rango 7-15 dígitos con "+" opcional: no asumir solo números
+        // peruanos, hay formatos internacionales más cortos que
+        // también son válidos.
         if (!telefono.isEmpty() && !telefono.matches("^\\+?[0-9]{7,15}$")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).")
-                    .showAndWait();
+            CSDialog.warning("Teléfono inválido",
+                    "Ingrese un teléfono válido (7 a 15 dígitos, con prefijo internacional opcional).");
             return;
         }
 
         // Solo verifica duplicado si el correo no está vacío porque es un campo opcional
         if (!correo.isEmpty() && dao.existeCorreo(correo, null)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un cliente registrado con ese correo electrónico")
-                    .showAndWait();
+            CSDialog.warning("Correo duplicado", "Ya existe un cliente registrado con ese correo electrónico.");
             return;
         }
 
         // Validación 5: correo opcional pero validado si se ingresa
         if (!correo.isEmpty() &&
                 !correo.matches("[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El correo no tiene un formato válido (ej: nombre@dominio.com)")
-                    .showAndWait();
+            CSDialog.warning("Correo inválido", "El correo no tiene un formato válido (ej: nombre@dominio.com).");
             return;
         }
 
         // Validación 6: número de documento duplicado
         if (dao.existeNumeroDocumento(numeroDocumento, null)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un cliente con ese número de documento")
-                    .showAndWait();
+            CSDialog.warning("Documento duplicado", "Ya existe un cliente con ese número de documento.");
             return;
         }
 
@@ -412,14 +395,12 @@ public class ClienteController implements AccesoControlable {
 
         boolean exito = dao.insertar(c);
         if (exito) {
-            new Alert(Alert.AlertType.INFORMATION,
-                    "Cliente registrado correctamente").showAndWait();
+            CSDialog.success("Cliente registrado", "El cliente fue registrado correctamente.");
             cargarTabla();
             filtrar();
             limpiar();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo registrar el cliente").showAndWait();
+            CSDialog.error("Error", "No se pudo registrar el cliente.");
         }
     }
 

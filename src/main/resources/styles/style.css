@@ -1,34 +1,5 @@
-/* ============================================================
-   COMPUSOFT — Design System
-   Identidad: #E94560 coral/marca | SaaS moderno tipo Stripe/Linear
-   ============================================================ */
 
-/* ── TOKENS DE DISEÑO ────────────────────────────────────────
-   Paleta completa coherente con el login
-   ─────────────────────────────────────────────────────────── */
-
-/*
-  MARCA        #E94560   coral principal (botones, activos, énfasis)
-  MARCA HOVER  #C73652   coral oscuro (hover de botones primarios)
-  MARCA LIGHT  #FFF0F3   coral muy suave (fondos de hover en sidebar)
-  MARCA MID    #FDDDE3   coral claro (badge, chips activos)
-
-  DARK         #1A1A2E   casi negro (fondo sidebar, títulos fuertes)
-  DARK MID     #2D2D44   gris oscuro azulado (sidebar hover)
-  DARK LIGHT   #3D3D5C   gris medio sidebar (texto normal)
-
-  NEUTRAL 50   #F8FAFC   fondo global (casi blanco, limpio)
-  NEUTRAL 100  #F1F5F9   fondo tarjetas secundarias, filas alternas
-  NEUTRAL 200  #E2E8F0   bordes suaves
-  NEUTRAL 300  #CBD5E1   bordes más definidos
-  NEUTRAL 500  #64748B   texto secundario
-  NEUTRAL 700  #334155   texto principal
-  NEUTRAL 900  #0F172A   títulos fuertes (no negro puro)
-
-  WHITE        #FFFFFF   tarjetas, inputs, sidebar
-*/
-
-/* ── RESET GLOBAL ─────────────────────────────────────────── */
+/* RESET GLOBAL */
 * {
     -fx-font-family: 'Segoe UI', 'Inter', sans-serif;
 }
@@ -37,12 +8,10 @@
     -fx-background-color: #F8FAFC;
 }
 
-/* ============================================================
-   SIDEBAR — Dark elegante alineado con el login
-   ============================================================ */
+/* SIDEBAR — Dark elegante alineado con el login */
 
 .sidebar {
-    -fx-background-color: #1A1A2E;
+    -fx-background-color: #1F2A44;
     -fx-min-width: 220px;
     -fx-pref-width: 220px;
     -fx-max-width: 220px;
@@ -53,7 +22,7 @@
 .sidebar-section-label {
     -fx-font-size: 10px;
     -fx-font-weight: bold;
-    -fx-text-fill: #4A4A6A;
+    -fx-text-fill: #6B7690;
     -fx-letter-spacing: 1.5px;
     -fx-padding: 16 16 4 16;
 }
@@ -61,7 +30,7 @@
 /* Botones del menú lateral */
 .sidebar-btn {
     -fx-background-color: transparent;
-    -fx-text-fill: #9090AA;
+    -fx-text-fill: #C4CAD9;
     -fx-font-size: 13px;
     -fx-alignment: CENTER-LEFT;
     -fx-padding: 9 14;
@@ -71,13 +40,14 @@
     -fx-border-radius: 8;
 }
 
-/* Hover: coral muy suave con texto más claro */
+/* Hover: overlay translúcido, sin bloque de color sólido */
 .sidebar-btn:hover {
-    -fx-background-color: #2D2D44;
+    -fx-background-color: rgba(255,255,255,0.06);
     -fx-text-fill: #FFFFFF;
 }
 
-/* Botón activo: coral marca como en el login */
+/* Botón activo: coral marca sólido, para que la selección
+   se note de inmediato sin ambigüedad */
 .sidebar-btn-active {
     -fx-background-color: #E94560;
     -fx-text-fill: #FFFFFF;
@@ -85,9 +55,7 @@
     -fx-background-radius: 8;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
+/* TOPBAR */
 
 .topbar {
     -fx-background-color: #FFFFFF;
@@ -104,9 +72,7 @@
     -fx-text-fill: #0F172A;
 }
 
-/* ============================================================
-   CARDS / PANELES
-   ============================================================ */
+/* CARDS / PANELES */
 
 .card {
     -fx-background-color: #FFFFFF;
@@ -118,9 +84,7 @@
     -fx-border-radius: 12;
 }
 
-/* ============================================================
-   BOTONES
-   ============================================================ */
+/* BOTONES */
 
 /* Primario: coral marca — para Guardar, acciones principales */
 .btn-primary {
@@ -137,6 +101,130 @@
 .btn-primary:hover {
     -fx-background-color: #C73652;
     -fx-effect: dropshadow(gaussian, rgba(233,69,96,0.4), 10, 0, 0, 4);
+}
+
+/* Info: navy del sidebar/btn-table-edit — para acciones de consulta
+   o verificación que deben distinguirse de Guardar/Crear (coral) */
+.btn-info {
+    -fx-background-color: #315E9E;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 8;
+    -fx-padding: 9 18;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(49,94,158,0.3), 8, 0, 0, 3);
+}
+
+.btn-info:hover {
+    -fx-background-color: #274A7D;
+    -fx-effect: dropshadow(gaussian, rgba(49,94,158,0.4), 10, 0, 0, 4);
+}
+
+/* Cerrar tarjetas de formulario que se muestran/ocultan (ej. "Nueva
+   Regla" en Compatibilidad): chip coral suave, visible a primera
+   vista como acción de cierre, sin ser tan fuerte como btn-primary */
+.btn-close-panel {
+    -fx-background-color: #FFF0F3;
+    -fx-text-fill: #E94560;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-background-radius: 8;
+    -fx-padding: 9 16;
+    -fx-cursor: hand;
+}
+
+.btn-close-panel:hover {
+    -fx-background-color: #FDDDE3;
+}
+
+/* BOTONES DE ACCIONES EN TABLAS (Ver / Editar / Eliminar-Anular)
+   Jerarquía visual cohesiva con la marca: neutro con borde ->
+   navy sólido (acento del sidebar) -> coral sólido (marca). */
+.btn-table-view {
+    -fx-background-color: white;
+    -fx-text-fill: #1A1A2E;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+}
+
+.btn-table-view:hover {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #1A1A2E;
+}
+
+.btn-table-edit {
+    -fx-background-color: #315E9E;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+}
+
+.btn-table-edit:hover {
+    -fx-background-color: #274A7D;
+}
+
+.btn-table-delete {
+    -fx-background-color: #E94560;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+}
+
+.btn-table-delete:hover {
+    -fx-background-color: #C73652;
+}
+
+.btn-table-delete:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* Neutro con borde, para acciones secundarias sueltas
+   (Limpiar, Cancelar cuando no están dentro de un modal) */
+.btn-neutral {
+    -fx-background-color: white;
+    -fx-text-fill: #334155;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8;
+    -fx-padding: 9 18;
+    -fx-cursor: hand;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.btn-neutral:hover {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #94A3B8;
+}
+
+/* Estado seleccionado para ToggleButton (atajos de rango de fechas
+   en Reportes y Kárdex: "Hoy", "Últimos 7 días", etc.): mismo acento
+   de marca (#E94560) ya usado para "seleccionado" en otros controles
+   (pestañas, filas de combo), para que el atajo activo se note de
+   verdad en vez de solo el efecto de click momentáneo. */
+.btn-neutral:selected {
+    -fx-background-color: #E94560;
+    -fx-text-fill: white;
+    -fx-border-color: #E94560;
+}
+
+.btn-neutral:selected:hover {
+    -fx-background-color: #d63e56;
+    -fx-border-color: #d63e56;
 }
 
 /* Secundario: para Editar */
@@ -177,18 +265,17 @@
     -fx-text-fill: #C73652;
 }
 
-/* ============================================================
-   FORMULARIO — INPUTS
-   ============================================================ */
+/* FORMULARIO — INPUTS */
 
 .label-field {
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: #334155;
 }
 
 .text-field, .combo-box {
     -fx-background-color: #FFFFFF;
+    -fx-background-insets: 0;
     -fx-border-color: #CBD5E1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -201,17 +288,20 @@
 .text-field:focused {
     -fx-border-color: #E94560;
     -fx-border-width: 1.5;
+    -fx-background-insets: 0;
     -fx-effect: dropshadow(gaussian, rgba(233,69,96,0.12), 6, 0, 0, 0);
 }
 
 .combo-box:focused {
     -fx-border-color: #E94560;
     -fx-border-width: 1.5;
+    -fx-background-insets: 0;
 }
 
-/* ── TextArea ───────────────────────────────────────────── */
+/* TextArea  */
 .text-area {
     -fx-background-color: #FFFFFF;
+    -fx-background-insets: 0;
     -fx-border-color: #CBD5E1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -220,6 +310,7 @@
 
 .text-area .content {
     -fx-background-color: #FFFFFF;
+    -fx-background-insets: 0;
     -fx-background-radius: 8;
     -fx-padding: 8 10;
     -fx-text-fill: #0F172A;
@@ -228,13 +319,15 @@
 .text-area:focused {
     -fx-border-color: #E94560;
     -fx-border-width: 1.5;
+    -fx-background-insets: 0;
 }
 
 .text-area:focused .content {
     -fx-background-color: #FFFFFF;
+    -fx-background-insets: 0;
 }
 
-/* ── ComboBox dropdown ──────────────────────────────────── */
+/* ComboBox dropdown */
 .combo-box-popup .list-view {
     -fx-background-color: #FFFFFF;
     -fx-background-radius: 10;
@@ -277,9 +370,7 @@
     -fx-background-color: #E94560;
 }
 
-/* ============================================================
-   TABLA
-   ============================================================ */
+/* TABLA */
 
 .table-view {
     -fx-background-color: transparent;
@@ -351,9 +442,7 @@
     -fx-border-width: 0 0 1 0;
 }
 
-/* ============================================================
-   TABS (TabPane)
-   ============================================================ */
+/* TABS (TabPane) */
 
 .tab-pane > .tab-header-area > .tab-header-background {
     -fx-background-color: #F8FAFC;
@@ -410,9 +499,7 @@
     -fx-border-color: transparent;
 }
 
-/* ============================================================
-   DATE PICKER (Kárdex)
-   ============================================================ */
+/* DATE PICKER (Kárdex) */
 
 .date-picker {
     -fx-background-color: transparent;
@@ -443,3 +530,82 @@
     -fx-background-radius: 10;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0, 0, 6);
 }
+
+/* ============================================================
+   MODALES DE DETALLE (Ver/Editar) — estilo caja gris clara
+   Usado en ProductoModal y modales similares: inputs con fondo
+   gris muy suave y bordes redondeados grandes (estilo web de
+   referencia). En modo Ver, se deshabilitan (setDisable) y toman
+   el estado :disabled de abajo, sin perder legibilidad.
+   ============================================================ */
+.campo-input {
+    -fx-background-color: #F8FAFC;
+    -fx-background-insets: 0;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: #0F172A;
+    -fx-prompt-text-fill: #94A3B8;
+}
+
+.campo-input:focused {
+    -fx-border-color: #E94560;
+    -fx-border-width: 1.5;
+    -fx-background-color: #FFFFFF;
+    -fx-background-insets: 0;
+}
+
+.campo-input:disabled {
+    -fx-opacity: 1;
+    -fx-background-color: #F1F5F9;
+    -fx-background-insets: 0;
+    -fx-text-fill: #334155;
+}
+
+.campo-input .content {
+    -fx-background-color: #F8FAFC;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+}
+
+.campo-input:disabled .content {
+    -fx-background-color: #F1F5F9;
+    -fx-background-insets: 0;
+}
+
+/* Variante para campos que deben verse "deshabilitados" mientras
+   siguen recibiendo eventos de mouse (para que el Tooltip con el
+   texto completo funcione). setDisable() bloquea el mouse en
+   JavaFX y el tooltip nunca se dispara; setEditable(false) +
+   esta clase logran el mismo look sin ese problema. */
+.campo-readonly {
+    -fx-background-color: #F1F5F9;
+    -fx-background-insets: 0;
+    -fx-text-fill: #334155;
+}
+
+/* ============================================================
+   GRÁFICOS (Reportes) — paleta de marca en vez del arcoiris
+   por defecto de JavaFX, para mantener identidad visual.
+   ============================================================ */
+.default-color0.chart-series-line, .default-color0.chart-bar,
+.default-color0.chart-pie { -fx-bar-fill: #E94560; -fx-stroke: #E94560; -fx-pie-color: #E94560; }
+.default-color1.chart-series-line, .default-color1.chart-bar,
+.default-color1.chart-pie { -fx-bar-fill: #315E9E; -fx-stroke: #315E9E; -fx-pie-color: #315E9E; }
+.default-color2.chart-series-line, .default-color2.chart-bar,
+.default-color2.chart-pie { -fx-bar-fill: #166534; -fx-stroke: #166534; -fx-pie-color: #166534; }
+.default-color3.chart-series-line, .default-color3.chart-bar,
+.default-color3.chart-pie { -fx-bar-fill: #92400E; -fx-stroke: #92400E; -fx-pie-color: #92400E; }
+.default-color4.chart-series-line, .default-color4.chart-bar,
+.default-color4.chart-pie { -fx-bar-fill: #7C3AED; -fx-stroke: #7C3AED; -fx-pie-color: #7C3AED; }
+.default-color5.chart-series-line, .default-color5.chart-bar,
+.default-color5.chart-pie { -fx-bar-fill: #0891B2; -fx-stroke: #0891B2; -fx-pie-color: #0891B2; }
+.default-color6.chart-series-line, .default-color6.chart-bar,
+.default-color6.chart-pie { -fx-bar-fill: #94A3B8; -fx-stroke: #94A3B8; -fx-pie-color: #94A3B8; }
+.default-color7.chart-series-line, .default-color7.chart-bar,
+.default-color7.chart-pie { -fx-bar-fill: #1F2A44; -fx-stroke: #1F2A44; -fx-pie-color: #1F2A44; }
+
+.chart-line-symbol { -fx-background-color: #E94560, white; }
+.chart-legend { -fx-font-size: 11px; }

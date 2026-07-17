@@ -15,22 +15,23 @@
             <!-- Logo -->
             <HBox alignment="CENTER_LEFT" spacing="10"
                   style="-fx-padding: 18 16 14 16;
-             -fx-border-color: transparent transparent #2d5a8e transparent;
+             -fx-border-color: transparent transparent #34456B transparent;
              -fx-border-width: 0 0 1 0;">
-                <Label text="🖥️" style="-fx-font-size: 22px;"/>
+                <Region prefWidth="3" prefHeight="30" minWidth="3"
+                        style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
                 <VBox spacing="1">
                     <Label text="COMPUSOFT"
-                           style="-fx-font-size: 14px; -fx-font-weight: bold;
-                      -fx-text-fill: #ffffff;"/>
+                           style="-fx-font-size: 17px; -fx-font-weight: 800;
+                      -fx-text-fill: #ffffff; -fx-letter-spacing: 1px;"/>
                     <Label text="Sistema Comercial"
-                           style="-fx-font-size: 10px; -fx-text-fill: #7ea8cc;"/>
+                           style="-fx-font-size: 10px; -fx-text-fill: #8A93A8;"/>
                 </VBox>
             </HBox>
 
             <!-- Usuario con avatar -->
             <HBox spacing="10" alignment="CENTER_LEFT"
                   style="-fx-padding: 12 16;
-             -fx-border-color: transparent transparent #2d5a8e transparent;
+             -fx-border-color: transparent transparent #34456B transparent;
              -fx-border-width: 0 0 1 0;">
                 <Label text="👤"
                        style="-fx-font-size: 18px;
@@ -46,7 +47,7 @@
                         <Label text="●"
                                style="-fx-font-size: 8px; -fx-text-fill: #22C55E;"/>
                         <Label fx:id="lblCargo"
-                               style="-fx-font-size: 10px; -fx-text-fill: #9090AA;"/>
+                               style="-fx-font-size: 10px; -fx-text-fill: #8A93A8;"/>
                     </HBox>
                 </VBox>
             </HBox>
@@ -119,6 +120,11 @@
                         styleClass="sidebar-btn"
                         onAction="#abrirKardex"
                         visible="false" managed="false"/>
+                <Button fx:id="btnReportes"
+                        text="  📈  Reportes"
+                        styleClass="sidebar-btn"
+                        onAction="#abrirReportes"
+                        visible="false" managed="false"/>
                 <Button fx:id="btnConfiguracion"
                         text="  ⚙️  Configuración"
                         styleClass="sidebar-btn"
@@ -129,7 +135,7 @@
 
             <!-- Cerrar sesión al fondo -->
             <VBox style="-fx-padding: 8 10 12 10;
-             -fx-border-color: #2d5a8e transparent transparent transparent;
+             -fx-border-color: #34456B transparent transparent transparent;
              -fx-border-width: 1 0 0 0;">
                 <Button text="  🚪  Cerrar Sesión"
                         styleClass="sidebar-btn"

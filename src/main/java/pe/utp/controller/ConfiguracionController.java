@@ -10,6 +10,7 @@ import pe.utp.dao.MetodoPagoDAO;
 import pe.utp.dao.TipoComprobanteDAO;
 import pe.utp.dao.TipoDocumentoDAO;
 import pe.utp.dao.ValidacionEliminacionDAO;
+import pe.utp.dialog.CSDialog;
 import pe.utp.util.ResultadoEliminacion;
 import pe.utp.model.MetodoPago;
 import pe.utp.model.TipoComprobante;
@@ -87,8 +88,7 @@ public class ConfiguracionController implements AccesoControlable {
     }
 
     private void mostrarErrorEliminacion() {
-        new Alert(Alert.AlertType.ERROR,
-                "No se pudo eliminar el registro").show();
+        CSDialog.error("Error", "No se pudo eliminar el registro.");
     }
 
     private boolean verificarAcceso() {
@@ -148,17 +148,14 @@ public class ConfiguracionController implements AccesoControlable {
         String documento = txtDocumento.getText().trim();
         // Validación 1: campos obligatorios
         if (id.isEmpty() || documento.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos.");
             return;
         }
 
         // Validación 2: solo letras y espacios
         // Ej: "DNI", "Carnet de Extranjería"
         if (!documento.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El documento solo puede contener letras y espacios")
-                    .showAndWait();
+            CSDialog.warning("Documento inválido", "El documento solo puede contener letras y espacios.");
             return;
         }
 
@@ -166,9 +163,7 @@ public class ConfiguracionController implements AccesoControlable {
         String idExcluir = tipoDocSeleccionado != null
                 ? tipoDocSeleccionado.getIdTipoDocumento() : null;
         if (tipoDocDAO.existeDocumento(documento, idExcluir)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un tipo de documento con ese nombre")
-                    .showAndWait();
+            CSDialog.warning("Documento duplicado", "Ya existe un tipo de documento con ese nombre.");
             return;
         }
 
@@ -179,14 +174,13 @@ public class ConfiguracionController implements AccesoControlable {
 
         if (exito) {
             String msg = tipoDocSeleccionado == null
-                    ? "Tipo de documento registrado correctamente"
-                    : "Tipo de documento actualizado correctamente";
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+                    ? "Tipo de documento registrado correctamente."
+                    : "Tipo de documento actualizado correctamente.";
+            CSDialog.success("Guardado", msg);
             cargarTipoDoc();
             limpiarTipoDoc();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo guardar el tipo de documento").showAndWait();
+            CSDialog.error("Error", "No se pudo guardar el tipo de documento.");
         }
     }
 
@@ -197,25 +191,20 @@ public class ConfiguracionController implements AccesoControlable {
         String nombre = txtNombreComp.getText().trim();
 
         if (id.isEmpty() || nombre.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos.");
             return;
         }
 
         // Solo letras y espacios.
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El nombre solo puede contener letras y espacios")
-                    .showAndWait();
+            CSDialog.warning("Nombre inválido", "El nombre solo puede contener letras y espacios.");
             return;
         }
 
         String idExcluir = tipoCompSeleccionado != null
                 ? tipoCompSeleccionado.getIdTipoComprobante() : null;
         if (tipoCompDAO.existeNombre(nombre, idExcluir)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un tipo de comprobante con ese nombre")
-                    .showAndWait();
+            CSDialog.warning("Comprobante duplicado", "Ya existe un tipo de comprobante con ese nombre.");
             return;
         }
 
@@ -226,14 +215,13 @@ public class ConfiguracionController implements AccesoControlable {
 
         if (exito) {
             String msg = tipoCompSeleccionado == null
-                    ? "Tipo de comprobante registrado correctamente"
-                    : "Tipo de comprobante actualizado correctamente";
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+                    ? "Tipo de comprobante registrado correctamente."
+                    : "Tipo de comprobante actualizado correctamente.";
+            CSDialog.success("Guardado", msg);
             cargarTipoComp();
             limpiarTipoComp();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo guardar el tipo de comprobante").showAndWait();
+            CSDialog.error("Error", "No se pudo guardar el tipo de comprobante.");
         }
     }
 
@@ -243,25 +231,20 @@ public class ConfiguracionController implements AccesoControlable {
         String id = txtIdMetodoPago.getText().trim();
         String metodo = txtMetodoPago.getText().trim();
         if (id.isEmpty() || metodo.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Completa todos los campos").showAndWait();
+            CSDialog.warning("Campos incompletos", "Completa todos los campos.");
             return;
         }
 
         // Letras, números y espacios. Ej: "Tarjeta de Crédito", "Yape"
         if (!metodo.matches("[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s]+")) {
-            new Alert(Alert.AlertType.WARNING,
-                    "El método contiene caracteres no permitidos")
-                    .showAndWait();
+            CSDialog.warning("Método inválido", "El método contiene caracteres no permitidos.");
             return;
         }
 
         String idExcluir = metodoPagoSeleccionado != null
                 ? metodoPagoSeleccionado.getIdMetodoPago() : null;
         if (metodoPagoDAO.existeMetodo(metodo, idExcluir)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Ya existe un método de pago con ese nombre")
-                    .showAndWait();
+            CSDialog.warning("Método duplicado", "Ya existe un método de pago con ese nombre.");
             return;
         }
 
@@ -272,14 +255,13 @@ public class ConfiguracionController implements AccesoControlable {
 
         if (exito) {
             String msg = metodoPagoSeleccionado == null
-                    ? "Método de pago registrado correctamente"
-                    : "Método de pago actualizado correctamente";
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
+                    ? "Método de pago registrado correctamente."
+                    : "Método de pago actualizado correctamente.";
+            CSDialog.success("Guardado", msg);
             cargarMetodoPago();
             limpiarMetodoPago();
         } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "No se pudo guardar el método de pago").showAndWait();
+            CSDialog.error("Error", "No se pudo guardar el método de pago.");
         }
     }
 
@@ -315,12 +297,14 @@ public class ConfiguracionController implements AccesoControlable {
             final Button btnEliminar = new Button("Eliminar");
 
             {
-                btnEditar.setStyle(
-                        "-fx-background-color: #4361ee; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
-                btnEliminar.setStyle(
-                        "-fx-background-color: #ef233c; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;");
+                // Mismas clases de estilo que la columna Acciones de
+                // Categoría (.btn-table-edit / .btn-table-delete en
+                // style.css): antes esta tabla tenía sus propios
+                // colores sueltos (#4361ee/#ef233c) en vez de la
+                // paleta de marca (#315E9E/#E94560), así que Acciones
+                // se veía distinto según el módulo.
+                btnEditar.getStyleClass().add("btn-table-edit");
+                btnEliminar.getStyleClass().add("btn-table-delete");
 
                 btnEditar.setOnAction(e -> {
                     Object item = getTableView().getItems().get(getIndex());
@@ -354,64 +338,71 @@ public class ConfiguracionController implements AccesoControlable {
 
                 btnEliminar.setOnAction(e -> {
                     Object item = getTableView().getItems().get(getIndex());
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                            "¿Eliminar este registro?", ButtonType.YES, ButtonType.NO);
-                    alert.showAndWait().ifPresent(resp -> {
-                        if (resp == ButtonType.YES) {
-                            switch (tipo) {
-                                case "tipoDoc" -> {
-                                    TipoDocumento td = (TipoDocumento) item;
-                                    ResultadoEliminacion r = validacion.validarTipoDocumento(
-                                            td.getIdTipoDocumento(), td.getDocumento());
-                                    if (!r.isPermitido()) {
-                                        r.mostrarAlerta();
-                                        return;
-                                    }
-                                    if (tipoDocDAO.eliminar(td.getIdTipoDocumento())) {
-                                        cargarTipoDoc();
-                                    } else {
-                                        mostrarErrorEliminacion();
-                                    }
+                    boolean confirmado = CSDialog.confirm(
+                            "Eliminar registro", "¿Eliminar este registro?",
+                            "Eliminar", "Cancelar", true, true);
+                    if (confirmado) {
+                        switch (tipo) {
+                            case "tipoDoc" -> {
+                                TipoDocumento td = (TipoDocumento) item;
+                                ResultadoEliminacion r = validacion.validarTipoDocumento(
+                                        td.getIdTipoDocumento(), td.getDocumento());
+                                if (!r.isPermitido()) {
+                                    r.mostrarAlerta();
+                                    return;
                                 }
-                                case "tipoComp" -> {
-                                    TipoComprobante tc = (TipoComprobante) item;
-                                    ResultadoEliminacion r = validacion.validarTipoComprobante(
-                                            tc.getIdTipoComprobante(), tc.getNombre());
-                                    if (!r.isPermitido()) {
-                                        r.mostrarAlerta();
-                                        return;
-                                    }
-                                    if (tipoCompDAO.eliminar(tc.getIdTipoComprobante())) {
-                                        cargarTipoComp();
-                                    } else {
-                                        mostrarErrorEliminacion();
-                                    }
+                                if (tipoDocDAO.eliminar(td.getIdTipoDocumento())) {
+                                    CSDialog.success("Eliminado", "El tipo de documento fue eliminado correctamente.");
+                                    cargarTipoDoc();
+                                } else {
+                                    mostrarErrorEliminacion();
                                 }
-                                case "metodoPago" -> {
-                                    MetodoPago mp = (MetodoPago) item;
-                                    ResultadoEliminacion r = validacion.validarMetodoPago(
-                                            mp.getIdMetodoPago(), mp.getMetodoDePago());
-                                    if (!r.isPermitido()) {
-                                        r.mostrarAlerta();
-                                        return;
-                                    }
-                                    if (metodoPagoDAO.eliminar(mp.getIdMetodoPago())) {
-                                        cargarMetodoPago();
-                                    } else {
-                                        mostrarErrorEliminacion();
-                                    }
+                            }
+                            case "tipoComp" -> {
+                                TipoComprobante tc = (TipoComprobante) item;
+                                ResultadoEliminacion r = validacion.validarTipoComprobante(
+                                        tc.getIdTipoComprobante(), tc.getNombre());
+                                if (!r.isPermitido()) {
+                                    r.mostrarAlerta();
+                                    return;
+                                }
+                                if (tipoCompDAO.eliminar(tc.getIdTipoComprobante())) {
+                                    CSDialog.success("Eliminado", "El tipo de comprobante fue eliminado correctamente.");
+                                    cargarTipoComp();
+                                } else {
+                                    mostrarErrorEliminacion();
+                                }
+                            }
+                            case "metodoPago" -> {
+                                MetodoPago mp = (MetodoPago) item;
+                                ResultadoEliminacion r = validacion.validarMetodoPago(
+                                        mp.getIdMetodoPago(), mp.getMetodoDePago());
+                                if (!r.isPermitido()) {
+                                    r.mostrarAlerta();
+                                    return;
+                                }
+                                if (metodoPagoDAO.eliminar(mp.getIdMetodoPago())) {
+                                    CSDialog.success("Eliminado", "El método de pago fue eliminado correctamente.");
+                                    cargarMetodoPago();
+                                } else {
+                                    mostrarErrorEliminacion();
                                 }
                             }
                         }
-                    });
+                    }
                 });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) setGraphic(null);
-                else setGraphic(new HBox(6, btnEditar, btnEliminar));
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox hbox = new HBox(5, btnEditar, btnEliminar);
+                    hbox.setAlignment(javafx.geometry.Pos.CENTER);
+                    setGraphic(hbox);
+                }
             }
         });
     }
