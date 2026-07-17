@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.CotizacionDetalleModalController"
+      spacing="0"
+      style="-fx-background-color: white;"
+      prefWidth="380">
+
+    <!-- CABECERA -->
+    <VBox spacing="4" alignment="CENTER"
+          style="-fx-background-color: #1a1a2e; -fx-padding: 20 24;">
+        <Label text="COMPUSOFT"
+               style="-fx-font-size: 18px; -fx-font-weight: bold;
+                      -fx-text-fill: white; -fx-letter-spacing: 2px;"/>
+        <Label text="Sistema Comercial"
+               style="-fx-font-size: 11px;
+                      -fx-text-fill: rgba(255,255,255,0.7);"/>
+        <Separator style="-fx-padding: 6 0 0 0;"/>
+        <Label text="DETALLE DE COTIZACIÓN"
+               style="-fx-font-size: 12px; -fx-font-weight: bold;
+                      -fx-text-fill: #e94560; -fx-padding: 6 0 0 0;
+                      -fx-letter-spacing: 1px;"/>
+    </VBox>
+
+    <!-- CUERPO -->
+    <ScrollPane fitToWidth="true"
+                style="-fx-background-color: white; -fx-background: white;
+                       -fx-border-color: transparent;"
+                VBox.vgrow="ALWAYS">
+        <VBox spacing="10" style="-fx-padding: 20;">
+
+            <!-- Datos generales -->
+            <VBox spacing="4">
+                <HBox spacing="8">
+                    <Label text="N° Cotización:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblIdCotizacion"
+                           style="-fx-font-size: 12px; -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+                <HBox spacing="8">
+                    <Label text="Fecha:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblFecha"
+                           style="-fx-font-size: 12px; -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+                <HBox spacing="8">
+                    <Label text="Cliente:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblCliente"
+                           style="-fx-font-size: 12px; -fx-text-fill: #1a1a2e;"
+                           wrapText="true"/>
+                </HBox>
+                <HBox spacing="8">
+                    <Label text="Atendido por:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblEmpleado"
+                           style="-fx-font-size: 12px; -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+                <HBox spacing="8">
+                    <Label text="Estado:"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblEstado"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+                </HBox>
+            </VBox>
+
+            <Separator style="-fx-padding: 4 0;"/>
+
+            <!-- Tabla de productos -->
+            <VBox fx:id="panelProductos" spacing="8">
+                <HBox spacing="6">
+                    <Label text="Producto"
+                           style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"
+                           HBox.hgrow="ALWAYS"/>
+                    <Label text="Cant."
+                           style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"
+                           prefWidth="35" alignment="CENTER_RIGHT"/>
+                    <Label text="P.Unit"
+                           style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"
+                           prefWidth="55" alignment="CENTER_RIGHT"/>
+                    <Label text="Subtotal"
+                           style="-fx-font-size: 10px; -fx-font-weight: bold;
+                                  -fx-text-fill: #6c757d;"
+                           prefWidth="65" alignment="CENTER_RIGHT"/>
+                </HBox>
+                <Separator/>
+            </VBox>
+
+            <Separator style="-fx-padding: 4 0;"/>
+
+            <!-- Descuento y Total -->
+            <VBox spacing="6">
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label text="Descuento:"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #6c757d;"/>
+                    <Label fx:id="lblDescuento"
+                           style="-fx-font-size: 12px;
+                                  -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label text="TOTAL COTIZACIÓN:"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"/>
+                    <Label fx:id="lblTotal"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+            </VBox>
+
+            <Separator style="-fx-padding: 4 0;"/>
+
+            <Label text="Este documento es una proforma referencial.&#10;No tiene validez tributaria."
+                   style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa;
+                          -fx-text-alignment: center;"
+                   textAlignment="CENTER" wrapText="true"
+                   maxWidth="Infinity"/>
+        </VBox>
+    </ScrollPane>
+
+    <!-- PIE -->
+    <HBox spacing="10" alignment="CENTER_RIGHT"
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
+                 -fx-border-width: 1;">
+        <Button text="Cerrar" onAction="#cerrar" styleClass="btn-primary"/>
+    </HBox>
+
+</VBox>

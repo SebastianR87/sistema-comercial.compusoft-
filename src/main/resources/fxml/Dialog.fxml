@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<!--
+     Raíz del diálogo: un StackPane que ocupa TODA la ventana
+     transparente (ver CSDialog.mostrarInterno, que dimensiona el
+     Stage al tamaño exacto de la ventana dueña). El propio StackPane
+     pinta el overlay semitransparente (.cs-dialog-overlay en
+     dialog.css) y centra la tarjeta dentro de él; así el "fondo
+     oscurecido" cubre toda la app, no solo un rincón de la pantalla.
+
+     Un clic directo sobre este StackPane (fuera de la tarjeta) cierra
+     el diálogo (ver DialogController), igual que Escape.
+-->
+<StackPane fx:id="rootOverlay" styleClass="cs-dialog-overlay"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="pe.utp.dialog.DialogController">
+
+    <!-- maxHeight="-Infinity" (Region.USE_PREF_SIZE): sin esto, un
+         StackPane estira a sus hijos para llenar TODO el alto
+         disponible, no solo el ancho; un Region (VBox incluida) no
+         tiene alto máximo por defecto (Double.MAX_VALUE), así que la
+         tarjeta terminaba ocupando el alto completo de la ventana,
+         con un enorme espacio en blanco debajo de los botones. Con
+         este tope, la tarjeta se dimensiona a su alto natural de
+         contenido y el StackPane la centra en vez de estirarla. -->
+    <VBox fx:id="card" styleClass="cs-dialog-card" spacing="20"
+          minWidth="380" prefWidth="420" maxWidth="460" maxHeight="-Infinity"
+          StackPane.alignment="CENTER">
+        <padding>
+            <Insets top="28" bottom="24" left="28" right="28"/>
+        </padding>
+
+        <HBox spacing="16" alignment="TOP_LEFT">
+            <StackPane fx:id="iconBadge" styleClass="cs-dialog-icon-badge"
+                       prefWidth="44" prefHeight="44"
+                       minWidth="44" minHeight="44"
+                       maxWidth="44" maxHeight="44"/>
+
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label fx:id="lblTitulo" styleClass="cs-dialog-title" wrapText="true"/>
+                <!-- wrapText + sin maxWidth fijo: el Label toma el
+                     ancho que le da este VBox (hgrow ALWAYS dentro del
+                     HBox), así que un mensaje largo envuelve en vez de
+                     desbordar la tarjeta, sin importar cuántas líneas
+                     necesite (soporte de texto largo). -->
+                <Label fx:id="lblMensaje" styleClass="cs-dialog-message" wrapText="true"/>
+            </VBox>
+        </HBox>
+
+        <HBox fx:id="panelBotones" styleClass="cs-dialog-buttons"
+              alignment="CENTER_RIGHT" spacing="10">
+            <!-- Oculto por defecto (managed=false): solo se activa
+                 para DialogType.CONFIRM (ver DialogController.configurar). -->
+            <Button fx:id="btnSecundario" styleClass="btn-neutral"
+                    visible="false" managed="false"/>
+            <Button fx:id="btnPrimario" styleClass="cs-dialog-btn-primario"/>
+        </HBox>
+    </VBox>
+</StackPane>

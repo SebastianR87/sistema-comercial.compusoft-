@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.CompatibilidadController"
+      spacing="0" style="-fx-background-color: #f0f2f5;">
+
+    <!-- TOPBAR -->
+    <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="50" bottom="15" left="20" right="20"/></padding>
+            <Label text=" Matriz de Compatibilidad Técnica"
+                   styleClass="topbar-title"
+                   style="-fx-font-size: 20px; -fx-letter-spacing: 0.5px;"/>
+        <HBox HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnNuevaRegla" text="➕ Nueva Regla"
+                styleClass="btn-primary"
+                onAction="#mostrarFormulario"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: #f0f2f5;
+                       -fx-background: #f0f2f5;
+                       -fx-border-color: transparent;">
+        <VBox spacing="16" style="-fx-padding: 20;">
+
+            <!-- FORMULARIO NUEVA REGLA (oculto por defecto) -->
+            <VBox fx:id="panelFormulario" styleClass="card" spacing="14"
+                  visible="false" managed="false">
+                <!-- Encabezado de la tarjeta: izquierda = título (con su
+                     ícono ya incluido en el texto), derecha = botón
+                     cerrar. El Region con hgrow es quien empuja la X
+                     al extremo derecho: el Label NO crece de forma
+                     confiable con HBox.hgrow porque su maxWidth por
+                     defecto no es infinito, por eso antes la X quedaba
+                     pegada al texto. La X queda así en el mismo borde
+                     derecho que "Guardar Regla"/"Actualizar Regla". -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label fx:id="lblTituloForm" text="➕ Nueva Regla de Compatibilidad"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="✖" onAction="#ocultarFormulario"
+                            styleClass="btn-close-panel"/>
+                </HBox>
+                <Separator/>
+
+                <!-- Dos productos en una fila -->
+                <HBox spacing="16">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Componente A" styleClass="label-field"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="(Ej: Placa Base, CPU, RAM...)"
+                               style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa;"/>
+                        <ComboBox fx:id="cbProducto1"
+                                  maxWidth="Infinity"
+                                  promptText="Busca por nombre o ID..."/>
+                    </VBox>
+
+                    <VBox alignment="CENTER" style="-fx-padding: 18 0 0 0;">
+                        <Label text="⇄"
+                               style="-fx-font-size: 20px; -fx-text-fill: #6c757d;"/>
+                    </VBox>
+
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Componente B" styleClass="label-field"
+                               style="-fx-font-weight: bold;"/>
+                        <Label text="(Ej: Procesador, Tarjeta, Memoria...)"
+                               style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa;"/>
+                        <ComboBox fx:id="cbProducto2"
+                                  maxWidth="Infinity"
+                                  promptText="Busca por nombre o ID..."/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="16">
+                    <VBox spacing="5" prefWidth="200">
+                        <Label text="Estado de compatibilidad"
+                               styleClass="label-field"/>
+                        <ComboBox fx:id="cbEstado" maxWidth="Infinity"
+                                  promptText="Selecciona..."/>
+                    </VBox>
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label text="Restricción / Nota técnica (opcional)"
+                               styleClass="label-field"/>
+                        <TextField fx:id="txtRestriccion"
+                                   promptText="Ej: Socket AM5 Directo, EXPO inestable a 7200MHz..."/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button text="🔄 Limpiar" onAction="#limpiarFormulario"
+                            styleClass="btn-neutral"/>
+                    <Button fx:id="btnGuardarRegla" text="💾 Guardar Regla" onAction="#guardar"
+                            styleClass="btn-primary"/>
+                </HBox>
+            </VBox>
+
+            <!-- VERIFICADOR RÁPIDO -->
+            <VBox styleClass="card" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Label text="⚡" style="-fx-font-size: 14px;"/>
+                    <Label text="Verificador Rápido"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+                <Separator/>
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="cbVerificarA"
+                              maxWidth="Infinity" minWidth="180" HBox.hgrow="ALWAYS"
+                              promptText="Componente A (Ej: Placa Base)"/>
+                    <Label text="⇄"
+                           style="-fx-font-size: 16px; -fx-text-fill: #6c757d;"/>
+                    <ComboBox fx:id="cbVerificarB"
+                              maxWidth="Infinity" minWidth="180" HBox.hgrow="ALWAYS"
+                              promptText="Componente B (Ej: Procesador)"/>
+                    <Button text="⚡ Verificar" onAction="#verificarCompatibilidad"
+                            styleClass="btn-info"/>
+                </HBox>
+
+                <!-- Resultado de la verificación -->
+                <VBox fx:id="panelResultado" spacing="6"
+                      visible="false" managed="false"
+                      style="-fx-background-color: #f8f9fa;
+                             -fx-background-radius: 8;
+                             -fx-border-radius: 8;
+                             -fx-border-width: 1;
+                             -fx-padding: 12;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label fx:id="lblResultadoIcono"
+                               style="-fx-font-size: 20px;"/>
+                        <VBox spacing="2">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Label fx:id="lblResultadoEstado"
+                                       style="-fx-font-size: 13px;
+                                              -fx-font-weight: bold;
+                                              -fx-background-radius: 4;
+                                              -fx-padding: 2 8;"/>
+                                <Label fx:id="lblResultadoCodigo"
+                                       style="-fx-font-size: 11px;
+                                              -fx-text-fill: #6c757d;
+                                              -fx-font-family: 'Courier New';"/>
+                            </HBox>
+                            <Label fx:id="lblResultadoDesc"
+                                   style="-fx-font-size: 12px;
+                                          -fx-text-fill: #495057;"
+                                   wrapText="true"/>
+                        </VBox>
+                    </HBox>
+                    <Label fx:id="lblResultadoNota"
+                           style="-fx-font-size: 11px; -fx-text-fill: #6c757d;
+                                  -fx-font-style: italic;"
+                           wrapText="true" maxWidth="Infinity"/>
+                </VBox>
+            </VBox>
+
+            <!-- MATRIZ GLOBAL -->
+            <VBox styleClass="card" spacing="12" VBox.vgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Matriz Global de Componentes"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;
+                                  -fx-text-fill: #1a1a2e;"
+                           HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblContadorReglas"
+                           style="-fx-font-size: 11px; -fx-text-fill: #6c757d;"/>
+                </HBox>
+
+                <!-- Filtros -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <HBox spacing="0" alignment="CENTER_LEFT"
+                          HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #f8f9fa;
+                                 -fx-border-color: #e0e0e0;
+                                 -fx-border-radius: 8;
+                                 -fx-background-radius: 8;
+                                 -fx-border-width: 1;
+                                 -fx-padding: 0 10;">
+                        <Label text="🔍"
+                               style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa;
+                                      -fx-padding: 0 6 0 0;"/>
+                        <TextField fx:id="txtFiltro"
+                                   promptText="Filtrar por nombre de producto..."
+                                   HBox.hgrow="ALWAYS"
+                                   onKeyReleased="#filtrar"
+                                   style="-fx-background-color: transparent;
+                                          -fx-border-color: transparent;
+                                          -fx-font-size: 13px;
+                                          -fx-padding: 7 0;"/>
+                    </HBox>
+                    <ComboBox fx:id="cbFiltroEstado"
+                              prefWidth="180"
+                              promptText="Todos los estados"
+                              onAction="#filtrar"/>
+                </HBox>
+
+                <Separator/>
+
+                <TableView fx:id="tablaCompatibilidad" VBox.vgrow="ALWAYS"
+                           minHeight="300">
+                    <columns>
+                        <TableColumn fx:id="colProductoBase"
+                                     text="Componente Base" prefWidth="180"/>
+                        <TableColumn fx:id="colTipoBase"
+                                     text="Tipo" prefWidth="100"/>
+                        <TableColumn fx:id="colProductoObj"
+                                     text="Componente Objetivo" prefWidth="180"/>
+                        <TableColumn fx:id="colTipoObj"
+                                     text="Tipo" prefWidth="100"/>
+                        <TableColumn fx:id="colEstadoTabla"
+                                     text="Estado" prefWidth="110"/>
+                        <TableColumn fx:id="colRestriccion"
+                                     text="Restricción / Notas" prefWidth="200"/>
+                        <TableColumn fx:id="colAcciones"
+                                     text="Acciones" prefWidth="200"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

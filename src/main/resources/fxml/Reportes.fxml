@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.ReportesController"
+      spacing="0" style="-fx-background-color: #F8FAFC;">
+
+    <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="35" bottom="15" left="20" right="20"/></padding>
+            <Label text="Reportes" styleClass="topbar-title"
+                   style="-fx-font-size: 20px; -fx-letter-spacing: 0.5px;"/>
+    </HBox>
+
+    <!-- ============================================================
+         ZONA CON SCROLL: filtros + KPIs + gráficos + tabla. Solo el
+         topbar (arriba) queda fijo; TODO lo demás, incluyendo el
+         propio card de filtros, se desplaza junto con el contenido
+         (mismo patrón que Kárdex). Antes los filtros quedaban fijos
+         sobre el ScrollPane, pero al crecer con las secciones de
+         "RANGO DE FECHAS" y "Acciones" terminaban ocupando demasiado
+         alto fijo y dejaban muy poco espacio visible para ver KPIs y
+         gráficos al hacer scroll; exactamente lo que Kárdex evita al
+         tener todo dentro de un mismo ScrollPane.
+         ============================================================ -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: #F8FAFC;
+                       -fx-background: #F8FAFC;
+                       -fx-border-color: transparent;">
+    <VBox spacing="16" style="-fx-padding: 16 20 20 20;">
+
+        <!-- FILTROS: reorganizados en 3 grupos con separación visual
+             real (antes iba todo en una sola fila apretada: tipo,
+             fechas y botones mezclados sin jerarquía). Mismo patrón ya
+             usado en Kárdex, para que ambos módulos se sientan
+             consistentes: 1) tipo de reporte, 2) rango de fechas con
+             atajos rápidos, 3) acciones, cada uno en su propio bloque
+             y separado por un Separator. -->
+        <VBox styleClass="card" spacing="14" style="-fx-padding: 16 20;">
+            <Label text="FILTROS DEL REPORTE"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Separator/>
+
+            <VBox spacing="3">
+                <Label text="TIPO DE REPORTE"
+                       style="-fx-font-size: 9px; -fx-font-weight: bold;
+                              -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <ComboBox fx:id="cbTipo" prefWidth="180"/>
+            </VBox>
+
+            <!-- Rango de fechas: bloque propio con atajos rápidos, para
+                 no tener que abrir el calendario dos veces en los
+                 rangos más comunes (mismo patrón que Kárdex). -->
+            <VBox spacing="8">
+                <Label text="RANGO DE FECHAS"
+                       style="-fx-font-size: 9px; -fx-font-weight: bold;
+                              -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <VBox spacing="3">
+                        <Label text="DESDE"
+                               style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                      -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                        <DatePicker fx:id="dpDesde" styleClass="campo-input" prefWidth="140"/>
+                    </VBox>
+                    <VBox spacing="3">
+                        <Label text="HASTA"
+                               style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                      -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                        <DatePicker fx:id="dpHasta" styleClass="campo-input" prefWidth="140"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <!-- Atajos rápidos: ToggleButton (no Button) dentro
+                         de un mismo ToggleGroup, para que el atajo
+                         activo quede visualmente marcado (:selected en
+                         style.css) hasta que se elija otro o se edite
+                         una fecha a mano. Solo ajustan Desde/Hasta; el
+                         usuario sigue presionando "Generar Reporte". -->
+                    <fx:define>
+                        <ToggleGroup fx:id="grupoRangoFechas"/>
+                    </fx:define>
+                    <ToggleButton fx:id="btnRangoHoy" text="Hoy" toggleGroup="$grupoRangoFechas"
+                                  onAction="#rangoHoy" styleClass="btn-neutral"
+                                  style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                    <ToggleButton fx:id="btnRango7Dias" text="Últimos 7 días" toggleGroup="$grupoRangoFechas"
+                                  onAction="#rangoUltimos7Dias" styleClass="btn-neutral"
+                                  style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                    <ToggleButton fx:id="btnRangoMes" text="Este mes" toggleGroup="$grupoRangoFechas"
+                                  onAction="#rangoEsteMes" styleClass="btn-neutral"
+                                  style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                    <ToggleButton fx:id="btnRangoAnio" text="Este año" toggleGroup="$grupoRangoFechas"
+                                  onAction="#rangoEsteAnio" styleClass="btn-neutral"
+                                  style="-fx-font-size: 11px; -fx-padding: 6 12;"/>
+                </HBox>
+            </VBox>
+
+            <Separator/>
+
+            <!-- Acciones: separadas visualmente de los filtros de
+                 arriba. Exportar a PDF queda a la derecha (aparece
+                 recién cuando ya hay un reporte generado). -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Limpiar" onAction="#limpiar" styleClass="btn-neutral"/>
+                <Button text="Generar Reporte" onAction="#generarReporte" styleClass="btn-primary"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <!-- btn-info: mismas medidas exactas que btn-primary
+                     (padding 9 18, radio 8, sombra, fuente 13px bold),
+                     solo cambia a azul corporativo; ya existía en
+                     style.css, se usaba en otros módulos. -->
+                <Button fx:id="btnExportarPdf" text="Exportar a PDF"
+                        onAction="#exportarPdf" styleClass="btn-info"
+                        visible="false" managed="false"/>
+            </HBox>
+        </VBox>
+
+        <!-- KPIs: GridPane con 4 columnas de 25% exactas, así las
+             cuatro tarjetas quedan del MISMO tamaño sin importar si el
+             texto de una es más largo que el de otra (con HBox y
+             hgrow no hay esa garantía geométrica). El 4to KPI cambia
+             de indicador según el tipo de reporte (Clientes Atendidos
+             en Ventas, Productos Comprados en Compras). -->
+        <GridPane fx:id="panelResumen" hgap="14" visible="false" managed="false">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+            </columnConstraints>
+            <!-- Cada KPI es un StackPane: el contenido (título+valor)
+                 va centrado como antes, y el ícono discreto (~19px,
+                 hecho con formas nativas de JavaFX -Circle/Rectangle/
+                 Polygon/Polyline-, no SVG a mano) se ancla arriba a la
+                 izquierda respetando el padding de la tarjeta. Estilo
+                 monolínea, un solo color (el mismo acento del KPI),
+                 sin relleno llamativo; inspirado en las tarjetas de
+                 SAP Business One / Zoho Analytics / Odoo. -->
+            <StackPane styleClass="card" GridPane.columnIndex="0">
+                <VBox spacing="6" alignment="CENTER">
+                    <Label fx:id="lblTituloTotal" text="TOTAL VENDIDO"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold;
+                                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                    <Label fx:id="lblTotal"
+                           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #E94560;"/>
+                </VBox>
+                <!-- Ícono de dinero: moneda con signo "$", igual al
+                     glifo típico de "revenue/money" en dashboards web
+                     (Font Awesome coins / Material payments). -->
+                <Group StackPane.alignment="TOP_LEFT">
+                    <Circle centerX="10" centerY="10" radius="8.5"
+                            style="-fx-fill: transparent; -fx-stroke: #E94560; -fx-stroke-width: 1.6;"/>
+                    <Text x="6.3" y="14.2"
+                          style="-fx-fill: #E94560; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </Group>
+            </StackPane>
+            <StackPane styleClass="card" GridPane.columnIndex="1">
+                <VBox spacing="6" alignment="CENTER">
+                    <Label fx:id="lblTituloCantidad" text="N° DE VENTAS"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold;
+                                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                    <Label fx:id="lblCantidad"
+                           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #315E9E;"/>
+                </VBox>
+                <!-- Ícono de carrito de compras: silueta clásica de
+                     "shopping cart" (canasta + asa + 2 ruedas), el
+                     mismo lenguaje visual que Feather/Font Awesome. -->
+                <Group StackPane.alignment="TOP_LEFT">
+                    <Polyline points="1,2,4,2,5,6"
+                              style="-fx-fill: transparent; -fx-stroke: #315E9E; -fx-stroke-width: 1.5;
+                                     -fx-stroke-line-join: round; -fx-stroke-line-cap: round;"/>
+                    <Polygon points="5,6,17,6,14.5,13,7.5,13"
+                             style="-fx-fill: transparent; -fx-stroke: #315E9E; -fx-stroke-width: 1.5;"/>
+                    <Circle centerX="8.5" centerY="16.5" radius="1.4" style="-fx-fill: #315E9E;"/>
+                    <Circle centerX="13.5" centerY="16.5" radius="1.4" style="-fx-fill: #315E9E;"/>
+                </Group>
+            </StackPane>
+            <StackPane styleClass="card" GridPane.columnIndex="2">
+                <VBox spacing="6" alignment="CENTER">
+                    <Label fx:id="lblTituloPromedio" text="TICKET PROMEDIO"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold;
+                                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                    <Label fx:id="lblPromedio"
+                           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                </VBox>
+                <!-- Ícono de tendencia ascendente: línea quebrada + flecha -->
+                <Group StackPane.alignment="TOP_LEFT">
+                    <Polyline points="2,16,8,10,12,13,18,4"
+                              style="-fx-fill: transparent; -fx-stroke: #166534; -fx-stroke-width: 1.8;
+                                     -fx-stroke-line-join: round; -fx-stroke-line-cap: round;"/>
+                    <Polygon points="14,4,18,4,18,8" style="-fx-fill: #166534;"/>
+                </Group>
+            </StackPane>
+            <StackPane fx:id="panelKpi4" styleClass="card" GridPane.columnIndex="3">
+                <VBox spacing="6" alignment="CENTER">
+                    <Label fx:id="lblTituloKpi4" text="CLIENTES ATENDIDOS"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold;
+                                  -fx-text-fill: #64748B; -fx-letter-spacing: 0.5px;"/>
+                    <Label fx:id="lblKpi4"
+                           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #7C3AED;"/>
+                </VBox>
+                <!-- 4to ícono: cambia según el tipo de reporte. Persona
+                     (Clientes Atendidos) visible por defecto porque
+                     "Ventas" es el tipo inicial; el controlador alterna
+                     cuál de los dos se ve al generar el reporte. -->
+                <Group fx:id="iconKpi4Persona" StackPane.alignment="TOP_LEFT">
+                    <Circle centerX="10" centerY="6.5" radius="3.2"
+                            style="-fx-fill: transparent; -fx-stroke: #7C3AED; -fx-stroke-width: 1.6;"/>
+                    <Arc centerX="10" centerY="19" radiusX="7" radiusY="7" startAngle="25" length="130" type="OPEN"
+                         style="-fx-fill: transparent; -fx-stroke: #7C3AED; -fx-stroke-width: 1.6;"/>
+                </Group>
+                <Group fx:id="iconKpi4Caja" visible="false" managed="false" StackPane.alignment="TOP_LEFT">
+                    <Polygon points="10,1,18,5.5,18,14.5,10,19,2,14.5,2,5.5"
+                             style="-fx-fill: transparent; -fx-stroke: #7C3AED; -fx-stroke-width: 1.5;"/>
+                    <Line startX="10" startY="10" endX="10" endY="19" style="-fx-stroke: #7C3AED; -fx-stroke-width: 1.3;"/>
+                    <Line startX="2" startY="5.5" endX="10" endY="10" style="-fx-stroke: #7C3AED; -fx-stroke-width: 1.3;"/>
+                    <Line startX="18" startY="5.5" endX="10" endY="10" style="-fx-stroke: #7C3AED; -fx-stroke-width: 1.3;"/>
+                </Group>
+            </StackPane>
+        </GridPane>
+
+        <!-- ZONA FLEXIBLE: gráficos + tabla. Crece con el contenido; el
+             scroll lo aporta el ScrollPane que envuelve toda la zona
+             junto con los KPIs de arriba. -->
+        <VBox fx:id="panelGraficos" spacing="12" visible="false" managed="false">
+
+            <!-- FILA DE GRÁFICOS: 70% tendencia / 30% circular. El
+                 circular usa menos padding en su tarjeta que el resto
+                 (12 en vez de 20) para que el gráfico gane área real,
+                 con la leyenda al lado (no debajo) y sin quedar chico. -->
+            <GridPane hgap="14" prefHeight="300" minHeight="260">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="70"/>
+                    <ColumnConstraints percentWidth="30"/>
+                </columnConstraints>
+                <VBox styleClass="card" spacing="10" GridPane.columnIndex="0">
+                    <Label fx:id="lblTituloTendencia" text="TENDENCIA POR DÍA"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+                    <Separator/>
+                    <LineChart fx:id="chartTendencia" VBox.vgrow="ALWAYS" animated="false" legendVisible="false">
+                        <xAxis><CategoryAxis fx:id="ejeXTendencia" label="Fecha"/></xAxis>
+                        <yAxis><NumberAxis fx:id="ejeYTendencia" label="S/"/></yAxis>
+                    </LineChart>
+                </VBox>
+                <VBox styleClass="card" spacing="8" GridPane.columnIndex="1" style="-fx-padding: 12;">
+                    <Label text="DISTRIBUCIÓN POR CATEGORÍA"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+                    <Separator/>
+                    <!-- animated="false": con animación (el valor por
+                         defecto de PieChart) un snapshot tomado justo
+                         después de generar el reporte puede capturar
+                         las porciones a mitad de la animación de
+                         entrada; el pastel sale incompleto/vacío en
+                         el PDF. Con animación desactivada, el gráfico
+                         queda dibujado por completo de inmediato. -->
+                    <PieChart fx:id="chartCategoria" VBox.vgrow="ALWAYS" animated="false"
+                              legendVisible="true" legendSide="RIGHT"/>
+                </VBox>
+            </GridPane>
+
+            <!-- FILA INFERIOR: 35% barras Top Productos / 65% tabla de
+                 movimientos: la tabla tiene mayor prioridad visual. -->
+            <GridPane hgap="14" VBox.vgrow="ALWAYS" prefHeight="320" minHeight="280">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="35"/>
+                    <ColumnConstraints percentWidth="65"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints vgrow="ALWAYS"/>
+                </rowConstraints>
+                <VBox styleClass="card" spacing="10" GridPane.columnIndex="0">
+                    <Label fx:id="lblTituloTop" text="TOP 8 PRODUCTOS"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+                    <Separator/>
+                    <!-- Barras horizontales: los nombres de producto se leen
+                         completos a la izquierda, sin superponerse ni rotar -->
+                    <BarChart fx:id="chartTop" VBox.vgrow="ALWAYS" animated="false" legendVisible="false">
+                        <xAxis><NumberAxis fx:id="ejeXTop" label="Unidades" side="BOTTOM"/></xAxis>
+                        <yAxis><CategoryAxis fx:id="ejeYTop" label="Producto" side="LEFT"/></yAxis>
+                    </BarChart>
+                </VBox>
+                <VBox fx:id="panelTabla" styleClass="card" spacing="10" GridPane.columnIndex="1">
+                    <Label text="DETALLE DE MOVIMIENTOS"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                  -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+                    <Separator/>
+                    <!-- colFecha con ancho fijo (min = pref = max = 100):
+                         la fecha dd/MM/yyyy nunca se trunca sin importar
+                         cuánto se angoste la tabla. Cliente/Proveedor y
+                         Producto ceden un poco de ancho para compensar. -->
+                    <TableView fx:id="tablaDetalle" VBox.vgrow="ALWAYS" minHeight="180">
+                        <columns>
+                            <TableColumn fx:id="colFecha" text="Fecha" prefWidth="100" minWidth="100" maxWidth="100"/>
+                            <TableColumn fx:id="colComprobante" text="Comprobante" prefWidth="110"/>
+                            <TableColumn fx:id="colEntidad" text="Cliente" prefWidth="140"/>
+                            <TableColumn fx:id="colProducto" text="Producto" prefWidth="170"/>
+                            <TableColumn fx:id="colCantidad" text="Cantidad" prefWidth="80"/>
+                            <TableColumn fx:id="colPrecio" text="Precio" prefWidth="90"/>
+                            <TableColumn fx:id="colSubtotal" text="Subtotal" prefWidth="100"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                </VBox>
+            </GridPane>
+        </VBox>
+    </VBox>
+    </ScrollPane>
+
+    <!-- ============================================================
+         LAYOUT EXCLUSIVO PARA PDF: totalmente independiente del
+         dashboard visible de arriba (que no cambia en nada). Estos
+         nodos viven ocultos (visible=false managed=false) y solo se
+         usan para construir el PDF.
+
+         Diseño fijo de 2 páginas (estilo reporte ejecutivo tipo
+         Power BI / SAP Business One), SIEMPRE en Portrait:
+
+         PÁGINA 1 (una sola página, nunca se reparte en varias):
+           1. Encabezado (logo, sistema, emisión/usuario/tipo)
+           2. Información del reporte (título + periodo)
+           3. Resumen Ejecutivo (KPIs)
+           4. Gráfico de Tendencia (el protagonista), a todo el
+              ancho de contenido
+           5. Fila con Distribución por Categoría + Top 8 Productos
+              LADO A LADO (GridPane 50/50, misma altura)
+           6. Pie de página
+
+         El controlador mide el alto real de encabezado + info + KPIs
+         + pie de página, y reparte lo que sobra del alto de la hoja
+         entre el bloque de tendencia y la fila inferior; luego
+         redimensiona los 3 gráficos (los nodos REALES del dashboard)
+         a esa caja exacta y recién ahí los captura, para que el
+         propio motor de charts recalcule ejes/leyenda a ese tamaño
+         en vez de estirar una imagen ya capturada (ver
+         redimensionarYCapturar en ReportesController). Nunca se
+         reduce la fuente ni se aplica Scale de impresión: lo único
+         que se ajusta es cuánto alto de dibujo le toca a cada
+         gráfico.
+
+         PÁGINA 2 en adelante: ÚNICAMENTE la tabla de movimientos, a
+         todo el ancho, paginada por filas si no entran todas (nunca
+         escalada horizontalmente).
+         ============================================================ -->
+
+    <!-- Contenedor real de cada página de bloques: exportarPdf() lo
+         llena con el subconjunto de bloques que le toca a esa hoja
+         (más el pie de página) y lo imprime; luego lo vacía para
+         armar la siguiente. -->
+    <!-- -fx-padding debe coincidir con PADDING_PAGINA_BLOQUES en
+         ReportesController: ya no es un margen de página (eso lo
+         controla el PageLayout con MARGEN_IMPRESION_PT), es solo un
+         colchón visual chico para que el contenido no toque el
+         borde exacto del área imprimible. -->
+    <VBox fx:id="panelImpresionPaginaBloques" visible="false" managed="false"
+          spacing="14" style="-fx-background-color: white; -fx-padding: 8;"/>
+
+    <!-- Bloques sueltos: viven aquí solo para que el FXML los declare
+         en algún lado al cargar la vista; exportarPdf() los saca de
+         este contenedor y los reparte entre panelImpresionPaginaBloques. -->
+    <VBox fx:id="panelImpresionBloques" visible="false" managed="false">
+
+        <!-- BLOQUE 1: Encabezado de la empresa -->
+        <VBox fx:id="panelImpEncabezado" spacing="10">
+            <HBox alignment="TOP_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #E94560; -fx-background-radius: 8;"
+                           prefWidth="40" prefHeight="40" maxWidth="40" maxHeight="40">
+                    <Label text="CS" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;"/>
+                </StackPane>
+                <VBox spacing="1">
+                    <Label text="CompuSoft S.A.C" style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1F2A44;"/>
+                    <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 10px; -fx-text-fill: #94A3B8;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox spacing="2" alignment="TOP_RIGHT">
+                    <Label fx:id="lblImpEmision" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                    <Label fx:id="lblImpGeneradoPor" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpTipoReporte" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+                </VBox>
+            </HBox>
+            <Region style="-fx-background-color: #315E9E;" prefHeight="2">
+                <VBox.margin><Insets top="6"/></VBox.margin>
+            </Region>
+        </VBox>
+
+        <!-- BLOQUE 2: Información del reporte -->
+        <VBox fx:id="panelImpInfo" spacing="4">
+            <VBox spacing="2">
+                <Label fx:id="lblImpTitulo" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                <Label fx:id="lblImpPeriodo" style="-fx-font-size: 11px; -fx-text-fill: #64748B;"/>
+            </VBox>
+            <Label text="RESUMEN EJECUTIVO"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+        </VBox>
+
+        <!-- BLOQUE 3: KPIs, en grilla 2x2 (más legible en Portrait
+             angosto que los 4 en una sola fila que se usan en
+             pantalla). -->
+        <VBox fx:id="panelImpKpis" spacing="0">
+            <GridPane hgap="12" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                      style="-fx-background-color: #FFF0F3; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label fx:id="lblImpTotalTitulo" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpTotal" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #E94560;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                      style="-fx-background-color: #F0F5FC; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label fx:id="lblImpCantidadTitulo" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpCantidad" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #315E9E;"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                      style="-fx-background-color: #F0FDF4; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label fx:id="lblImpPromedioTitulo" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpPromedio" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                </VBox>
+                <VBox fx:id="panelImpKpi4" spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                      style="-fx-background-color: #F5F3FF; -fx-background-radius: 8; -fx-padding: 12;">
+                    <Label fx:id="lblImpTituloKpi4" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #64748B;"/>
+                    <Label fx:id="lblImpValorKpi4" style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #7C3AED;"/>
+                </VBox>
+            </GridPane>
+        </VBox>
+
+        <!-- BLOQUE 4: Gráfico de tendencia, el protagonista de la
+             página 1. preserveRatio="false": ahora se calculan en
+             Java tanto el ancho (todo el ancho de contenido) como el
+             alto exacto que le corresponde dentro del presupuesto de
+             la página 1, y el propio LineChart se redimensiona a esa
+             caja ANTES de capturarlo (ver redimensionarYCapturar en
+             el controlador), así que la imagen ya nace con el
+             tamaño/proporción correctos; no hace falta que
+             ImageView reajuste nada por su cuenta. -->
+        <VBox fx:id="panelImpChartTendencia" spacing="6">
+            <Label fx:id="lblImpTituloTendencia"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            <ImageView fx:id="imgTendencia" preserveRatio="false"/>
+        </VBox>
+
+        <!-- BLOQUE 5: fila con Distribución por Categoría y Top 8
+             Productos LADO A LADO (mitad y mitad, misma altura), tal
+             como pidió el usuario; ya no van uno debajo del otro.
+             Un GridPane con 2 columnas al 50% garantiza el reparto
+             exacto del ancho; el controlador redimensiona ambos
+             gráficos a la MISMA altura antes de capturarlos, para que
+             queden perfectamente alineados. -->
+        <GridPane fx:id="panelImpFilaCategoriaTop" hgap="18">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <VBox fx:id="panelImpChartCategoria" spacing="6" alignment="CENTER" GridPane.columnIndex="0">
+                <Label fx:id="lblImpTituloCategoria" text="DISTRIBUCIÓN POR CATEGORÍA"
+                       style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                <ImageView fx:id="imgCategoria" preserveRatio="false"/>
+            </VBox>
+            <VBox fx:id="panelImpChartTop" spacing="6" GridPane.columnIndex="1">
+                <Label fx:id="lblImpTituloTop"
+                       style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                <ImageView fx:id="imgTop" preserveRatio="false"/>
+            </VBox>
+        </GridPane>
+
+        <!-- Espaciador flexible: al imprimir, exportarPdf() redimensiona
+             panelImpresionPaginaBloques al ALTO COMPLETO de la hoja (no
+             a su alto natural de contenido); este Region con
+             VBox.vgrow="ALWAYS" absorbe todo el espacio sobrante y
+             empuja el pie de página hasta quedar pegado al margen
+             inferior, sin importar cuánto midan los gráficos de esta
+             página en particular. -->
+        <Region fx:id="espaciadorBloques" VBox.vgrow="ALWAYS"/>
+
+        <!-- Pie de página de las páginas de bloques (encabezado hasta
+             Top Productos). Se reutiliza el mismo nodo para todas esas
+             páginas: el controlador solo actualiza el texto de fecha y
+             número de página antes de imprimir cada una. -->
+        <VBox fx:id="panelImpFooterBloques" spacing="6">
+            <Region style="-fx-background-color: #E2E8F0;" prefHeight="1"/>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+                <Label fx:id="lblPieBloquesFecha" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblPieBloquesPagina" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <!-- TABLA DE MOVIMIENTOS (oculta, solo PDF). Siempre en su
+         propia página o páginas, en Portrait, justo después del
+         bloque de Top Productos. Se llena por código con Labels
+         planos dentro de un GridPane (ver construirTablaImpresion),
+         no imprimiendo tablaDetalle directamente, porque tablaDetalle
+         es un TableView VIRTUALIZADO: en pantalla solo renderiza las
+         filas que caben en su alto visible, no todas las del reporte;
+         imprimir ese nodo tal cual dejaba páginas en blanco.
+
+         Nunca se escala para caber: si las filas no entran en una
+         página, la tabla continúa en la siguiente con los
+         encabezados de columna repetidos (ver medirPaginacionTabla e
+         imprimirTablaPaginada). Se prefieren más páginas antes que
+         angostar columnas o perder legibilidad.
+         ============================================================ -->
+    <!-- El encabezado de esta página se rehizo para ser IDÉNTICO al
+         de la página 1 (mismo logo de 40px, misma tipografía de
+         nombre/título y el mismo bloque de emisión/usuario/tipo de
+         reporte a la derecha): antes era una versión reducida (logo
+         de 26px, un solo renglón de título en 14px) y se veía como
+         un documento distinto. Ahora ambas páginas comparten estilo,
+         alineación, márgenes y tipografía de punta a punta. -->
+    <VBox fx:id="panelTablaImpresion" visible="false" managed="false"
+          style="-fx-background-color: white; -fx-padding: 8;" spacing="10">
+        <HBox alignment="TOP_LEFT" spacing="12">
+            <StackPane style="-fx-background-color: #E94560; -fx-background-radius: 8;"
+                       prefWidth="40" prefHeight="40" maxWidth="40" maxHeight="40">
+                <Label text="CS" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;"/>
+            </StackPane>
+            <VBox spacing="1">
+                <Label text="CompuSoft S.A.C" style="-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #1F2A44;"/>
+                <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 10px; -fx-text-fill: #94A3B8;"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox spacing="2" alignment="TOP_RIGHT">
+                <Label fx:id="lblImpTablaEmision" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+                <Label fx:id="lblImpTablaGeneradoPor" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+                <Label fx:id="lblImpTablaTipoReporte" style="-fx-font-size: 10px; -fx-text-fill: #64748B;"/>
+            </VBox>
+        </HBox>
+        <Region style="-fx-background-color: #315E9E;" prefHeight="2">
+            <VBox.margin><Insets top="6"/></VBox.margin>
+        </Region>
+        <VBox spacing="2">
+            <Label fx:id="lblImpTablaTitulo" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1F2A44;"/>
+            <Label fx:id="lblImpTablaPeriodo" style="-fx-font-size: 11px; -fx-text-fill: #64748B;"/>
+        </VBox>
+        <Label text="DETALLE DE MOVIMIENTOS"
+               style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+        <GridPane fx:id="gridTablaImpresion" hgap="4" vgap="3"/>
+
+        <!-- Mismo espaciador flexible que en la página de bloques:
+             empuja el pie de página al margen inferior sin importar
+             cuántas filas tenga la tabla en esta hoja en particular
+             (la última página, con pocas filas, ya no deja el footer
+             flotando pegado a la tabla). -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <VBox spacing="6">
+            <Region style="-fx-background-color: #E2E8F0;" prefHeight="1"/>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="CompuSoft Sistema Comercial" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+                <Label fx:id="lblPieTablaFecha" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblImpTablaPagina" style="-fx-font-size: 9px; -fx-text-fill: #94A3B8;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</VBox>

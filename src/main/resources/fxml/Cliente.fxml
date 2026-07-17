@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.ClienteController"
+      spacing="0" style="-fx-background-color: #f0f2f5;">
+
+    <!-- ToggleGroup fuera del árbol visual
+         para que JavaFX lo procese correctamente -->
+    <fx:define>
+        <ToggleGroup fx:id="toggleFiltro"/>
+    </fx:define>
+
+    <!-- TOPBAR -->
+    <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
+        <Label text="👤 Clientes" styleClass="topbar-title"/>
+    </HBox>
+
+    <HBox spacing="20" VBox.vgrow="ALWAYS">
+        <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+
+        <!-- FORMULARIO NUEVO CLIENTE
+             ScrollPane para que todos los campos sean visibles
+             aunque la pantalla sea pequeña -->
+        <VBox styleClass="card" spacing="0"
+              prefWidth="300" minWidth="300">
+
+            <!-- Título fuera del scroll para que siempre sea visible -->
+            <Label text="➕ Nuevo Cliente"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold;
+                          -fx-text-fill: #1a1a2e; -fx-padding: 0 0 10 0;"/>
+            <Separator/>
+
+            <ScrollPane fitToWidth="true"
+                        VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent;
+                               -fx-background: transparent;
+                               -fx-border-color: transparent;
+                               -fx-padding: 0;">
+                <VBox spacing="12" style="-fx-padding: 10 4 10 4;">
+
+                    <!-- ID generado automáticamente -->
+                    <VBox spacing="5">
+                        <Label text="ID" styleClass="label-field"/>
+                        <TextField fx:id="txtId" promptText="Ej: CLI001"
+                                   style="-fx-background-color: #f0f0f0;"/>
+                    </VBox>
+
+                    <!-- Nombre completo -->
+                    <VBox spacing="5">
+                        <Label text="Nombre completo" styleClass="label-field"/>
+                        <TextField fx:id="txtNombre"
+                                   promptText="Ej: Miguel Perez"/>
+                    </VBox>
+
+                    <!-- Tipo de documento: carga objetos TipoDocumento de BD
+                         onAction actualiza el hint del número según el tipo -->
+                    <VBox spacing="5">
+                        <Label text="Tipo de documento" styleClass="label-field"/>
+                        <ComboBox fx:id="cbTipoDocumento" maxWidth="Infinity"
+                                  promptText="Selecciona tipo"
+                                  onAction="#actualizarPlaceholder"/>
+                    </VBox>
+
+                    <!-- Número de documento: hint dinámico según tipo -->
+                    <VBox spacing="5">
+                        <Label text="Número de documento" styleClass="label-field"/>
+                        <TextField fx:id="txtNumeroDocumento"
+                                   promptText="Selecciona un tipo primero"/>
+                    </VBox>
+
+                    <!-- Teléfono: opcional pero validado si se ingresa -->
+                    <VBox spacing="5">
+                        <Label text="Teléfono" styleClass="label-field"/>
+                        <TextField fx:id="txtTelefono"
+                                   promptText="Ej: 987654321"/>
+                    </VBox>
+
+                    <!-- Correo: opcional pero validado si se ingresa -->
+                    <VBox spacing="5">
+                        <Label text="Correo electrónico" styleClass="label-field"/>
+                        <TextField fx:id="txtCorreo"
+                                   promptText="correo@email.com"/>
+                    </VBox>
+
+                    <!-- Dirección: opcional -->
+                    <VBox spacing="5">
+                        <Label text="Dirección" styleClass="label-field"/>
+                        <TextField fx:id="txtDireccion"
+                                   promptText="Ej: Av. Micaela Bastidas"/>
+                    </VBox>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- Botones fuera del scroll para que siempre sean visibles -->
+            <Separator/>
+            <VBox spacing="8" style="-fx-padding: 10 0 0 0;">
+                <Button text="💾 Guardar" styleClass="btn-primary"
+                        onAction="#guardar" maxWidth="Infinity"/>
+                <Button text="🔄 Limpiar" onAction="#limpiar"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: #6c757d;
+                               -fx-text-fill: white;
+                               -fx-background-radius: 8;
+                               -fx-padding: 8 16; -fx-cursor: hand;"/>
+            </VBox>
+        </VBox>
+
+        <!-- TABLA DE CLIENTES -->
+        <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+
+            <Label text="📋 Lista de Clientes"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold;
+                          -fx-text-fill: #1a1a2e;"/>
+            <Separator/>
+
+            <!-- BARRA DE HERRAMIENTAS: buscador + filtros -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+
+                <!-- Buscador en tiempo real con FilteredList -->
+                <TextField fx:id="txtBuscar"
+                           promptText="🔍  Buscar por nombre o número de documento..."
+                           HBox.hgrow="ALWAYS"
+                           onKeyReleased="#filtrar"/>
+
+                <!-- Filtros -->
+                <ToggleButton fx:id="btnTodos" text="Todos"
+                              toggleGroup="$toggleFiltro"
+                              selected="true"
+                              onAction="#filtrar"
+                              style="-fx-background-color: #1a1a2e;
+                     -fx-text-fill: white;
+                     -fx-background-radius: 6;
+                     -fx-cursor: hand;
+                     -fx-font-size: 12px;
+                     -fx-padding: 6 12;"/>
+
+                <ToggleButton fx:id="btnDni" text="DNI"
+                              toggleGroup="$toggleFiltro"
+                              onAction="#filtrar"
+                              style="-fx-background-radius: 6;
+                     -fx-cursor: hand;
+                     -fx-font-size: 12px;
+                     -fx-padding: 6 12;"/>
+
+                <ToggleButton fx:id="btnRuc" text="RUC"
+                              toggleGroup="$toggleFiltro"
+                              onAction="#filtrar"
+                              style="-fx-background-radius: 6;
+                     -fx-cursor: hand;
+                     -fx-font-size: 12px;
+                     -fx-padding: 6 12;"/>
+
+                <ToggleButton fx:id="btnPasaporte" text="Pasaporte"
+                              toggleGroup="$toggleFiltro"
+                              onAction="#filtrar"
+                              style="-fx-background-radius: 6;
+                     -fx-cursor: hand;
+                     -fx-font-size: 12px;
+                     -fx-padding: 6 12;"/>
+
+                <ToggleButton fx:id="btnCarnet" text="Carnet"
+                              toggleGroup="$toggleFiltro"
+                              onAction="#filtrar"
+                              style="-fx-background-radius: 6;
+                     -fx-cursor: hand;
+                     -fx-font-size: 12px;
+                     -fx-padding: 6 12;"/>
+            </HBox>
+
+            <!-- Tabla de clientes -->
+            <TableView fx:id="tablaCliente" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId"
+                                 text="ID"          prefWidth="70"/>
+                    <TableColumn fx:id="colNombre"
+                                 text="Nombre"      prefWidth="150"/>
+                    <TableColumn fx:id="colTipoDoc"
+                                 text="Tipo Doc."   prefWidth="110"/>
+                    <TableColumn fx:id="colNumDoc"
+                                 text="N° Documento" prefWidth="110"/>
+                    <TableColumn fx:id="colTelefono"
+                                 text="Teléfono"    prefWidth="100"/>
+                    <TableColumn fx:id="colCorreo"
+                                 text="Correo"      prefWidth="150"/>
+                    <!-- colAcciones tiene los 3 botones: Ver, Editar, Eliminar -->
+                    <TableColumn fx:id="colAcciones"
+                                 text="Acciones"    prefWidth="220"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </HBox>
+</VBox>

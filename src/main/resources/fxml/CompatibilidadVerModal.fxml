@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.CompatibilidadVerModalController"
+      spacing="0"
+      style="-fx-background-color: white;"
+      prefWidth="560">
+
+    <!-- CABECERA: misma estructura que ProductoModal (franja de marca +
+         título chico + nombre grande), en modo exclusivamente lectura -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
+        <Region prefWidth="4" minHeight="40"
+                style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
+
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label text="DETALLE DE REGLA"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Label fx:id="lblNombreCabecera" text="Componente A ⇄ Componente B"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"
+                   wrapText="true"/>
+        </VBox>
+    </HBox>
+
+
+    <!-- CUERPO: solo lectura, mismos campo-input deshabilitados que en
+         ProductoModal (fondo gris suave, sin borde de foco) -->
+    <ScrollPane fitToWidth="true"
+                style="-fx-background-color: white; -fx-background: white;
+                       -fx-border-color: transparent;"
+                VBox.vgrow="ALWAYS">
+        <VBox spacing="18" style="-fx-padding: 22 24;">
+
+            <Label text="COMPONENTES"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+
+            <HBox spacing="16">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Componente A" styleClass="label-field"/>
+                    <TextField fx:id="txtComponenteA" disable="true" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="240"/>
+                    <Label fx:id="lblTipoA"
+                           style="-fx-font-size: 11px; -fx-text-fill: #64748B;"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="Componente B" styleClass="label-field"/>
+                    <TextField fx:id="txtComponenteB" disable="true" styleClass="campo-input"
+                               maxWidth="Infinity" prefWidth="240"/>
+                    <Label fx:id="lblTipoB"
+                           style="-fx-font-size: 11px; -fx-text-fill: #64748B;"/>
+                </VBox>
+            </HBox>
+
+            <Separator style="-fx-padding: 6 0;"/>
+
+            <Label text="ESTADO DE COMPATIBILIDAD"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+
+            <!-- Chip de estado: mismo patrón visual que el panel del
+                 Verificador Rápido (icono + estado en badge de color) -->
+            <VBox fx:id="panelEstado" spacing="6"
+                  style="-fx-background-radius: 8; -fx-border-radius: 8;
+                         -fx-border-width: 1; -fx-padding: 12;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label fx:id="lblEstadoIcono" style="-fx-font-size: 20px;"/>
+                    <Label fx:id="lblEstadoTexto"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                  -fx-background-radius: 4; -fx-padding: 2 8;"/>
+                </HBox>
+            </VBox>
+
+            <Separator style="-fx-padding: 6 0;"/>
+
+            <Label text="RESTRICCIÓN / NOTA TÉCNICA"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+
+            <TextArea fx:id="txtRestriccion" disable="true" styleClass="campo-input"
+                      wrapText="true" prefRowCount="3"/>
+        </VBox>
+    </ScrollPane>
+
+    <!-- PIE DEL MODAL: un único botón, sin acciones de guardado
+         porque este modal es exclusivamente de consulta -->
+    <HBox spacing="10" alignment="CENTER_RIGHT"
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
+                 -fx-border-width: 1;">
+
+        <Button text="Cerrar" onAction="#cerrar" styleClass="btn-neutral"/>
+    </HBox>
+
+</VBox>

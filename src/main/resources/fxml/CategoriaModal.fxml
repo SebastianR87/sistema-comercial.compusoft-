@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pe.utp.controller.CategoriaModalController"
+      spacing="0"
+      style="-fx-background-color: white;"
+      prefWidth="420">
+
+    <!-- CABECERA: barra de marca + título chico / nombre grande,
+         igual patrón que ProveedorModal/ClienteModal/ProductoModal -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 18 20; -fx-border-color: transparent transparent #E2E8F0 transparent; -fx-border-width: 1;">
+        <Region prefWidth="4" minHeight="40"
+                style="-fx-background-color: #E94560; -fx-background-radius: 2;"/>
+
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTituloCabecera" text="NUEVA CATEGORÍA"
+                   style="-fx-font-size: 11px; -fx-font-weight: bold;
+                          -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+            <Label fx:id="lblNombreCabecera" text="Nueva categoría"
+                   style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+        </VBox>
+    </HBox>
+
+    <!-- CUERPO: solo ID (generado, no editable) y Nombre -->
+    <VBox spacing="16" style="-fx-padding: 22 24;">
+
+        <Label text="DATOS DE LA CATEGORÍA"
+               style="-fx-font-size: 12px; -fx-font-weight: bold;
+              -fx-text-fill: #E94560; -fx-letter-spacing: 1px;"/>
+
+        <VBox spacing="6">
+            <Label text="ID Categoría" styleClass="label-field"/>
+            <TextField fx:id="txtId" disable="true" styleClass="campo-input"
+                       maxWidth="Infinity"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="Nombre" styleClass="label-field"/>
+            <TextField fx:id="txtNombre" styleClass="campo-input"
+                       promptText="Ej: Procesadores"/>
+        </VBox>
+
+    </VBox>
+
+    <!-- PIE DEL MODAL -->
+    <HBox spacing="10" alignment="CENTER_RIGHT"
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #F8FAFC;
+                 -fx-border-color: #E2E8F0 transparent transparent transparent;
+                 -fx-border-width: 1;">
+
+        <Button fx:id="btnCancelar" text="Cancelar"
+                onAction="#cancelar"
+                style="-fx-background-color: white; -fx-text-fill: #334155;
+                       -fx-border-color: #CBD5E1; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-padding: 9 18; -fx-font-size: 13px;"/>
+
+        <Button fx:id="btnGuardar" text="Guardar" styleClass="btn-primary"
+                onAction="#guardar"/>
+    </HBox>
+
+</VBox>

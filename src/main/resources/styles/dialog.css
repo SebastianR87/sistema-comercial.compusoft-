@@ -1,0 +1,62 @@
+/* CSDialog — estilos del diálogo modal propio (reemplazo de
+   javafx.scene.control.Alert). Se carga junto a style.css (ver
+   CSDialog.mostrarInterno), así que reutiliza intencionalmente los
+   mismos colores de marca ya documentados ahí en vez de definir una
+   paleta nueva:
+
+     #166534  verde (éxito) -- ya usado para Entradas/positivo
+     #92400E  ámbar (advertencia) -- ya usado para Stock mínimo
+     #E94560  coral (error)     -- ya usado para Salidas/eliminar
+     #315E9E  navy  (info/confirmación) -- ya usado para .btn-info
+
+   Los colores puntuales por tipo se aplican en código
+   (DialogController.colorDe) porque el icono y el botón primario
+   comparten el mismo valor y no vale la pena declarar 4 variantes de
+   clase CSS casi idénticas solo para eso. */
+
+.cs-dialog-overlay {
+    -fx-background-color: rgba(15, 23, 42, 0.45);
+}
+
+.cs-dialog-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.30), 32, 0.12, 0, 10);
+}
+
+.cs-dialog-icon-badge {
+    -fx-background-radius: 999;
+}
+
+.cs-dialog-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1F2A44;
+}
+
+.cs-dialog-message {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748B;
+}
+
+.cs-dialog-buttons {
+    -fx-padding: 4 0 0 0;
+}
+
+.cs-dialog-btn-primario {
+    -fx-background-radius: 8;
+    -fx-padding: 9 20;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.18), 6, 0, 0, 2);
+}
+
+.cs-dialog-btn-primario:hover {
+    -fx-opacity: 0.90;
+}
+
+.cs-dialog-btn-primario:pressed {
+    -fx-opacity: 0.80;
+}
