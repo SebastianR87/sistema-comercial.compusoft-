@@ -13,6 +13,7 @@ import pe.utp.dao.CompraDAO;
 import pe.utp.dao.LoteDAO;
 import pe.utp.dao.ProductoDAO;
 import pe.utp.dao.ProveedorDAO;
+import pe.utp.service.CompraService;
 import pe.utp.dialog.CSDialog;
 import pe.utp.model.*;
 import pe.utp.security.PermisoService;
@@ -65,6 +66,7 @@ public class CompraController implements AccesoControlable {
     @FXML private TableColumn<Compra, String> colEstado;
 
     private CompraDAO compraDAO = new CompraDAO();
+    private CompraService compraService = new CompraService();
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
     private ProductoDAO productoDAO  = new ProductoDAO();
     // producto.precio_compra ya no se guarda (cada lote tiene su
@@ -684,7 +686,7 @@ public class CompraController implements AccesoControlable {
                 "Anular", "Cancelar", true, true);
         if (!confirmado) return;
 
-        String resultado = compraDAO.anularCompra(c.getIdCompra());
+        String resultado = compraService.anularCompra(c.getIdCompra());
 
         switch (resultado) {
             case "OK" -> {

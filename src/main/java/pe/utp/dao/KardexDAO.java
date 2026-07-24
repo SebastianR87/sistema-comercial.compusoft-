@@ -57,7 +57,6 @@ public class KardexDAO {
      * - Salidas: vienen de detalleventa_lote (cada fila indica de
      *   qué lote salió y a qué costo real, no un promedio). Se
      *   excluyen las ventas con estado ANULADA.
-     *
      * El saldo (columna Existencias) se acumula fila por fila en
      * base a estos valores reales -- ya no se recalcula un CPP
      * "adivinado": los entrada/salida que se acumulan son el costo

@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pe.utp.dao.*;
+import pe.utp.service.VentaService;
 import pe.utp.dialog.CSDialog;
 import pe.utp.model.*;
 import javafx.scene.layout.HBox;
@@ -78,6 +79,7 @@ public class VentaController implements AccesoControlable {
 
     // DAOs
     private VentaDAO ventaDAO = new VentaDAO();
+    private VentaService ventaService = new VentaService();
     private ClienteDAO clienteDAO = new ClienteDAO();
     private ProductoDAO productoDAO = new ProductoDAO();
     private TipoComprobanteDAO tipoCompDAO = new TipoComprobanteDAO();
@@ -801,7 +803,7 @@ public class VentaController implements AccesoControlable {
                 "Anular", "Cancelar", true, true);
         if (!confirmado) return;
 
-        String resultado = ventaDAO.anularVenta(v.getIdVenta());
+        String resultado = ventaService.anularVenta(v.getIdVenta());
 
         switch (resultado) {
             case "OK" -> {

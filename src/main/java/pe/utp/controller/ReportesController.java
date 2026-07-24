@@ -87,7 +87,7 @@ public class ReportesController {
 
     // Layout exclusivo para PDF (oculto en pantalla): bloques
     // independientes que exportarPdf() reparte entre páginas. Ver el
-    // comentario grande sobre esta sección en Reportes.fxml. =====
+    // comentario grande sobre esta sección en Reportes.fxml.
     @FXML private VBox panelImpresionPaginaBloques;
     @FXML private VBox panelImpresionBloques;
 
@@ -152,23 +152,8 @@ public class ReportesController {
     @FXML private Label lblImpTablaPagina;
     @FXML private GridPane gridTablaImpresion;
 
-    // Margen FÍSICO de la hoja (en puntos, 1pt = 1/72"), aplicado
-    // directamente al PageLayout en vez de usar Printer.MarginType.
-    // DEFAULT solía reservar ~54pt (0.75") por lado antes de que
-    // empezara el área imprimible, y encima de eso se restaba otro
-    // tanto de padding interno: los dos descuentos juntos dejaban
-    // franjas laterales enormes. Con un margen físico chico y
-    // explícito, el contenido usa prácticamente todo el ancho real
-    // de la hoja. ~15pt equivale a unos 20px de referencia (96dpi).
     private static final double MARGEN_IMPRESION_PT = 15;
 
-    // -fx-padding del contenedor de página de bloques y de la tabla
-    // (panelImpresionPaginaBloques / panelTablaImpresion en el
-    // FXML): ya NO es un segundo margen, es solo un colchón visual
-    // pequeño para que el texto/gráficos no toquen el borde exacto
-    // del área imprimible. Debe coincidir con el valor puesto en el
-    // FXML (-fx-padding) para que los cálculos de ancho/alto de
-    // contenido sean exactos.
     private static final double PADDING_PAGINA_BLOQUES = 8;
 
     private final ReporteDAO dao = new ReporteDAO();
@@ -480,7 +465,6 @@ public class ReportesController {
         actualizandoRangoPreset = false;
     }
 
-    // ============================================================
     // EXPORTACIÓN A PDF
     //
     // Arquitectura: la pantalla y el PDF son dos layouts totalmente
@@ -509,7 +493,6 @@ public class ReportesController {
     // real ANTES de capturarlos (ver redimensionarYCapturar), para
     // que el propio motor de charts recalcule ejes/leyenda a ese
     // tamaño en vez de estirar una imagen ya capturada.
-    // ============================================================
 
     @FXML
     private void exportarPdf() {
@@ -525,13 +508,6 @@ public class ReportesController {
 
         Printer impresora = job.getPrinter();
 
-        // A4 forzado explícitamente: antes se heredaba el papel por
-        // defecto del driver de impresión, que en algunos equipos NO
-        // es A4 (p.ej. impresoras configuradas en Carta/Letter). Si
-        // el driver no reconoce la instancia Paper.A4 (raro, pero
-        // posible en ciertos drivers físicos), se busca el papel
-        // "A4" real que reporta ESE impresora entre sus formatos
-        // soportados, para no romper la exportación.
         Paper papelA4 = impresora.getPrinterAttributes().getSupportedPapers().stream()
                 .filter(p -> p.getName() != null && p.getName().toUpperCase(Locale.ROOT).contains("A4"))
                 .findFirst()
@@ -562,7 +538,7 @@ public class ReportesController {
         panelImpresionPaginaBloques.setVisible(true);
         panelTablaImpresion.setVisible(true);
 
-        // ── 1) Medir a su tamaño REAL los bloques de contenido fijo
+        // 1) Medir a su tamaño REAL los bloques de contenido fijo
         // (encabezado, info, KPIs) y el pie de página: nunca se
         // recortan ni se les cambia la fuente, así que se miden tal
         // cual y lo que sobra de la hoja se lo reparten los dos
@@ -744,21 +720,6 @@ public class ReportesController {
         }
     }
 
-    /**
-     * Imprime un nodo a su tamaño REAL, sin ningún escalado: SIEMPRE
-     * al alto COMPLETO de la página impresa (altoObjetivo), no al
-     * alto natural de su contenido. Esto es lo que permite que el
-     * espaciador flexible (Region con VBox.vgrow="ALWAYS") que cada
-     * página tiene antes de su pie de página se expanda de verdad y
-     * empuje el footer hasta el margen inferior, sin importar cuánto
-     * contenido tenga esa hoja en particular (bloques del resumen
-     * ejecutivo o filas de la tabla). La distribución por bloques y
-     * la paginación por filas con colchón de seguridad ya garantizan
-     * que el contenido de CADA página quepa completo dentro de ese
-     * alto, así que nunca hace falta encoger nada "a la fuerza" --
-     * antes un Scale uniforme podía además angostar la tabla
-     * horizontalmente, justo lo que se quería evitar.
-     */
     private void imprimirNodoPlano(PrinterJob job, PageLayout layout, VBox nodo, double altoObjetivo) {
         if (altoObjetivo <= 0) {
             return;
@@ -829,27 +790,6 @@ public class ReportesController {
         lblImpTituloTop.setText(lblTituloTop.getText());
     }
 
-    /**
-     * Redimensiona el gráfico (el mismo nodo REAL y visible del
-     * dashboard, no una copia) a una caja EXACTA de ancho x alto
-     * antes de capturarlo: así el propio motor de charts de JavaFX
-     * recalcula ejes, leyenda y proporciones para ese tamaño, en vez
-     * de estirar/deformar una imagen ya capturada a otro tamaño. La
-     * captura se hace a 3x de resolución para que no salga borrosa
-     * al imprimirse más grande que su tamaño en pantalla.
-     *
-     * Como el chart sigue siendo el nodo gestionado del dashboard,
-     * se guarda su prefWidth/prefHeight originales (normalmente
-     * USE_COMPUTED_SIZE) y se restauran de inmediato después de
-     * capturar, con un requestLayout() para forzar que recupere su
-     * tamaño natural en pantalla antes de que el usuario lo note.
-     *
-     * Nunca se hace snapshot de una caja con tamaño cero o negativo
-     * (por ejemplo si el presupuesto de alto calculado en
-     * exportarPdf() diera un resultado inválido): en ese caso se
-     * deja el ImageView sin imagen en vez de mandar algo corrupto a
-     * la impresora.
-     */
     private void redimensionarYCapturar(Chart chart, ImageView destino, double ancho, double alto) {
         if (ancho <= 0 || alto <= 0) {
             return;

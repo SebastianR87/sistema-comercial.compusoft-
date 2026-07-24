@@ -8,8 +8,6 @@ import java.util.Properties;
 
 public class ConexionDB {
 
-    private static String motor;
-    private static String server;
     private static String database;
     private static String user;
     private static String password;
@@ -27,25 +25,14 @@ public class ConexionDB {
                 Properties props = new Properties();
                 props.load(input);
 
-                motor    = props.getProperty("motor");
-                server   = props.getProperty("server");
                 database = props.getProperty("database");
                 user     = props.getProperty("user");
                 password = props.getProperty("password");
+                url      = props.getProperty("url");
 
-                if (motor.equalsIgnoreCase("mysql")) {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    url = "jdbc:mysql://" + server + ":3306/" + database
-                            + "?useSSL=false&serverTimezone=UTC";
-                } else {
-                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                    url = "jdbc:sqlserver://" + server + ":1433;"
-                            + "databaseName=" + database + ";"
-                            + "encrypt=false;"
-                            + "trustServerCertificate=true;";
-                }
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
-                System.out.println("Config cargada: " + motor + " - " + database);
+                System.out.println("Config cargada: SQL Server - " + database);
             }
 
         } catch (Exception e) {
@@ -53,19 +40,13 @@ public class ConexionDB {
         }
     }
 
-    // Antes se creaba una Connection física NUEVA en cada llamada y nunca
-    // se cerraba en ningún DAO -> fuga de conexiones sin límite (cada
-    // navegación entre pantallas abría más conexiones contra la BD hasta
-    // agotar el límite del motor). Ahora se reutiliza una única conexión
-    // (patrón singleton perezoso) y solo se abre una nueva si la anterior
-    // nunca existió o quedó cerrada/caída.
     private static Connection conexion;
 
     public static Connection getConexion() {
         try {
             if (conexion == null || conexion.isClosed()) {
                 conexion = DriverManager.getConnection(url, user, password);
-                System.out.println("Conexion exitosa a " + database + " [" + motor + "]");
+                System.out.println("Conexion exitosa a " + database + " [SQL Server]");
             }
             return conexion;
         } catch (SQLException e) {

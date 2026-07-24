@@ -141,9 +141,9 @@ public class ProductoController implements AccesoControlable {
     }
 
     private VBox crearCard(Categoria cat) {
-        String color    = obtenerColor(cat.getNombre());
-        String icono    = obtenerIcono(cat.getNombre());
-        int    cantidad = dao.listarPorCategoria(
+        String color = obtenerColor(cat.getNombre());
+        String icono = obtenerIcono(cat.getNombre());
+        int cantidad = dao.listarPorCategoria(
                 cat.getIdCategoria()).size();
 
         VBox card = new VBox(8);

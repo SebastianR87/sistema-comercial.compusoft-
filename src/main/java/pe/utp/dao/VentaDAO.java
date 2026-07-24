@@ -23,26 +23,6 @@ public class VentaDAO {
      * restar directamente sobre producto.stock, para que el costo
      * de cada venta quede asociado al costo real del lote de origen
      * y no a un promedio (ver LoteDAO.consumirFIFO).
-     *
-     * Flujo:
-     * 1. Inserta la cabecera en tabla venta
-     * 2. Inserta cada línea en detalleventa, descuenta el stock de
-     *    forma atómica/condicional (el propio UPDATE actúa como
-     *    chequeo de stock suficiente), consume lotes FIFO y registra
-     *    en detalleventa_lote de dónde salió cada cantidad
-     * 3. COMMIT si todo salió bien, ROLLBACK si algo falló
-     *
-     * Antes había un "Paso 1" que verificaba el stock disponible con
-     * un SELECT separado, ANTES de insertar nada, y solo más abajo
-     * (Paso 4 original) restaba el stock sin condición. Ese chequeo
-     * separado del descuento real dejaba una ventana: si dos ventas
-     * del mismo producto se registraban casi al mismo tiempo, ambas
-     * podían leer el mismo stock disponible en el SELECT, pasar la
-     * validación, y luego ambas restar -- vendiendo más unidades de
-     * las que realmente había (stock quedaba negativo). Ahora el
-     * chequeo y el descuento son la MISMA operación SQL
-     * ("UPDATE ... WHERE stock >= ?"), así que no hay ventana entre
-     * verificar y actuar.
      */
     public String registrarVenta(Venta venta, List<DetalleVenta> detalles) {
         try {
@@ -103,7 +83,6 @@ public class VentaDAO {
                 // aquí aunque el detalle real viva ahora en los lotes.
                 // La condición "stock >= cantidad" hace que este UPDATE
                 // sea el chequeo Y el descuento en una sola operación
-                // atómica (ver javadoc del método).
                 psRestar.setInt(1, d.getCantidad());
                 psRestar.setString(2, d.getProducto().getIdProducto());
                 psRestar.setInt(3, d.getCantidad());
@@ -163,97 +142,44 @@ public class VentaDAO {
         }
     }
 
-    /**
-     * Anula una venta ya registrada: devuelve cada cantidad vendida
-     * al lote EXACTO del que salió (usando detalleventa_lote), y
-     * marca la venta como ANULADA. No borra ningún registro.
-     *
-     * Flujo:
-     * 1. Verifica que la venta exista y no esté ya anulada
-     * 2. Trae el detalle de la venta
-     * 3. Por cada línea, devuelve la cantidad a su(s) lote(s) de
-     *    origen y actualiza el stock total del producto
-     * 4. Actualiza el estado de la venta a 'ANULADA'
-     * 5. COMMIT si todo salió bien, ROLLBACK si algo falló
-     */
-    public String anularVenta(String idVenta) {
-        try {
-            conexion.setAutoCommit(false);
+    // Métodos de soporte para anular una venta
+    // NOTA: al igual que LoteDAO, estos métodos NO manejan su propia
+    // transacción (no hacen setAutoCommit/commit/rollback) y lanzan
+    // SQLException hacia arriba. La orquestación de la anulación
+    // (verificar estado, devolver stock a los lotes, marcar ANULADA,
+    // todo dentro de una sola transacción) vive en VentaService,
+    // que es quien abre y cierra la transacción real.
 
-            // Paso 1: verifica estado actual de la venta
-            String sqlEstado = "SELECT estado FROM venta WHERE id_venta = ?";
-            PreparedStatement psEstado = conexion.prepareStatement(sqlEstado);
-            psEstado.setString(1, idVenta);
-            ResultSet rsEstado = psEstado.executeQuery();
-
-            if (!rsEstado.next()) {
-                conexion.rollback();
-                conexion.setAutoCommit(true);
-                return "NO_EXISTE";
-            }
-            String estadoActual = rsEstado.getString("estado");
-            rsEstado.close();
-
-            if ("ANULADA".equalsIgnoreCase(estadoActual)) {
-                conexion.rollback();
-                conexion.setAutoCommit(true);
-                return "YA_ANULADA";
-            }
-
-            // Paso 2: trae el detalle para saber qué stock revertir
-            List<DetalleVenta> detalles = listarDetalle(idVenta);
-
-            // Paso 3: devuelve cada cantidad EXACTAMENTE al lote del
-            // que salió (consultando detalleventa_lote), en vez de
-            // sumar el stock del producto de forma genérica. Así cada
-            // lote recupera su costo real sin mezclarse con otros.
-            LoteDAO loteDAO = new LoteDAO(conexion);
-            String sqlLotesConsumidos = "SELECT id_lote, cantidad " +
-                    "FROM detalleventa_lote WHERE id_detalleventa = ?";
-            PreparedStatement psLotesConsumidos = conexion.prepareStatement(sqlLotesConsumidos);
-
-            String sqlDevolverStock = "UPDATE producto " +
-                    "SET stock = stock + ? WHERE id_producto = ?";
-            PreparedStatement psDevolver = conexion.prepareStatement(sqlDevolverStock);
-
-            for (DetalleVenta d : detalles) {
-                psLotesConsumidos.setString(1, d.getIdDetalleVenta());
-                ResultSet rsLotes = psLotesConsumidos.executeQuery();
-                while (rsLotes.next()) {
-                    loteDAO.devolverALote(
-                            rsLotes.getString("id_lote"),
-                            rsLotes.getInt("cantidad"));
-                }
-                rsLotes.close();
-
-                // El stock total del producto (columna resumen) se
-                // sigue actualizando igual que antes
-                psDevolver.setInt(1, d.getCantidad());
-                psDevolver.setString(2, d.getProducto().getIdProducto());
-                psDevolver.executeUpdate();
-            }
-
-            // Paso 4: marca la venta como anulada
-            String sqlAnular = "UPDATE venta SET estado = 'ANULADA' WHERE id_venta = ?";
-            PreparedStatement psAnular = conexion.prepareStatement(sqlAnular);
-            psAnular.setString(1, idVenta);
-            psAnular.executeUpdate();
-
-            conexion.commit();
-            return "OK";
-
-        } catch (SQLException e) {
-            try { conexion.rollback(); } catch (SQLException ex) {
-                System.out.println("Error en rollback: " + ex.getMessage());
-            }
-            System.out.println("Error al anular venta: " + e.getMessage());
-            return "ERROR:" + e.getMessage();
-        } finally {
-            try { conexion.setAutoCommit(true); }
-            catch (SQLException e) {
-                System.out.println("Error al restaurar autocommit: " + e.getMessage());
-            }
+    /** Estado actual de una venta, o null si no existe. */
+    public String obtenerEstado(String idVenta) throws SQLException {
+        String sql = "SELECT estado FROM venta WHERE id_venta = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idVenta);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            String estado = rs.getString("estado");
+            rs.close();
+            return estado;
         }
+        rs.close();
+        return null;
+    }
+
+    /** Suma cantidad al stock total (columna resumen) de un producto. */
+    public void devolverStockProducto(String idProducto, int cantidad) throws SQLException {
+        String sql = "UPDATE producto SET stock = stock + ? WHERE id_producto = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setInt(1, cantidad);
+        ps.setString(2, idProducto);
+        ps.executeUpdate();
+    }
+
+    /** Marca una venta como ANULADA. No borra ningún registro. */
+    public void marcarAnulada(String idVenta) throws SQLException {
+        String sql = "UPDATE venta SET estado = 'ANULADA' WHERE id_venta = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idVenta);
+        ps.executeUpdate();
     }
 
 
