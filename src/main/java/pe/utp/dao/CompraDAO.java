@@ -32,7 +32,6 @@ public class CompraDAO {
      * Registra la compra completa en una sola transacción. Una transacción
      * garantiza que si algo falla en el medio, ningún cambio queda guardado
      * a medias.
-     *
      * Costeo por lotes (FIFO): cada línea de compra crea su propio lote
      * en lote_compra, con su costo real e independiente -- ya no se
      * calcula un Costo Promedio Ponderado (CPP) que mezcle precios de
@@ -189,88 +188,61 @@ public class CompraDAO {
      * 5. Marca la compra como ANULADA
      * 6. COMMIT si todo salió bien, ROLLBACK si algo falló
      */
-    public String anularCompra(String idCompra) {
-        try {
-            conexion.setAutoCommit(false);
-            LoteDAO loteDAO = new LoteDAO(conexion);
+    // ===== Métodos de soporte para anular una compra =====
+    // NOTA: al igual que en VentaDAO/LoteDAO, estos métodos NO manejan
+    // su propia transacción (no hacen setAutoCommit/commit/rollback) y
+    // lanzan SQLException hacia arriba. La orquestación de la anulación
+    // vive en CompraService, que es quien abre y cierra la transacción.
 
-            // Paso 1: verifica estado actual
-            String sqlEstado = "SELECT estado FROM compra WHERE id_compra = ?";
-            PreparedStatement psEstado = conexion.prepareStatement(sqlEstado);
-            psEstado.setString(1, idCompra);
-            ResultSet rsEstado = psEstado.executeQuery();
-
-            if (!rsEstado.next()) {
-                conexion.rollback();
-                conexion.setAutoCommit(true);
-                return "NO_EXISTE";
-            }
-            String estadoActual = rsEstado.getString("estado");
-            rsEstado.close();
-
-            if ("ANULADA".equalsIgnoreCase(estadoActual)) {
-                conexion.rollback();
-                conexion.setAutoCommit(true);
-                return "YA_ANULADA";
-            }
-
-            // Paso 2: trae el detalle de la compra
-            List<DetalleCompra> detalles = listarDetalle(idCompra);
-
-            // Paso 3: valida que cada lote generado por esta compra
-            // siga con su cantidad completa (nada vendido todavía)
-            String sqlLote = "SELECT cantidad_restante, cantidad_original " +
-                    "FROM lote_compra WHERE id_detallecompra = ?";
-            PreparedStatement psLote = conexion.prepareStatement(sqlLote);
-
-            for (DetalleCompra d : detalles) {
-                psLote.setString(1, d.getIdDetalleCompra());
-                ResultSet rs = psLote.executeQuery();
-                if (rs.next()) {
-                    int restante = rs.getInt("cantidad_restante");
-                    int original = rs.getInt("cantidad_original");
-                    if (restante < original) {
-                        rs.close();
-                        conexion.rollback();
-                        conexion.setAutoCommit(true);
-                        return "STOCK_INSUFICIENTE:" + d.getProducto().getNombre() + ":" + restante;
-                    }
-                }
-                rs.close();
-            }
-
-            // Paso 4: revierte el stock del producto y anula los lotes
-            String sqlStock = "UPDATE producto SET stock = stock - ? WHERE id_producto = ?";
-            PreparedStatement psStock = conexion.prepareStatement(sqlStock);
-
-            for (DetalleCompra d : detalles) {
-                psStock.setInt(1, d.getCantidad());
-                psStock.setString(2, d.getProducto().getIdProducto());
-                psStock.executeUpdate();
-            }
-            loteDAO.anularLotesDeCompra(idCompra);
-
-            // Paso 5: marca la compra como anulada
-            String sqlAnular = "UPDATE compra SET estado = 'ANULADA' WHERE id_compra = ?";
-            PreparedStatement psAnular = conexion.prepareStatement(sqlAnular);
-            psAnular.setString(1, idCompra);
-            psAnular.executeUpdate();
-
-            conexion.commit();
-            return "OK";
-
-        } catch (SQLException e) {
-            try { conexion.rollback(); } catch (SQLException ex) {
-                System.out.println("Error en rollback: " + ex.getMessage());
-            }
-            System.out.println("Error al anular compra: " + e.getMessage());
-            return "ERROR:" + e.getMessage();
-        } finally {
-            try { conexion.setAutoCommit(true); }
-            catch (SQLException e) {
-                System.out.println("Error al restaurar autocommit: " + e.getMessage());
-            }
+    /** Estado actual de una compra, o null si no existe. */
+    public String obtenerEstado(String idCompra) throws SQLException {
+        String sql = "SELECT estado FROM compra WHERE id_compra = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idCompra);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            String estado = rs.getString("estado");
+            rs.close();
+            return estado;
         }
+        rs.close();
+        return null;
+    }
+
+    /**
+     * Cantidad restante y original de un lote generado por una línea
+     * de compra. Se usa para validar que no se haya vendido nada de
+     * ese lote antes de permitir anular la compra.
+     */
+    public int[] obtenerCantidadesLote(String idDetalleCompra) throws SQLException {
+        String sql = "SELECT cantidad_restante, cantidad_original " +
+                "FROM lote_compra WHERE id_detallecompra = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idDetalleCompra);
+        ResultSet rs = ps.executeQuery();
+        int[] resultado = null;
+        if (rs.next()) {
+            resultado = new int[] { rs.getInt("cantidad_restante"), rs.getInt("cantidad_original") };
+        }
+        rs.close();
+        return resultado;
+    }
+
+    /** Resta cantidad al stock total (columna resumen) de un producto. */
+    public void restarStockProducto(String idProducto, int cantidad) throws SQLException {
+        String sql = "UPDATE producto SET stock = stock - ? WHERE id_producto = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setInt(1, cantidad);
+        ps.setString(2, idProducto);
+        ps.executeUpdate();
+    }
+
+    /** Marca una compra como ANULADA. No borra ningún registro. */
+    public void marcarAnulada(String idCompra) throws SQLException {
+        String sql = "UPDATE compra SET estado = 'ANULADA' WHERE id_compra = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idCompra);
+        ps.executeUpdate();
     }
 
     /** Lista todas las compras con JOIN a proveedor y empleado para mostrar sus nombres en la tabla. */
@@ -339,7 +311,7 @@ public class CompraDAO {
 
     /**
      * Genera el siguiente ID correlativo para la compra.
-     * Usa QueryHelper para compatibilidad MySQL/SQL Server.
+     * Usa QueryHelper para generar sintaxis compatible con SQL Server.
      */
     public String obtenerUltimoId() {
         String sql = QueryHelper.limitar(

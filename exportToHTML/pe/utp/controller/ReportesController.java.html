@@ -1,0 +1,977 @@
+<html>
+<head>
+<title>ReportesController.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #7a7e85;}
+.s5 { color: #2aacb8;}
+.s6 { color: #5f826b; font-style: italic;}
+.s7 { color: #67a37c; font-style: italic;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ReportesController.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">pe</span><span class="s2">.</span><span class="s1">utp</span><span class="s2">.</span><span class="s1">controller</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">beans</span><span class="s2">.</span><span class="s1">property</span><span class="s2">.</span><span class="s1">SimpleStringProperty</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">collections</span><span class="s2">.</span><span class="s1">FXCollections</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">fxml</span><span class="s2">.</span><span class="s1">FXML</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">print</span><span class="s2">.</span><span class="s1">PageLayout</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">print</span><span class="s2">.</span><span class="s1">PageOrientation</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">print</span><span class="s2">.</span><span class="s1">Paper</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">print</span><span class="s2">.</span><span class="s1">Printer</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">print</span><span class="s2">.</span><span class="s1">PrinterJob</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">SnapshotParameters</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">BarChart</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">Chart</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">LineChart</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">NumberAxis</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">PieChart</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">XYChart</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">control</span><span class="s2">.*;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">image</span><span class="s2">.</span><span class="s1">ImageView</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">image</span><span class="s2">.</span><span class="s1">WritableImage</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">ColumnConstraints</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">GridPane</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">HBox</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">Region</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">StackPane</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">.</span><span class="s1">VBox</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">pe</span><span class="s2">.</span><span class="s1">utp</span><span class="s2">.</span><span class="s1">dao</span><span class="s2">.</span><span class="s1">ReporteDAO</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">pe</span><span class="s2">.</span><span class="s1">utp</span><span class="s2">.</span><span class="s1">dialog</span><span class="s2">.</span><span class="s1">CSDialog</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">pe</span><span class="s2">.</span><span class="s1">utp</span><span class="s2">.</span><span class="s1">security</span><span class="s2">.</span><span class="s1">Sesion</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">pe</span><span class="s2">.</span><span class="s1">utp</span><span class="s2">.</span><span class="s1">util</span><span class="s2">.</span><span class="s1">RangoFechaUtil</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">time</span><span class="s2">.</span><span class="s1">LocalDate</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">time</span><span class="s2">.</span><span class="s1">LocalTime</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">time</span><span class="s2">.</span><span class="s1">format</span><span class="s2">.</span><span class="s1">DateTimeFormatter</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">util</span><span class="s2">.</span><span class="s1">List</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">java</span><span class="s2">.</span><span class="s1">util</span><span class="s2">.</span><span class="s1">Locale</span><span class="s2">;</span>
+
+<span class="s0">public class </span><span class="s1">ReportesController </span><span class="s2">{</span>
+
+    <span class="s0">private static final </span><span class="s1">String VENTAS </span><span class="s2">= </span><span class="s3">&quot;Ventas&quot;</span><span class="s2">;</span>
+    <span class="s0">private static final </span><span class="s1">String COMPRAS </span><span class="s2">= </span><span class="s3">&quot;Compras&quot;</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">ComboBox</span><span class="s2">&lt;</span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">cbTipo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">DatePicker dpDesde</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">DatePicker dpHasta</span><span class="s2">;</span>
+
+    <span class="s4">// Atajos de rango de fechas (Hoy/Últimos 7 días/Este mes/Este año)</span>
+    <span class="s4">// ToggleGroup para que el atajo activo quede marcado</span>
+    <span class="s4">// visualmente (ver CSS .btn-neutral:selected). Se limpia solo si</span>
+    <span class="s4">// el usuario edita Desde/Hasta a mano (ver initialize()), no</span>
+    <span class="s4">// cuando el propio atajo es el que actualiza esas fechas.</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">ToggleGroup grupoRangoFechas</span><span class="s2">;</span>
+    <span class="s0">private boolean </span><span class="s1">actualizandoRangoPreset </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Button btnExportarPdf</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">GridPane panelResumen</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloTotal</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTotal</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloCantidad</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblCantidad</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloPromedio</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblPromedio</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">StackPane panelKpi4</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloKpi4</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblKpi4</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">Group iconKpi4Persona</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">Group iconKpi4Caja</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelGraficos</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloTendencia</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">LineChart</span><span class="s2">&lt;</span><span class="s1">String</span><span class="s2">, </span><span class="s1">Number</span><span class="s2">&gt; </span><span class="s1">chartTendencia</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">PieChart chartCategoria</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblTituloTop</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">BarChart</span><span class="s2">&lt;</span><span class="s1">Number</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">chartTop</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">NumberAxis ejeXTop</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelTabla</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableView</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">&gt; </span><span class="s1">tablaDetalle</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colFecha</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colComprobante</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colEntidad</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colProducto</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colCantidad</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colPrecio</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">TableColumn</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">colSubtotal</span><span class="s2">;</span>
+
+    <span class="s4">// Layout exclusivo para PDF (oculto en pantalla): bloques</span>
+    <span class="s4">// independientes que exportarPdf() reparte entre páginas. Ver el</span>
+    <span class="s4">// comentario grande sobre esta sección en Reportes.fxml. =====</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpresionPaginaBloques</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpresionBloques</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpEncabezado</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpEmision</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpGeneradoPor</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTipoReporte</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpInfo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTitulo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpPeriodo</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpKpis</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTotalTitulo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTotal</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpCantidadTitulo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpCantidad</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpPromedioTitulo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpPromedio</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpKpi4</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTituloKpi4</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpValorKpi4</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpChartTendencia</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTituloTendencia</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">ImageView imgTendencia</span><span class="s2">;</span>
+
+    <span class="s4">// Fila Categoría + Top Productos: ambos gráficos ahora comparten</span>
+    <span class="s4">// una misma fila (GridPane 50/50) en vez de ir uno debajo del</span>
+    <span class="s4">// otro. lblImpTituloCategoria tiene fx:id solo para poder medir</span>
+    <span class="s4">// su alto real al repartir el espacio disponible.</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">GridPane panelImpFilaCategoriaTop</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpChartCategoria</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTituloCategoria</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">ImageView imgCategoria</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpChartTop</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTituloTop</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">ImageView imgTop</span><span class="s2">;</span>
+
+    <span class="s4">// Espaciador flexible (Region con VBox.vgrow=&quot;ALWAYS&quot; puesto en el</span>
+    <span class="s4">// FXML): se intercala entre la fila de gráficos y el pie de</span>
+    <span class="s4">// página para que éste quede SIEMPRE pegado al margen inferior de</span>
+    <span class="s4">// la hoja, sin importar cuánto midan los gráficos.</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Region espaciadorBloques</span><span class="s2">;</span>
+
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelImpFooterBloques</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblPieBloquesFecha</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblPieBloquesPagina</span><span class="s2">;</span>
+
+    <span class="s4">// Panel de impresión de la tabla (oculto, solo para PDF)</span>
+    <span class="s4">// Encabezado idéntico al de la página 1 (mismo logo, tipografía y</span>
+    <span class="s4">// bloque de emisión/usuario/tipo de reporte), para que ambas</span>
+    <span class="s4">// páginas del documento compartan la misma identidad visual.</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">VBox panelTablaImpresion</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaEmision</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaGeneradoPor</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaTipoReporte</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaTitulo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaPeriodo</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblPieTablaFecha</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">Label lblImpTablaPagina</span><span class="s2">;</span>
+    <span class="s1">@FXML </span><span class="s0">private </span><span class="s1">GridPane gridTablaImpresion</span><span class="s2">;</span>
+
+    <span class="s4">// Margen FÍSICO de la hoja (en puntos, 1pt = 1/72&quot;), aplicado</span>
+    <span class="s4">// directamente al PageLayout en vez de usar Printer.MarginType.</span>
+    <span class="s4">// DEFAULT solía reservar ~54pt (0.75&quot;) por lado antes de que</span>
+    <span class="s4">// empezara el área imprimible, y encima de eso se restaba otro</span>
+    <span class="s4">// tanto de padding interno: los dos descuentos juntos dejaban</span>
+    <span class="s4">// franjas laterales enormes. Con un margen físico chico y</span>
+    <span class="s4">// explícito, el contenido usa prácticamente todo el ancho real</span>
+    <span class="s4">// de la hoja. ~15pt equivale a unos 20px de referencia (96dpi).</span>
+    <span class="s0">private static final double </span><span class="s1">MARGEN_IMPRESION_PT </span><span class="s2">= </span><span class="s5">15</span><span class="s2">;</span>
+
+    <span class="s4">// -fx-padding del contenedor de página de bloques y de la tabla</span>
+    <span class="s4">// (panelImpresionPaginaBloques / panelTablaImpresion en el</span>
+    <span class="s4">// FXML): ya NO es un segundo margen, es solo un colchón visual</span>
+    <span class="s4">// pequeño para que el texto/gráficos no toquen el borde exacto</span>
+    <span class="s4">// del área imprimible. Debe coincidir con el valor puesto en el</span>
+    <span class="s4">// FXML (-fx-padding) para que los cálculos de ancho/alto de</span>
+    <span class="s4">// contenido sean exactos.</span>
+    <span class="s0">private static final double </span><span class="s1">PADDING_PAGINA_BLOQUES </span><span class="s2">= </span><span class="s5">8</span><span class="s2">;</span>
+
+    <span class="s0">private final </span><span class="s1">ReporteDAO dao </span><span class="s2">= </span><span class="s0">new </span><span class="s1">ReporteDAO</span><span class="s2">();</span>
+
+    <span class="s0">private </span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">Resumen resumenActual</span><span class="s2">;</span>
+    <span class="s0">private </span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">FilaDetalleVenta</span><span class="s2">&gt; </span><span class="s1">ventasActuales</span><span class="s2">;</span>
+    <span class="s0">private </span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">FilaDetalleCompra</span><span class="s2">&gt; </span><span class="s1">comprasActuales</span><span class="s2">;</span>
+    <span class="s0">private </span><span class="s1">LocalDate desdeActual</span><span class="s2">;</span>
+    <span class="s0">private </span><span class="s1">LocalDate hastaActual</span><span class="s2">;</span>
+
+    <span class="s6">/** Fila genérica para la tabla: sirve tanto para Ventas como Compras. */</span>
+    <span class="s0">public static class </span><span class="s1">FilaReporte </span><span class="s2">{</span>
+        <span class="s0">final </span><span class="s1">String fecha</span><span class="s2">, </span><span class="s1">comprobante</span><span class="s2">, </span><span class="s1">entidad</span><span class="s2">, </span><span class="s1">producto</span><span class="s2">, </span><span class="s1">cantidad</span><span class="s2">, </span><span class="s1">precio</span><span class="s2">, </span><span class="s1">subtotal</span><span class="s2">;</span>
+        <span class="s1">FilaReporte</span><span class="s2">(</span><span class="s1">String fecha</span><span class="s2">, </span><span class="s1">String comprobante</span><span class="s2">, </span><span class="s1">String entidad</span><span class="s2">, </span><span class="s1">String producto</span><span class="s2">,</span>
+                    <span class="s0">int </span><span class="s1">cantidad</span><span class="s2">, </span><span class="s0">double </span><span class="s1">precio</span><span class="s2">, </span><span class="s0">double </span><span class="s1">subtotal</span><span class="s2">) {</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">fecha </span><span class="s2">= </span><span class="s1">fecha</span><span class="s2">;</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">comprobante </span><span class="s2">= </span><span class="s1">comprobante</span><span class="s2">;</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">entidad </span><span class="s2">= </span><span class="s1">entidad</span><span class="s2">;</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">producto </span><span class="s2">= </span><span class="s1">producto</span><span class="s2">;</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">cantidad </span><span class="s2">= </span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">cantidad</span><span class="s2">);</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">precio </span><span class="s2">= </span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %.2f&quot;</span><span class="s2">, </span><span class="s1">precio</span><span class="s2">);</span>
+            <span class="s0">this</span><span class="s2">.</span><span class="s1">subtotal </span><span class="s2">= </span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %.2f&quot;</span><span class="s2">, </span><span class="s1">subtotal</span><span class="s2">);</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">public void </span><span class="s1">initialize</span><span class="s2">() {</span>
+        <span class="s1">cbTipo</span><span class="s2">.</span><span class="s1">setItems</span><span class="s2">(</span><span class="s1">FXCollections</span><span class="s2">.</span><span class="s1">observableArrayList</span><span class="s2">(</span><span class="s1">VENTAS</span><span class="s2">, </span><span class="s1">COMPRAS</span><span class="s2">));</span>
+        <span class="s1">cbTipo</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">VENTAS</span><span class="s2">);</span>
+
+        <span class="s1">dpHasta</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">());</span>
+        <span class="s1">dpDesde</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">withDayOfMonth</span><span class="s2">(</span><span class="s5">1</span><span class="s2">));</span>
+
+        <span class="s1">colFecha</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">fecha</span><span class="s2">));</span>
+        <span class="s1">colComprobante</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">comprobante</span><span class="s2">));</span>
+        <span class="s1">colEntidad</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">entidad</span><span class="s2">));</span>
+        <span class="s1">colProducto</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">producto</span><span class="s2">));</span>
+        <span class="s1">colCantidad</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">cantidad</span><span class="s2">));</span>
+        <span class="s1">colPrecio</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">precio</span><span class="s2">));</span>
+        <span class="s1">colSubtotal</span><span class="s2">.</span><span class="s1">setCellValueFactory</span><span class="s2">(</span><span class="s1">d -&gt; </span><span class="s0">new </span><span class="s1">SimpleStringProperty</span><span class="s2">(</span><span class="s1">d</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">().</span><span class="s1">subtotal</span><span class="s2">));</span>
+
+        <span class="s4">// Si el usuario edita Desde/Hasta directamente (no vía un</span>
+        <span class="s4">// atajo de rango), el atajo que hubiera quedado marcado ya no</span>
+        <span class="s4">// representa el rango real: se des-selecciona para no mentir</span>
+        <span class="s4">// visualmente sobre qué filtro está activo.</span>
+        <span class="s1">dpDesde</span><span class="s2">.</span><span class="s1">valueProperty</span><span class="s2">().</span><span class="s1">addListener</span><span class="s2">((</span><span class="s1">obs</span><span class="s2">, </span><span class="s1">anterior</span><span class="s2">, </span><span class="s1">nuevo</span><span class="s2">) </span><span class="s1">-&gt; limpiarSeleccionRangoSiEsManual</span><span class="s2">());</span>
+        <span class="s1">dpHasta</span><span class="s2">.</span><span class="s1">valueProperty</span><span class="s2">().</span><span class="s1">addListener</span><span class="s2">((</span><span class="s1">obs</span><span class="s2">, </span><span class="s1">anterior</span><span class="s2">, </span><span class="s1">nuevo</span><span class="s2">) </span><span class="s1">-&gt; limpiarSeleccionRangoSiEsManual</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">limpiarSeleccionRangoSiEsManual</span><span class="s2">() {</span>
+        <span class="s0">if </span><span class="s2">(!</span><span class="s1">actualizandoRangoPreset </span><span class="s2">&amp;&amp; </span><span class="s1">grupoRangoFechas</span><span class="s2">.</span><span class="s1">getSelectedToggle</span><span class="s2">() != </span><span class="s0">null</span><span class="s2">) {</span>
+            <span class="s1">grupoRangoFechas</span><span class="s2">.</span><span class="s1">selectToggle</span><span class="s2">(</span><span class="s0">null</span><span class="s2">);</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">generarReporte</span><span class="s2">() {</span>
+        <span class="s1">LocalDate desde </span><span class="s2">= </span><span class="s1">dpDesde</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">();</span>
+        <span class="s1">LocalDate hasta </span><span class="s2">= </span><span class="s1">dpHasta</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">();</span>
+        <span class="s1">String tipo </span><span class="s2">= </span><span class="s1">cbTipo</span><span class="s2">.</span><span class="s1">getValue</span><span class="s2">();</span>
+
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">desde </span><span class="s2">== </span><span class="s0">null </span><span class="s2">|| </span><span class="s1">hasta </span><span class="s2">== </span><span class="s0">null</span><span class="s2">) {</span>
+            <span class="s1">CSDialog</span><span class="s2">.</span><span class="s1">warning</span><span class="s2">(</span><span class="s3">&quot;Rango de fechas incompleto&quot;</span><span class="s2">, </span><span class="s3">&quot;Selecciona el rango de fechas (Desde / Hasta).&quot;</span><span class="s2">);</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">desde</span><span class="s2">.</span><span class="s1">isAfter</span><span class="s2">(</span><span class="s1">hasta</span><span class="s2">)) {</span>
+            <span class="s1">CSDialog</span><span class="s2">.</span><span class="s1">warning</span><span class="s2">(</span><span class="s3">&quot;Rango de fechas inválido&quot;</span><span class="s2">, </span><span class="s3">&quot;La fecha 'Desde' no puede ser posterior a 'Hasta'.&quot;</span><span class="s2">);</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">hasta</span><span class="s2">.</span><span class="s1">isAfter</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">())) {</span>
+            <span class="s1">CSDialog</span><span class="s2">.</span><span class="s1">warning</span><span class="s2">(</span><span class="s3">&quot;Fecha inválida&quot;</span><span class="s2">, </span><span class="s3">&quot;La fecha 'Hasta' no puede ser una fecha futura.&quot;</span><span class="s2">);</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">desdeActual </span><span class="s2">= </span><span class="s1">desde</span><span class="s2">;</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">hastaActual </span><span class="s2">= </span><span class="s1">hasta</span><span class="s2">;</span>
+
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">VENTAS</span><span class="s2">.</span><span class="s1">equals</span><span class="s2">(</span><span class="s1">tipo</span><span class="s2">)) {</span>
+            <span class="s1">generarReporteVentas</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s2">} </span><span class="s0">else </span><span class="s2">{</span>
+            <span class="s1">generarReporteCompras</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s2">}</span>
+
+        <span class="s1">panelResumen</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelResumen</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelGraficos</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelGraficos</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelTabla</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelTabla</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">btnExportarPdf</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">btnExportarPdf</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">generarReporteVentas</span><span class="s2">(</span><span class="s1">LocalDate desde</span><span class="s2">, </span><span class="s1">LocalDate hasta</span><span class="s2">) {</span>
+        <span class="s1">lblTituloTotal</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TOTAL VENDIDO&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloCantidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;N° DE VENTAS&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloPromedio</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TICKET PROMEDIO&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloTendencia</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TENDENCIA DE VENTAS POR DÍA&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloTop</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TOP 8 PRODUCTOS MÁS VENDIDOS&quot;</span><span class="s2">);</span>
+        <span class="s1">colEntidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Cliente&quot;</span><span class="s2">);</span>
+
+        <span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">Resumen resumen </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerResumenVentas</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">resumenActual </span><span class="s2">= </span><span class="s1">resumen</span><span class="s2">;</span>
+        <span class="s1">lblTotal</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %,.2f&quot;</span><span class="s2">, </span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">total</span><span class="s2">));</span>
+        <span class="s1">lblCantidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">cantidadOperaciones</span><span class="s2">));</span>
+        <span class="s1">lblPromedio</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %,.2f&quot;</span><span class="s2">, </span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">promedio</span><span class="s2">));</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">PuntoTendencia</span><span class="s2">&gt; </span><span class="s1">tendencia </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerVentasPorDia</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s1">pintarTendencia</span><span class="s2">(</span><span class="s1">tendencia</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">ProductoTop</span><span class="s2">&gt; </span><span class="s1">top </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerTopProductosVendidos</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">, </span><span class="s5">8</span><span class="s2">);</span>
+        <span class="s1">pintarTop</span><span class="s2">(</span><span class="s1">top</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">CategoriaTotal</span><span class="s2">&gt; </span><span class="s1">categorias </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerVentasPorCategoria</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s1">pintarCategorias</span><span class="s2">(</span><span class="s1">categorias</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">FilaDetalleVenta</span><span class="s2">&gt; </span><span class="s1">filas </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">listarDetalleVentas</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">ventasActuales </span><span class="s2">= </span><span class="s1">filas</span><span class="s2">;</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">comprasActuales </span><span class="s2">= </span><span class="s0">null</span><span class="s2">;</span>
+
+        <span class="s4">// 4to KPI en Ventas: clientes distintos atendidos en el periodo.</span>
+        <span class="s1">lblTituloKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;CLIENTES ATENDIDOS&quot;</span><span class="s2">);</span>
+        <span class="s0">long </span><span class="s1">clientesAtendidos </span><span class="s2">= </span><span class="s1">filas</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">map</span><span class="s2">(</span><span class="s1">f -&gt; f</span><span class="s2">.</span><span class="s1">cliente</span><span class="s2">).</span><span class="s1">distinct</span><span class="s2">().</span><span class="s1">count</span><span class="s2">();</span>
+        <span class="s1">lblKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">clientesAtendidos</span><span class="s2">));</span>
+        <span class="s1">iconKpi4Persona</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Persona</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Caja</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Caja</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+
+        <span class="s1">tablaDetalle</span><span class="s2">.</span><span class="s1">setItems</span><span class="s2">(</span><span class="s1">FXCollections</span><span class="s2">.</span><span class="s1">observableArrayList</span><span class="s2">(</span>
+                <span class="s1">filas</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">map</span><span class="s2">(</span><span class="s1">f -&gt; </span><span class="s0">new </span><span class="s1">FilaReporte</span><span class="s2">(</span>
+                        <span class="s1">f</span><span class="s2">.</span><span class="s1">fecha</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">comprobante</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">cliente</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">producto</span><span class="s2">,</span>
+                        <span class="s1">f</span><span class="s2">.</span><span class="s1">cantidad</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">precio</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">subtotal</span>
+                <span class="s2">)).</span><span class="s1">toList</span><span class="s2">()</span>
+        <span class="s2">));</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">generarReporteCompras</span><span class="s2">(</span><span class="s1">LocalDate desde</span><span class="s2">, </span><span class="s1">LocalDate hasta</span><span class="s2">) {</span>
+        <span class="s1">lblTituloTotal</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TOTAL COMPRADO&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloCantidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;N° DE COMPRAS&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloPromedio</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;PROMEDIO POR COMPRA&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloTendencia</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TENDENCIA DE COMPRAS POR DÍA&quot;</span><span class="s2">);</span>
+        <span class="s1">lblTituloTop</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;TOP 8 PRODUCTOS MÁS COMPRADOS&quot;</span><span class="s2">);</span>
+        <span class="s1">colEntidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Proveedor&quot;</span><span class="s2">);</span>
+
+        <span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">Resumen resumen </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerResumenCompras</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">resumenActual </span><span class="s2">= </span><span class="s1">resumen</span><span class="s2">;</span>
+        <span class="s1">lblTotal</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %,.2f&quot;</span><span class="s2">, </span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">total</span><span class="s2">));</span>
+        <span class="s1">lblCantidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">cantidadOperaciones</span><span class="s2">));</span>
+        <span class="s1">lblPromedio</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;S/ %,.2f&quot;</span><span class="s2">, </span><span class="s1">resumen</span><span class="s2">.</span><span class="s1">promedio</span><span class="s2">));</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">PuntoTendencia</span><span class="s2">&gt; </span><span class="s1">tendencia </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerComprasPorDia</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s1">pintarTendencia</span><span class="s2">(</span><span class="s1">tendencia</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">ProductoTop</span><span class="s2">&gt; </span><span class="s1">top </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerTopProductosComprados</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">, </span><span class="s5">8</span><span class="s2">);</span>
+        <span class="s1">pintarTop</span><span class="s2">(</span><span class="s1">top</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">CategoriaTotal</span><span class="s2">&gt; </span><span class="s1">categorias </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">obtenerComprasPorCategoria</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s1">pintarCategorias</span><span class="s2">(</span><span class="s1">categorias</span><span class="s2">);</span>
+
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">FilaDetalleCompra</span><span class="s2">&gt; </span><span class="s1">filas </span><span class="s2">= </span><span class="s1">dao</span><span class="s2">.</span><span class="s1">listarDetalleCompras</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">);</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">comprasActuales </span><span class="s2">= </span><span class="s1">filas</span><span class="s2">;</span>
+        <span class="s0">this</span><span class="s2">.</span><span class="s1">ventasActuales </span><span class="s2">= </span><span class="s0">null</span><span class="s2">;</span>
+
+        <span class="s4">// 4to KPI en Compras: productos distintos comprados en el periodo.</span>
+        <span class="s1">lblTituloKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;PRODUCTOS COMPRADOS&quot;</span><span class="s2">);</span>
+        <span class="s0">long </span><span class="s1">productosComprados </span><span class="s2">= </span><span class="s1">filas</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">map</span><span class="s2">(</span><span class="s1">f -&gt; f</span><span class="s2">.</span><span class="s1">producto</span><span class="s2">).</span><span class="s1">distinct</span><span class="s2">().</span><span class="s1">count</span><span class="s2">();</span>
+        <span class="s1">lblKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">productosComprados</span><span class="s2">));</span>
+        <span class="s1">iconKpi4Caja</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Caja</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Persona</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">iconKpi4Persona</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+
+        <span class="s1">tablaDetalle</span><span class="s2">.</span><span class="s1">setItems</span><span class="s2">(</span><span class="s1">FXCollections</span><span class="s2">.</span><span class="s1">observableArrayList</span><span class="s2">(</span>
+                <span class="s1">filas</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">().</span><span class="s1">map</span><span class="s2">(</span><span class="s1">f -&gt; </span><span class="s0">new </span><span class="s1">FilaReporte</span><span class="s2">(</span>
+                        <span class="s1">f</span><span class="s2">.</span><span class="s1">fecha</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">comprobante</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">proveedor</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">producto</span><span class="s2">,</span>
+                        <span class="s1">f</span><span class="s2">.</span><span class="s1">cantidad</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">precio</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">subtotal</span>
+                <span class="s2">)).</span><span class="s1">toList</span><span class="s2">()</span>
+        <span class="s2">));</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">pintarTendencia</span><span class="s2">(</span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">PuntoTendencia</span><span class="s2">&gt; </span><span class="s1">puntos</span><span class="s2">) {</span>
+        <span class="s1">chartTendencia</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">&lt;</span><span class="s1">String</span><span class="s2">, </span><span class="s1">Number</span><span class="s2">&gt; </span><span class="s1">serie </span><span class="s2">= </span><span class="s0">new </span><span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">&lt;&gt;();</span>
+        <span class="s0">for </span><span class="s2">(</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">PuntoTendencia p </span><span class="s2">: </span><span class="s1">puntos</span><span class="s2">) {</span>
+            <span class="s1">serie</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s0">new </span><span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Data</span><span class="s2">&lt;&gt;(</span><span class="s1">p</span><span class="s2">.</span><span class="s1">fecha</span><span class="s2">, </span><span class="s1">p</span><span class="s2">.</span><span class="s1">total</span><span class="s2">));</span>
+        <span class="s2">}</span>
+        <span class="s1">chartTendencia</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s1">serie</span><span class="s2">);</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Gráfico de barras HORIZONTAL (eje X = cantidad numérica,</span>
+     <span class="s6">* eje Y = nombre del producto como categoría). Con muchos</span>
+     <span class="s6">* productos o nombres largos, las barras horizontales evitan</span>
+     <span class="s6">* que las etiquetas se superpongan o queden rotadas e</span>
+     <span class="s6">* ilegibles, a diferencia de un gráfico vertical clásico.</span>
+     <span class="s6">* Los nombres se truncan visualmente pero el tooltip de cada</span>
+     <span class="s6">* barra siempre muestra el nombre completo.</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">pintarTop</span><span class="s2">(</span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">ProductoTop</span><span class="s2">&gt; </span><span class="s1">productos</span><span class="s2">) {</span>
+        <span class="s1">chartTop</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">&lt;</span><span class="s1">Number</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">serie </span><span class="s2">= </span><span class="s0">new </span><span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Series</span><span class="s2">&lt;&gt;();</span>
+        <span class="s0">for </span><span class="s2">(</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">ProductoTop p </span><span class="s2">: </span><span class="s1">productos</span><span class="s2">) {</span>
+            <span class="s1">String etiqueta </span><span class="s2">= </span><span class="s1">p</span><span class="s2">.</span><span class="s1">nombre</span><span class="s2">.</span><span class="s1">length</span><span class="s2">() &gt; </span><span class="s5">22</span>
+                    <span class="s2">? </span><span class="s1">p</span><span class="s2">.</span><span class="s1">nombre</span><span class="s2">.</span><span class="s1">substring</span><span class="s2">(</span><span class="s5">0</span><span class="s2">, </span><span class="s5">20</span><span class="s2">) + </span><span class="s3">&quot;…&quot;</span>
+                    <span class="s2">: </span><span class="s1">p</span><span class="s2">.</span><span class="s1">nombre</span><span class="s2">;</span>
+            <span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Data</span><span class="s2">&lt;</span><span class="s1">Number</span><span class="s2">, </span><span class="s1">String</span><span class="s2">&gt; </span><span class="s1">dato </span><span class="s2">= </span><span class="s0">new </span><span class="s1">XYChart</span><span class="s2">.</span><span class="s1">Data</span><span class="s2">&lt;&gt;(</span><span class="s1">p</span><span class="s2">.</span><span class="s1">cantidad</span><span class="s2">, </span><span class="s1">etiqueta</span><span class="s2">);</span>
+            <span class="s1">serie</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s1">dato</span><span class="s2">);</span>
+            <span class="s1">dato</span><span class="s2">.</span><span class="s1">nodeProperty</span><span class="s2">().</span><span class="s1">addListener</span><span class="s2">((</span><span class="s1">obs</span><span class="s2">, </span><span class="s1">oldNode</span><span class="s2">, </span><span class="s1">newNode</span><span class="s2">) </span><span class="s1">-&gt; </span><span class="s2">{</span>
+                <span class="s0">if </span><span class="s2">(</span><span class="s1">newNode </span><span class="s2">!= </span><span class="s0">null</span><span class="s2">) {</span>
+                    <span class="s1">Tooltip</span><span class="s2">.</span><span class="s1">install</span><span class="s2">(</span><span class="s1">newNode</span><span class="s2">, </span><span class="s0">new </span><span class="s1">Tooltip</span><span class="s2">(</span>
+                            <span class="s1">p</span><span class="s2">.</span><span class="s1">nombre </span><span class="s2">+ </span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">&quot; </span><span class="s2">+ </span><span class="s1">p</span><span class="s2">.</span><span class="s1">cantidad </span><span class="s2">+ </span><span class="s3">&quot; unidades · S/ &quot; </span><span class="s2">+</span>
+                                    <span class="s1">String</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">US</span><span class="s2">, </span><span class="s3">&quot;%.2f&quot;</span><span class="s2">, </span><span class="s1">p</span><span class="s2">.</span><span class="s1">total</span><span class="s2">)));</span>
+                <span class="s2">}</span>
+            <span class="s2">});</span>
+        <span class="s2">}</span>
+        <span class="s1">chartTop</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s1">serie</span><span class="s2">);</span>
+
+        <span class="s4">// &quot;cantidad&quot; siempre es un número entero de unidades: el</span>
+        <span class="s4">// auto-rango por defecto de NumberAxis puede elegir un</span>
+        <span class="s4">// tickUnit fraccionario (0.25, 0.5...) cuando el máximo es</span>
+        <span class="s4">// chico, mostrando &quot;0.75, 1, 1.25&quot;. Se fuerza un eje con</span>
+        <span class="s4">// pasos enteros y se formatean las etiquetas sin decimales</span>
+        <span class="s4">// como respaldo, sin importar el rango de datos.</span>
+        <span class="s0">int </span><span class="s1">maxCantidad </span><span class="s2">= </span><span class="s1">productos</span><span class="s2">.</span><span class="s1">stream</span><span class="s2">()</span>
+                <span class="s2">.</span><span class="s1">mapToInt</span><span class="s2">(</span><span class="s1">p -&gt; p</span><span class="s2">.</span><span class="s1">cantidad</span><span class="s2">)</span>
+                <span class="s2">.</span><span class="s1">max</span><span class="s2">().</span><span class="s1">orElse</span><span class="s2">(</span><span class="s5">1</span><span class="s2">);</span>
+        <span class="s0">int </span><span class="s1">tickUnit </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span><span class="s5">1</span><span class="s2">, (</span><span class="s0">int</span><span class="s2">) </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">ceil</span><span class="s2">(</span><span class="s1">maxCantidad </span><span class="s2">/ </span><span class="s5">5.0</span><span class="s2">));</span>
+        <span class="s0">int </span><span class="s1">upperBound </span><span class="s2">= ((</span><span class="s1">maxCantidad </span><span class="s2">/ </span><span class="s1">tickUnit</span><span class="s2">) + </span><span class="s5">1</span><span class="s2">) * </span><span class="s1">tickUnit</span><span class="s2">;</span>
+
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setAutoRanging</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setLowerBound</span><span class="s2">(</span><span class="s5">0</span><span class="s2">);</span>
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setUpperBound</span><span class="s2">(</span><span class="s1">upperBound</span><span class="s2">);</span>
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setTickUnit</span><span class="s2">(</span><span class="s1">tickUnit</span><span class="s2">);</span>
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setMinorTickCount</span><span class="s2">(</span><span class="s5">1</span><span class="s2">);</span>
+        <span class="s1">ejeXTop</span><span class="s2">.</span><span class="s1">setTickLabelFormatter</span><span class="s2">(</span><span class="s0">new </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">util</span><span class="s2">.</span><span class="s1">StringConverter</span><span class="s2">&lt;</span><span class="s1">Number</span><span class="s2">&gt;() {</span>
+            <span class="s1">@Override </span><span class="s0">public </span><span class="s1">String toString</span><span class="s2">(</span><span class="s1">Number valor</span><span class="s2">) {</span>
+                <span class="s0">return </span><span class="s1">String</span><span class="s2">.</span><span class="s1">valueOf</span><span class="s2">(</span><span class="s1">valor</span><span class="s2">.</span><span class="s1">intValue</span><span class="s2">());</span>
+            <span class="s2">}</span>
+            <span class="s1">@Override </span><span class="s0">public </span><span class="s1">Number fromString</span><span class="s2">(</span><span class="s1">String texto</span><span class="s2">) {</span>
+                <span class="s0">return </span><span class="s1">Integer</span><span class="s2">.</span><span class="s1">parseInt</span><span class="s2">(</span><span class="s1">texto</span><span class="s2">);</span>
+            <span class="s2">}</span>
+        <span class="s2">});</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">pintarCategorias</span><span class="s2">(</span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">CategoriaTotal</span><span class="s2">&gt; </span><span class="s1">categorias</span><span class="s2">) {</span>
+        <span class="s1">chartCategoria</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s0">for </span><span class="s2">(</span><span class="s1">ReporteDAO</span><span class="s2">.</span><span class="s1">CategoriaTotal c </span><span class="s2">: </span><span class="s1">categorias</span><span class="s2">) {</span>
+            <span class="s1">chartCategoria</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s0">new </span><span class="s1">PieChart</span><span class="s2">.</span><span class="s1">Data</span><span class="s2">(</span><span class="s1">c</span><span class="s2">.</span><span class="s1">nombre</span><span class="s2">, </span><span class="s1">c</span><span class="s2">.</span><span class="s1">total</span><span class="s2">));</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">limpiar</span><span class="s2">() {</span>
+        <span class="s1">cbTipo</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">VENTAS</span><span class="s2">);</span>
+        <span class="s1">dpHasta</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">());</span>
+        <span class="s1">dpDesde</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">withDayOfMonth</span><span class="s2">(</span><span class="s5">1</span><span class="s2">));</span>
+
+        <span class="s1">panelResumen</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelResumen</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelGraficos</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelGraficos</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelTabla</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelTabla</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">btnExportarPdf</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">btnExportarPdf</span><span class="s2">.</span><span class="s1">setManaged</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+
+        <span class="s1">chartTendencia</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">chartTop</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">chartCategoria</span><span class="s2">.</span><span class="s1">getData</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">tablaDetalle</span><span class="s2">.</span><span class="s1">getItems</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+
+        <span class="s1">resumenActual </span><span class="s2">= </span><span class="s0">null</span><span class="s2">;</span>
+        <span class="s1">ventasActuales </span><span class="s2">= </span><span class="s0">null</span><span class="s2">;</span>
+        <span class="s1">comprasActuales </span><span class="s2">= </span><span class="s0">null</span><span class="s2">;</span>
+    <span class="s2">}</span>
+
+    <span class="s4">// ===== Atajos rápidos de rango de fechas =====</span>
+    <span class="s4">// Solo ajustan dpDesde/dpHasta; el usuario sigue presionando</span>
+    <span class="s4">// &quot;Generar Reporte&quot; para aplicar el filtro (mismo flujo de</span>
+    <span class="s4">// siempre). La fórmula de cada rango vive en RangoFechaUtil</span>
+    <span class="s4">// (compartida con Kárdex) para no duplicar el mismo cálculo en</span>
+    <span class="s4">// dos controllers.</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">rangoHoy</span><span class="s2">() {</span>
+        <span class="s1">aplicarRango</span><span class="s2">(</span><span class="s1">RangoFechaUtil</span><span class="s2">.</span><span class="s1">hoy</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">rangoUltimos7Dias</span><span class="s2">() {</span>
+        <span class="s1">aplicarRango</span><span class="s2">(</span><span class="s1">RangoFechaUtil</span><span class="s2">.</span><span class="s1">ultimos7Dias</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">rangoEsteMes</span><span class="s2">() {</span>
+        <span class="s1">aplicarRango</span><span class="s2">(</span><span class="s1">RangoFechaUtil</span><span class="s2">.</span><span class="s1">esteMes</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">rangoEsteAnio</span><span class="s2">() {</span>
+        <span class="s1">aplicarRango</span><span class="s2">(</span><span class="s1">RangoFechaUtil</span><span class="s2">.</span><span class="s1">esteAnio</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">aplicarRango</span><span class="s2">(</span><span class="s1">LocalDate</span><span class="s2">[] </span><span class="s1">rango</span><span class="s2">) {</span>
+        <span class="s1">actualizandoRangoPreset </span><span class="s2">= </span><span class="s0">true</span><span class="s2">;</span>
+        <span class="s1">dpDesde</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">rango</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]);</span>
+        <span class="s1">dpHasta</span><span class="s2">.</span><span class="s1">setValue</span><span class="s2">(</span><span class="s1">rango</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]);</span>
+        <span class="s1">actualizandoRangoPreset </span><span class="s2">= </span><span class="s0">false</span><span class="s2">;</span>
+    <span class="s2">}</span>
+
+    <span class="s4">// ============================================================</span>
+    <span class="s4">// EXPORTACIÓN A PDF</span>
+    <span class="s4">//</span>
+    <span class="s4">// Arquitectura: la pantalla y el PDF son dos layouts totalmente</span>
+    <span class="s4">// independientes. El dashboard visible no se toca para nada;</span>
+    <span class="s4">// todo lo de aquí abajo vive en nodos ocultos propios del PDF</span>
+    <span class="s4">// (ver el bloque grande de comentarios en Reportes.fxml).</span>
+    <span class="s4">//</span>
+    <span class="s4">// El documento se imprime SIEMPRE en Portrait (nunca Landscape),</span>
+    <span class="s4">// en un diseño FIJO de 2 páginas tipo reporte ejecutivo:</span>
+    <span class="s4">//</span>
+    <span class="s4">//   Página 1 (una sola, nunca se reparte en varias): encabezado,</span>
+    <span class="s4">//   información del reporte, KPIs (Resumen Ejecutivo), gráfico</span>
+    <span class="s4">//   de Tendencia a todo el ancho y, debajo, Categoría + Top</span>
+    <span class="s4">//   Productos LADO A LADO en una misma fila (50/50, misma</span>
+    <span class="s4">//   altura).</span>
+    <span class="s4">//</span>
+    <span class="s4">//   Página 2 en adelante: SOLO la tabla de movimientos, a todo</span>
+    <span class="s4">//   el ancho, paginada por filas si no entran todas (nunca</span>
+    <span class="s4">//   escalada horizontalmente, con los encabezados de columna</span>
+    <span class="s4">//   repetidos en cada hoja).</span>
+    <span class="s4">//</span>
+    <span class="s4">// El alto de encabezado/info/KPIs/pie de página se mide tal</span>
+    <span class="s4">// cual (nunca se recortan ni se les achica la fuente); lo que</span>
+    <span class="s4">// sobra de la hoja se reparte entre el bloque de tendencia y la</span>
+    <span class="s4">// fila inferior, y ESOS DOS gráficos se redimensionan a su caja</span>
+    <span class="s4">// real ANTES de capturarlos (ver redimensionarYCapturar), para</span>
+    <span class="s4">// que el propio motor de charts recalcule ejes/leyenda a ese</span>
+    <span class="s4">// tamaño en vez de estirar una imagen ya capturada.</span>
+    <span class="s4">// ============================================================</span>
+
+    <span class="s1">@FXML</span>
+    <span class="s0">private void </span><span class="s1">exportarPdf</span><span class="s2">() {</span>
+        <span class="s1">PrinterJob job </span><span class="s2">= </span><span class="s1">PrinterJob</span><span class="s2">.</span><span class="s1">createPrinterJob</span><span class="s2">();</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">job </span><span class="s2">== </span><span class="s0">null</span><span class="s2">) {</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s0">boolean </span><span class="s1">ok </span><span class="s2">= </span><span class="s1">job</span><span class="s2">.</span><span class="s1">showPrintDialog</span><span class="s2">(</span><span class="s1">tablaDetalle</span><span class="s2">.</span><span class="s1">getScene</span><span class="s2">().</span><span class="s1">getWindow</span><span class="s2">());</span>
+        <span class="s0">if </span><span class="s2">(!</span><span class="s1">ok</span><span class="s2">) {</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s1">Printer impresora </span><span class="s2">= </span><span class="s1">job</span><span class="s2">.</span><span class="s1">getPrinter</span><span class="s2">();</span>
+
+        <span class="s4">// A4 forzado explícitamente: antes se heredaba el papel por</span>
+        <span class="s4">// defecto del driver de impresión, que en algunos equipos NO</span>
+        <span class="s4">// es A4 (p.ej. impresoras configuradas en Carta/Letter). Si</span>
+        <span class="s4">// el driver no reconoce la instancia Paper.A4 (raro, pero</span>
+        <span class="s4">// posible en ciertos drivers físicos), se busca el papel</span>
+        <span class="s4">// &quot;A4&quot; real que reporta ESE impresora entre sus formatos</span>
+        <span class="s4">// soportados, para no romper la exportación.</span>
+        <span class="s1">Paper papelA4 </span><span class="s2">= </span><span class="s1">impresora</span><span class="s2">.</span><span class="s1">getPrinterAttributes</span><span class="s2">().</span><span class="s1">getSupportedPapers</span><span class="s2">().</span><span class="s1">stream</span><span class="s2">()</span>
+                <span class="s2">.</span><span class="s1">filter</span><span class="s2">(</span><span class="s1">p -&gt; p</span><span class="s2">.</span><span class="s1">getName</span><span class="s2">() != </span><span class="s0">null </span><span class="s2">&amp;&amp; </span><span class="s1">p</span><span class="s2">.</span><span class="s1">getName</span><span class="s2">().</span><span class="s1">toUpperCase</span><span class="s2">(</span><span class="s1">Locale</span><span class="s2">.</span><span class="s1">ROOT</span><span class="s2">).</span><span class="s1">contains</span><span class="s2">(</span><span class="s3">&quot;A4&quot;</span><span class="s2">))</span>
+                <span class="s2">.</span><span class="s1">findFirst</span><span class="s2">()</span>
+                <span class="s2">.</span><span class="s1">orElse</span><span class="s2">(</span><span class="s1">Paper</span><span class="s2">.</span><span class="s1">A4</span><span class="s2">);</span>
+
+        <span class="s4">// Portrait siempre, nunca Landscape. Margen físico chico y</span>
+        <span class="s4">// explícito (MARGEN_IMPRESION_PT) en vez de Printer.</span>
+        <span class="s4">// MarginType.DEFAULT: DEFAULT reserva un margen generoso y</span>
+        <span class="s4">// variable según el driver (a menudo ~0.75&quot;/54pt por lado),</span>
+        <span class="s4">// que sumado al padding interno dejaba franjas laterales muy</span>
+        <span class="s4">// grandes. Con margen explícito en puntos, el ancho realmente</span>
+        <span class="s4">// imprimible (layout.getPrintableWidth()) queda mucho más</span>
+        <span class="s4">// cerca del ancho físico total de la hoja A4.</span>
+        <span class="s1">PageLayout layout </span><span class="s2">= </span><span class="s1">impresora</span><span class="s2">.</span><span class="s1">createPageLayout</span><span class="s2">(</span>
+                <span class="s1">papelA4</span><span class="s2">,</span>
+                <span class="s1">PageOrientation</span><span class="s2">.</span><span class="s1">PORTRAIT</span><span class="s2">,</span>
+                <span class="s1">MARGEN_IMPRESION_PT</span><span class="s2">, </span><span class="s1">MARGEN_IMPRESION_PT</span><span class="s2">,</span>
+                <span class="s1">MARGEN_IMPRESION_PT</span><span class="s2">, </span><span class="s1">MARGEN_IMPRESION_PT</span>
+        <span class="s2">);</span>
+
+        <span class="s0">double </span><span class="s1">anchoPagina </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableWidth</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">altoPagina </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableHeight</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">anchoContenido </span><span class="s2">= </span><span class="s1">anchoPagina </span><span class="s2">- </span><span class="s5">2 </span><span class="s2">* </span><span class="s1">PADDING_PAGINA_BLOQUES</span><span class="s2">;</span>
+        <span class="s0">double </span><span class="s1">altoUtilPagina </span><span class="s2">= </span><span class="s1">altoPagina </span><span class="s2">- </span><span class="s5">2 </span><span class="s2">* </span><span class="s1">PADDING_PAGINA_BLOQUES</span><span class="s2">;</span>
+
+        <span class="s1">prepararTextosPagina1</span><span class="s2">();</span>
+
+        <span class="s1">panelImpresionPaginaBloques</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">true</span><span class="s2">);</span>
+
+        <span class="s4">// ── 1) Medir a su tamaño REAL los bloques de contenido fijo</span>
+        <span class="s4">// (encabezado, info, KPIs) y el pie de página: nunca se</span>
+        <span class="s4">// recortan ni se les cambia la fuente, así que se miden tal</span>
+        <span class="s4">// cual y lo que sobra de la hoja se lo reparten los dos</span>
+        <span class="s4">// gráficos flexibles (tendencia y la fila inferior).</span>
+        <span class="s0">double </span><span class="s1">spacing </span><span class="s2">= </span><span class="s1">panelImpresionPaginaBloques</span><span class="s2">.</span><span class="s1">getSpacing</span><span class="s2">();</span>
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">VBox</span><span class="s2">&gt; </span><span class="s1">bloquesFijos </span><span class="s2">= </span><span class="s1">List</span><span class="s2">.</span><span class="s1">of</span><span class="s2">(</span><span class="s1">panelImpEncabezado</span><span class="s2">, </span><span class="s1">panelImpInfo</span><span class="s2">, </span><span class="s1">panelImpKpis</span><span class="s2">);</span>
+        <span class="s0">double </span><span class="s1">altoFijos </span><span class="s2">= </span><span class="s5">0</span><span class="s2">;</span>
+        <span class="s0">for </span><span class="s2">(</span><span class="s1">VBox bloque </span><span class="s2">: </span><span class="s1">bloquesFijos</span><span class="s2">) {</span>
+            <span class="s1">bloque</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoContenido</span><span class="s2">);</span>
+            <span class="s1">bloque</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+            <span class="s1">altoFijos </span><span class="s2">+= </span><span class="s1">bloque</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoContenido</span><span class="s2">);</span>
+        <span class="s2">}</span>
+
+        <span class="s1">panelImpFooterBloques</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoContenido</span><span class="s2">);</span>
+        <span class="s1">panelImpFooterBloques</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">altoFooter </span><span class="s2">= </span><span class="s1">panelImpFooterBloques</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoContenido</span><span class="s2">);</span>
+
+        <span class="s4">// 6 espacios entre bloques (encabezado-info, info-KPIs,</span>
+        <span class="s4">// KPIs-tendencia, tendencia-fila, fila-espaciador,</span>
+        <span class="s4">// espaciador-pie) + colchón de seguridad del 3%, mismo</span>
+        <span class="s4">// criterio ya usado en el resto del documento para no dejar</span>
+        <span class="s4">// nada apretado contra el borde.</span>
+        <span class="s0">double </span><span class="s1">altoDisponibleGraficos </span><span class="s2">=</span>
+                <span class="s2">(</span><span class="s1">altoUtilPagina </span><span class="s2">- </span><span class="s1">altoFijos </span><span class="s2">- </span><span class="s1">altoFooter </span><span class="s2">- </span><span class="s5">6 </span><span class="s2">* </span><span class="s1">spacing</span><span class="s2">) * </span><span class="s5">0.97</span><span class="s2">;</span>
+
+        <span class="s4">// ── 2) Repartir ese espacio: tendencia es el protagonista</span>
+        <span class="s4">// (55%), la fila Categoría + Top Productos se queda con el</span>
+        <span class="s4">// resto (45%).</span>
+        <span class="s0">double </span><span class="s1">altoBloqueTendencia </span><span class="s2">= </span><span class="s1">altoDisponibleGraficos </span><span class="s2">* </span><span class="s5">0.55</span><span class="s2">;</span>
+        <span class="s0">double </span><span class="s1">altoBloqueFila </span><span class="s2">= </span><span class="s1">altoDisponibleGraficos </span><span class="s2">- </span><span class="s1">altoBloqueTendencia</span><span class="s2">;</span>
+
+        <span class="s0">double </span><span class="s1">altoLabelTendencia </span><span class="s2">= </span><span class="s1">lblImpTituloTendencia</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoContenido</span><span class="s2">);</span>
+        <span class="s0">double </span><span class="s1">altoImagenTendencia </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span><span class="s5">80</span><span class="s2">,</span>
+                <span class="s1">altoBloqueTendencia </span><span class="s2">- </span><span class="s1">altoLabelTendencia </span><span class="s2">- </span><span class="s1">panelImpChartTendencia</span><span class="s2">.</span><span class="s1">getSpacing</span><span class="s2">());</span>
+
+        <span class="s0">double </span><span class="s1">hgapFila </span><span class="s2">= </span><span class="s1">panelImpFilaCategoriaTop</span><span class="s2">.</span><span class="s1">getHgap</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">anchoColumna </span><span class="s2">= (</span><span class="s1">anchoContenido </span><span class="s2">- </span><span class="s1">hgapFila</span><span class="s2">) / </span><span class="s5">2</span><span class="s2">;</span>
+        <span class="s0">double </span><span class="s1">altoLabelFila </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span>
+                <span class="s1">lblImpTituloCategoria</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoColumna</span><span class="s2">),</span>
+                <span class="s1">lblImpTituloTop</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoColumna</span><span class="s2">));</span>
+        <span class="s0">double </span><span class="s1">altoImagenFila </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span><span class="s5">80</span><span class="s2">,</span>
+                <span class="s1">altoBloqueFila </span><span class="s2">- </span><span class="s1">altoLabelFila </span><span class="s2">- </span><span class="s1">panelImpChartCategoria</span><span class="s2">.</span><span class="s1">getSpacing</span><span class="s2">());</span>
+
+        <span class="s4">// ── 3) Redimensionar cada gráfico (el nodo REAL del</span>
+        <span class="s4">// dashboard) a su caja exacta y recién ahí capturarlo: el</span>
+        <span class="s4">// propio motor de charts recalcula ejes/leyenda para ese</span>
+        <span class="s4">// tamaño, así que no queda nada distorsionado ni escalado</span>
+        <span class="s4">// &quot;a la fuerza&quot;. Categoría y Top comparten el mismo alto</span>
+        <span class="s4">// para quedar perfectamente alineados en la fila.</span>
+        <span class="s1">redimensionarYCapturar</span><span class="s2">(</span><span class="s1">chartTendencia</span><span class="s2">, </span><span class="s1">imgTendencia</span><span class="s2">, </span><span class="s1">anchoContenido</span><span class="s2">, </span><span class="s1">altoImagenTendencia</span><span class="s2">);</span>
+        <span class="s1">redimensionarYCapturar</span><span class="s2">(</span><span class="s1">chartCategoria</span><span class="s2">, </span><span class="s1">imgCategoria</span><span class="s2">, </span><span class="s1">anchoColumna</span><span class="s2">, </span><span class="s1">altoImagenFila</span><span class="s2">);</span>
+        <span class="s1">redimensionarYCapturar</span><span class="s2">(</span><span class="s1">chartTop</span><span class="s2">, </span><span class="s1">imgTop</span><span class="s2">, </span><span class="s1">anchoColumna</span><span class="s2">, </span><span class="s1">altoImagenFila</span><span class="s2">);</span>
+
+        <span class="s4">// Los bloques viven en panelImpresionBloques solo para que</span>
+        <span class="s4">// el FXML los declare en algún lado; se sacan de ahí para</span>
+        <span class="s4">// armar la única página 1 real (un Node solo puede tener un</span>
+        <span class="s4">// padre a la vez).</span>
+        <span class="s1">panelImpresionBloques</span><span class="s2">.</span><span class="s1">getChildren</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">panelImpresionPaginaBloques</span><span class="s2">.</span><span class="s1">getChildren</span><span class="s2">().</span><span class="s1">setAll</span><span class="s2">(</span>
+                <span class="s1">panelImpEncabezado</span><span class="s2">, </span><span class="s1">panelImpInfo</span><span class="s2">, </span><span class="s1">panelImpKpis</span><span class="s2">,</span>
+                <span class="s1">panelImpChartTendencia</span><span class="s2">, </span><span class="s1">panelImpFilaCategoriaTop</span><span class="s2">, </span><span class="s1">espaciadorBloques</span><span class="s2">, </span><span class="s1">panelImpFooterBloques</span>
+        <span class="s2">);</span>
+
+        <span class="s4">// La tabla se mide aparte (paginación propia por filas) para</span>
+        <span class="s4">// saber el total de páginas del documento antes de imprimir</span>
+        <span class="s4">// la primera hoja, y que el pie de página ya diga</span>
+        <span class="s4">// &quot;Página 1 de N&quot; con el N correcto desde el principio.</span>
+        <span class="s1">List</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">&gt; </span><span class="s1">todasFilas </span><span class="s2">= </span><span class="s1">tablaDetalle</span><span class="s2">.</span><span class="s1">getItems</span><span class="s2">();</span>
+        <span class="s0">int</span><span class="s2">[] </span><span class="s1">infoTabla </span><span class="s2">= </span><span class="s1">medirPaginacionTabla</span><span class="s2">(</span><span class="s1">layout</span><span class="s2">, </span><span class="s1">todasFilas</span><span class="s2">);</span>
+        <span class="s0">int </span><span class="s1">filasPorPagina </span><span class="s2">= </span><span class="s1">infoTabla</span><span class="s2">[</span><span class="s5">0</span><span class="s2">];</span>
+        <span class="s0">int </span><span class="s1">totalPaginasTabla </span><span class="s2">= </span><span class="s1">infoTabla</span><span class="s2">[</span><span class="s5">1</span><span class="s2">];</span>
+        <span class="s0">int </span><span class="s1">totalPaginasGlobal </span><span class="s2">= </span><span class="s5">1 </span><span class="s2">+ </span><span class="s1">totalPaginasTabla</span><span class="s2">;</span>
+
+        <span class="s1">String fechaHoraPie </span><span class="s2">= </span><span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;dd/MM/yyyy&quot;</span><span class="s2">)) +</span>
+                <span class="s3">&quot; &quot; </span><span class="s2">+ </span><span class="s1">LocalTime</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;HH:mm&quot;</span><span class="s2">));</span>
+
+        <span class="s4">// ── 4) Página 1: SIEMPRE una sola página con encabezado,</span>
+        <span class="s4">// KPIs, tendencia y la fila Categoría/Top, calculados para</span>
+        <span class="s4">// encajar exactos en el alto disponible.</span>
+        <span class="s1">lblPieBloquesFecha</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">fechaHoraPie</span><span class="s2">);</span>
+        <span class="s1">lblPieBloquesPagina</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Página 1 de &quot; </span><span class="s2">+ </span><span class="s1">totalPaginasGlobal</span><span class="s2">);</span>
+        <span class="s1">imprimirNodoPlano</span><span class="s2">(</span><span class="s1">job</span><span class="s2">, </span><span class="s1">layout</span><span class="s2">, </span><span class="s1">panelImpresionPaginaBloques</span><span class="s2">, </span><span class="s1">altoPagina</span><span class="s2">);</span>
+        <span class="s1">panelImpresionPaginaBloques</span><span class="s2">.</span><span class="s1">getChildren</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+
+        <span class="s4">// Devuelve los bloques a su holder oculto: deja el árbol de</span>
+        <span class="s4">// FXML consistente para una próxima exportación en la misma</span>
+        <span class="s4">// sesión.</span>
+        <span class="s1">panelImpresionBloques</span><span class="s2">.</span><span class="s1">getChildren</span><span class="s2">().</span><span class="s1">setAll</span><span class="s2">(</span>
+                <span class="s1">panelImpEncabezado</span><span class="s2">, </span><span class="s1">panelImpInfo</span><span class="s2">, </span><span class="s1">panelImpKpis</span><span class="s2">,</span>
+                <span class="s1">panelImpChartTendencia</span><span class="s2">, </span><span class="s1">panelImpFilaCategoriaTop</span><span class="s2">, </span><span class="s1">espaciadorBloques</span><span class="s2">, </span><span class="s1">panelImpFooterBloques</span>
+        <span class="s2">);</span>
+
+        <span class="s4">// ── 5) Página(s) 2 en adelante: ÚNICAMENTE la tabla de</span>
+        <span class="s4">// movimientos, sin escalar horizontalmente -- se prefieren</span>
+        <span class="s4">// más páginas antes que angostar columnas o perder</span>
+        <span class="s4">// legibilidad.</span>
+        <span class="s1">imprimirTablaPaginada</span><span class="s2">(</span><span class="s1">job</span><span class="s2">, </span><span class="s1">layout</span><span class="s2">, </span><span class="s1">todasFilas</span><span class="s2">, </span><span class="s1">filasPorPagina</span><span class="s2">,</span>
+                <span class="s1">totalPaginasTabla</span><span class="s2">, </span><span class="s5">2</span><span class="s2">, </span><span class="s1">totalPaginasGlobal</span><span class="s2">, </span><span class="s1">fechaHoraPie</span><span class="s2">);</span>
+
+        <span class="s1">job</span><span class="s2">.</span><span class="s1">endJob</span><span class="s2">();</span>
+        <span class="s1">ocultarPanelesImpresion</span><span class="s2">();</span>
+    <span class="s2">}</span>
+
+    <span class="s0">private void </span><span class="s1">ocultarPanelesImpresion</span><span class="s2">() {</span>
+        <span class="s1">panelImpresionPaginaBloques</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">setVisible</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Mide (sin imprimir) cuántas filas caben por página y cuántas</span>
+     <span class="s6">* páginas ocupará la tabla completa, con el mismo truco de &quot;armar</span>
+     <span class="s6">* dos veces para medir&quot; usado en el resto del sistema: una vez</span>
+     <span class="s6">* vacía (para saber cuánto ocupa el encabezado) y una vez con</span>
+     <span class="s6">* todas las filas (para saber cuánto ocupa cada fila en</span>
+     <span class="s6">* promedio, a este ancho). numPagina/totalPaginas se pasan en 1</span>
+     <span class="s6">* porque en esta llamada solo interesa medir el alto, no el</span>
+     <span class="s6">* texto final que se imprimirá.</span>
+     <span class="s6">*/</span>
+    <span class="s0">private int</span><span class="s2">[] </span><span class="s1">medirPaginacionTabla</span><span class="s2">(</span><span class="s1">PageLayout layout</span><span class="s2">, </span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">&gt; </span><span class="s1">todas</span><span class="s2">) {</span>
+        <span class="s0">double </span><span class="s1">anchoPagina </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableWidth</span><span class="s2">();</span>
+
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">todas</span><span class="s2">.</span><span class="s1">isEmpty</span><span class="s2">()) {</span>
+            <span class="s0">return new int</span><span class="s2">[]{</span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">};</span>
+        <span class="s2">}</span>
+
+        <span class="s1">construirTablaImpresion</span><span class="s2">(</span><span class="s1">List</span><span class="s2">.</span><span class="s1">of</span><span class="s2">(), </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">altoEncabezado </span><span class="s2">= </span><span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">);</span>
+
+        <span class="s1">construirTablaImpresion</span><span class="s2">(</span><span class="s1">todas</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">);</span>
+        <span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">altoConTodas </span><span class="s2">= </span><span class="s1">panelTablaImpresion</span><span class="s2">.</span><span class="s1">prefHeight</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">);</span>
+
+        <span class="s0">double </span><span class="s1">altoPorFila </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span><span class="s5">1</span><span class="s2">, (</span><span class="s1">altoConTodas </span><span class="s2">- </span><span class="s1">altoEncabezado</span><span class="s2">) / </span><span class="s1">todas</span><span class="s2">.</span><span class="s1">size</span><span class="s2">());</span>
+        <span class="s0">double </span><span class="s1">altoDisponibleFilas </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableHeight</span><span class="s2">() - </span><span class="s1">altoEncabezado</span><span class="s2">;</span>
+
+        <span class="s4">// Margen de seguridad del 4%: el alto de fila usado aquí es un</span>
+        <span class="s4">// PROMEDIO medido en pantalla; el motor de impresión puede</span>
+        <span class="s4">// redondear métricas de fuente de forma ligeramente distinta</span>
+        <span class="s4">// al medir vs. al imprimir. Sin este colchón, un cálculo justo</span>
+        <span class="s4">// al límite podía dejar la última fila (o el pie de página,</span>
+        <span class="s4">// que va inmediatamente después) recortada u ocupando el</span>
+        <span class="s4">// margen inferior de la hoja. Reservar un 4% evita ese</span>
+        <span class="s4">// desborde sin sacrificar filas de forma notoria.</span>
+        <span class="s0">double </span><span class="s1">altoDisponibleConMargen </span><span class="s2">= </span><span class="s1">altoDisponibleFilas </span><span class="s2">* </span><span class="s5">0.96</span><span class="s2">;</span>
+        <span class="s0">int </span><span class="s1">filasPorPagina </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">max</span><span class="s2">(</span><span class="s5">1</span><span class="s2">, (</span><span class="s0">int</span><span class="s2">) </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">floor</span><span class="s2">(</span><span class="s1">altoDisponibleConMargen </span><span class="s2">/ </span><span class="s1">altoPorFila</span><span class="s2">));</span>
+        <span class="s0">int </span><span class="s1">totalPaginas </span><span class="s2">= (</span><span class="s0">int</span><span class="s2">) </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">ceil</span><span class="s2">((</span><span class="s0">double</span><span class="s2">) </span><span class="s1">todas</span><span class="s2">.</span><span class="s1">size</span><span class="s2">() / </span><span class="s1">filasPorPagina</span><span class="s2">);</span>
+
+        <span class="s0">return new int</span><span class="s2">[]{</span><span class="s1">filasPorPagina</span><span class="s2">, </span><span class="s1">totalPaginas</span><span class="s2">};</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Imprime la tabla ya paginada (filasPorPagina/totalPaginasTabla</span>
+     <span class="s6">* ya calculados por medirPaginacionTabla), continuando la</span>
+     <span class="s6">* numeración GLOBAL del documento a partir de paginaGlobalInicio.</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">imprimirTablaPaginada</span><span class="s2">(</span><span class="s1">PrinterJob job</span><span class="s2">, </span><span class="s1">PageLayout layout</span><span class="s2">, </span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">&gt; </span><span class="s1">todas</span><span class="s2">,</span>
+                                        <span class="s0">int </span><span class="s1">filasPorPagina</span><span class="s2">, </span><span class="s0">int </span><span class="s1">totalPaginasTabla</span><span class="s2">,</span>
+                                        <span class="s0">int </span><span class="s1">paginaGlobalInicio</span><span class="s2">, </span><span class="s0">int </span><span class="s1">totalPaginasGlobal</span><span class="s2">,</span>
+                                        <span class="s1">String fechaHoraPie</span><span class="s2">) {</span>
+        <span class="s0">double </span><span class="s1">altoPagina </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableHeight</span><span class="s2">();</span>
+
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">todas</span><span class="s2">.</span><span class="s1">isEmpty</span><span class="s2">()) {</span>
+            <span class="s1">construirTablaImpresion</span><span class="s2">(</span><span class="s1">todas</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s5">1</span><span class="s2">, </span><span class="s1">paginaGlobalInicio</span><span class="s2">, </span><span class="s1">totalPaginasGlobal</span><span class="s2">);</span>
+            <span class="s1">lblPieTablaFecha</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">fechaHoraPie</span><span class="s2">);</span>
+            <span class="s1">imprimirNodoPlano</span><span class="s2">(</span><span class="s1">job</span><span class="s2">, </span><span class="s1">layout</span><span class="s2">, </span><span class="s1">panelTablaImpresion</span><span class="s2">, </span><span class="s1">altoPagina</span><span class="s2">);</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s0">for </span><span class="s2">(</span><span class="s0">int </span><span class="s1">p </span><span class="s2">= </span><span class="s5">0</span><span class="s2">; </span><span class="s1">p </span><span class="s2">&lt; </span><span class="s1">totalPaginasTabla</span><span class="s2">; </span><span class="s1">p</span><span class="s2">++) {</span>
+            <span class="s0">int </span><span class="s1">desde </span><span class="s2">= </span><span class="s1">p </span><span class="s2">* </span><span class="s1">filasPorPagina</span><span class="s2">;</span>
+            <span class="s0">int </span><span class="s1">hasta </span><span class="s2">= </span><span class="s1">Math</span><span class="s2">.</span><span class="s1">min</span><span class="s2">(</span><span class="s1">desde </span><span class="s2">+ </span><span class="s1">filasPorPagina</span><span class="s2">, </span><span class="s1">todas</span><span class="s2">.</span><span class="s1">size</span><span class="s2">());</span>
+            <span class="s1">construirTablaImpresion</span><span class="s2">(</span><span class="s1">todas</span><span class="s2">.</span><span class="s1">subList</span><span class="s2">(</span><span class="s1">desde</span><span class="s2">, </span><span class="s1">hasta</span><span class="s2">), </span><span class="s1">p </span><span class="s2">+ </span><span class="s5">1</span><span class="s2">, </span><span class="s1">totalPaginasTabla</span><span class="s2">,</span>
+                    <span class="s1">paginaGlobalInicio </span><span class="s2">+ </span><span class="s1">p</span><span class="s2">, </span><span class="s1">totalPaginasGlobal</span><span class="s2">);</span>
+            <span class="s1">lblPieTablaFecha</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">fechaHoraPie</span><span class="s2">);</span>
+            <span class="s1">imprimirNodoPlano</span><span class="s2">(</span><span class="s1">job</span><span class="s2">, </span><span class="s1">layout</span><span class="s2">, </span><span class="s1">panelTablaImpresion</span><span class="s2">, </span><span class="s1">altoPagina</span><span class="s2">);</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Imprime un nodo a su tamaño REAL, sin ningún escalado: SIEMPRE</span>
+     <span class="s6">* al alto COMPLETO de la página impresa (altoObjetivo), no al</span>
+     <span class="s6">* alto natural de su contenido. Esto es lo que permite que el</span>
+     <span class="s6">* espaciador flexible (Region con VBox.vgrow=&quot;ALWAYS&quot;) que cada</span>
+     <span class="s6">* página tiene antes de su pie de página se expanda de verdad y</span>
+     <span class="s6">* empuje el footer hasta el margen inferior, sin importar cuánto</span>
+     <span class="s6">* contenido tenga esa hoja en particular (bloques del resumen</span>
+     <span class="s6">* ejecutivo o filas de la tabla). La distribución por bloques y</span>
+     <span class="s6">* la paginación por filas con colchón de seguridad ya garantizan</span>
+     <span class="s6">* que el contenido de CADA página quepa completo dentro de ese</span>
+     <span class="s6">* alto, así que nunca hace falta encoger nada &quot;a la fuerza&quot; --</span>
+     <span class="s6">* antes un Scale uniforme podía además angostar la tabla</span>
+     <span class="s6">* horizontalmente, justo lo que se quería evitar.</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">imprimirNodoPlano</span><span class="s2">(</span><span class="s1">PrinterJob job</span><span class="s2">, </span><span class="s1">PageLayout layout</span><span class="s2">, </span><span class="s1">VBox nodo</span><span class="s2">, </span><span class="s0">double </span><span class="s1">altoObjetivo</span><span class="s2">) {</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">altoObjetivo </span><span class="s2">&lt;= </span><span class="s5">0</span><span class="s2">) {</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s0">double </span><span class="s1">anchoOriginal </span><span class="s2">= </span><span class="s1">nodo</span><span class="s2">.</span><span class="s1">getPrefWidth</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">altoOriginal </span><span class="s2">= </span><span class="s1">nodo</span><span class="s2">.</span><span class="s1">getPrefHeight</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">anchoPagina </span><span class="s2">= </span><span class="s1">layout</span><span class="s2">.</span><span class="s1">getPrintableWidth</span><span class="s2">();</span>
+
+        <span class="s4">// setPrefWidth()/setPrefHeight() por sí solos NO alcanzan para</span>
+        <span class="s4">// nodos con managed=false: al no tener un padre que los</span>
+        <span class="s4">// redimensione automáticamente, el ancho/alto REAL del nodo se</span>
+        <span class="s4">// queda en su valor anterior (a menudo 0), y todo su contenido</span>
+        <span class="s4">// se calcula/comprime dentro de ese espacio casi nulo. El</span>
+        <span class="s4">// resize() explícito fuerza el tamaño real antes de imprimir.</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">);</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">setPrefHeight</span><span class="s2">(</span><span class="s1">altoObjetivo</span><span class="s2">);</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">resize</span><span class="s2">(</span><span class="s1">anchoPagina</span><span class="s2">, </span><span class="s1">altoObjetivo</span><span class="s2">);</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">();</span>
+
+        <span class="s4">// snapshot() fuerza una pasada de layout/render síncrona y</span>
+        <span class="s4">// completa justo antes de imprimir, para que ninguna fila o</span>
+        <span class="s4">// gráfico quede a medio dibujar.</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">snapshot</span><span class="s2">(</span><span class="s0">new </span><span class="s1">SnapshotParameters</span><span class="s2">(), </span><span class="s0">null</span><span class="s2">);</span>
+
+        <span class="s1">job</span><span class="s2">.</span><span class="s1">printPage</span><span class="s2">(</span><span class="s1">layout</span><span class="s2">, </span><span class="s1">nodo</span><span class="s2">);</span>
+
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">anchoOriginal</span><span class="s2">);</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">setPrefHeight</span><span class="s2">(</span><span class="s1">altoOriginal</span><span class="s2">);</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s1">nodo</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">();</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Llena todos los textos de la página 1 (encabezado, info,</span>
+     <span class="s6">* KPIs, títulos de los gráficos) con los datos del último</span>
+     <span class="s6">* reporte generado. No toca los gráficos -- eso lo hace</span>
+     <span class="s6">* redimensionarYCapturar() en exportarPdf(), una vez que ya se</span>
+     <span class="s6">* conoce el tamaño real de la hoja (PageLayout).</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">prepararTextosPagina1</span><span class="s2">() {</span>
+        <span class="s0">boolean </span><span class="s1">esVenta </span><span class="s2">= </span><span class="s1">ventasActuales </span><span class="s2">!= </span><span class="s0">null</span><span class="s2">;</span>
+
+        <span class="s1">lblImpEmision</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Emisión: &quot; </span><span class="s2">+</span>
+                <span class="s1">LocalDate</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;dd/MM/yyyy&quot;</span><span class="s2">)) + </span><span class="s3">&quot; &quot; </span><span class="s2">+</span>
+                <span class="s1">LocalTime</span><span class="s2">.</span><span class="s1">now</span><span class="s2">().</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;HH:mm&quot;</span><span class="s2">)));</span>
+        <span class="s1">String usuario </span><span class="s2">= </span><span class="s1">Sesion</span><span class="s2">.</span><span class="s1">getEmpleado</span><span class="s2">() != </span><span class="s0">null</span>
+                <span class="s2">? </span><span class="s1">Sesion</span><span class="s2">.</span><span class="s1">getEmpleado</span><span class="s2">().</span><span class="s1">getNombre</span><span class="s2">() : </span><span class="s3">&quot;Sistema&quot;</span><span class="s2">;</span>
+        <span class="s1">lblImpGeneradoPor</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Generado por: &quot; </span><span class="s2">+ </span><span class="s1">usuario</span><span class="s2">);</span>
+        <span class="s1">lblImpTipoReporte</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Tipo de reporte: &quot; </span><span class="s2">+ (</span><span class="s1">esVenta </span><span class="s2">? </span><span class="s3">&quot;Ventas&quot; </span><span class="s2">: </span><span class="s3">&quot;Compras&quot;</span><span class="s2">));</span>
+
+        <span class="s1">lblImpTitulo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">esVenta </span><span class="s2">? </span><span class="s3">&quot;Reporte de Ventas&quot; </span><span class="s2">: </span><span class="s3">&quot;Reporte de Compras&quot;</span><span class="s2">);</span>
+        <span class="s1">lblImpPeriodo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Periodo: &quot; </span><span class="s2">+</span>
+                <span class="s1">desdeActual</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;dd/MM/yyyy&quot;</span><span class="s2">)) + </span><span class="s3">&quot; al &quot; </span><span class="s2">+</span>
+                <span class="s1">hastaActual</span><span class="s2">.</span><span class="s1">format</span><span class="s2">(</span><span class="s1">DateTimeFormatter</span><span class="s2">.</span><span class="s1">ofPattern</span><span class="s2">(</span><span class="s3">&quot;dd/MM/yyyy&quot;</span><span class="s2">)));</span>
+
+        <span class="s1">lblImpTotalTitulo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloTotal</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTotal</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTotal</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpCantidadTitulo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloCantidad</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpCantidad</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblCantidad</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpPromedioTitulo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloPromedio</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpPromedio</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblPromedio</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTituloKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloKpi4</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpValorKpi4</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblKpi4</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+
+        <span class="s1">lblImpTituloTendencia</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloTendencia</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTituloTop</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblTituloTop</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Redimensiona el gráfico (el mismo nodo REAL y visible del</span>
+     <span class="s6">* dashboard, no una copia) a una caja EXACTA de ancho x alto</span>
+     <span class="s6">* antes de capturarlo: así el propio motor de charts de JavaFX</span>
+     <span class="s6">* recalcula ejes, leyenda y proporciones para ese tamaño, en vez</span>
+     <span class="s6">* de estirar/deformar una imagen ya capturada a otro tamaño. La</span>
+     <span class="s6">* captura se hace a 3x de resolución para que no salga borrosa</span>
+     <span class="s6">* al imprimirse más grande que su tamaño en pantalla.</span>
+     <span class="s6">*</span>
+     <span class="s6">* Como el chart sigue siendo el nodo gestionado del dashboard,</span>
+     <span class="s6">* se guarda su prefWidth/prefHeight originales (normalmente</span>
+     <span class="s6">* USE_COMPUTED_SIZE) y se restauran de inmediato después de</span>
+     <span class="s6">* capturar, con un requestLayout() para forzar que recupere su</span>
+     <span class="s6">* tamaño natural en pantalla antes de que el usuario lo note.</span>
+     <span class="s6">*</span>
+     <span class="s6">* Nunca se hace snapshot de una caja con tamaño cero o negativo</span>
+     <span class="s6">* (por ejemplo si el presupuesto de alto calculado en</span>
+     <span class="s6">* exportarPdf() diera un resultado inválido): en ese caso se</span>
+     <span class="s6">* deja el ImageView sin imagen en vez de mandar algo corrupto a</span>
+     <span class="s6">* la impresora.</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">redimensionarYCapturar</span><span class="s2">(</span><span class="s1">Chart chart</span><span class="s2">, </span><span class="s1">ImageView destino</span><span class="s2">, </span><span class="s0">double </span><span class="s1">ancho</span><span class="s2">, </span><span class="s0">double </span><span class="s1">alto</span><span class="s2">) {</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">ancho </span><span class="s2">&lt;= </span><span class="s5">0 </span><span class="s2">|| </span><span class="s1">alto </span><span class="s2">&lt;= </span><span class="s5">0</span><span class="s2">) {</span>
+            <span class="s0">return</span><span class="s2">;</span>
+        <span class="s2">}</span>
+
+        <span class="s0">double </span><span class="s1">prefWOriginal </span><span class="s2">= </span><span class="s1">chart</span><span class="s2">.</span><span class="s1">getPrefWidth</span><span class="s2">();</span>
+        <span class="s0">double </span><span class="s1">prefHOriginal </span><span class="s2">= </span><span class="s1">chart</span><span class="s2">.</span><span class="s1">getPrefHeight</span><span class="s2">();</span>
+
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">ancho</span><span class="s2">);</span>
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">setPrefHeight</span><span class="s2">(</span><span class="s1">alto</span><span class="s2">);</span>
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">resize</span><span class="s2">(</span><span class="s1">ancho</span><span class="s2">, </span><span class="s1">alto</span><span class="s2">);</span>
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">applyCss</span><span class="s2">();</span>
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">layout</span><span class="s2">();</span>
+
+        <span class="s0">double </span><span class="s1">escalaCaptura </span><span class="s2">= </span><span class="s5">3.0</span><span class="s2">;</span>
+        <span class="s1">SnapshotParameters params </span><span class="s2">= </span><span class="s0">new </span><span class="s1">SnapshotParameters</span><span class="s2">();</span>
+        <span class="s1">params</span><span class="s2">.</span><span class="s1">setTransform</span><span class="s2">(</span><span class="s0">new </span><span class="s1">javafx</span><span class="s2">.</span><span class="s1">scene</span><span class="s2">.</span><span class="s1">transform</span><span class="s2">.</span><span class="s1">Scale</span><span class="s2">(</span><span class="s1">escalaCaptura</span><span class="s2">, </span><span class="s1">escalaCaptura</span><span class="s2">));</span>
+        <span class="s1">destino</span><span class="s2">.</span><span class="s1">setImage</span><span class="s2">(</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">snapshot</span><span class="s2">(</span><span class="s1">params</span><span class="s2">, </span><span class="s0">null</span><span class="s2">));</span>
+        <span class="s1">destino</span><span class="s2">.</span><span class="s1">setFitWidth</span><span class="s2">(</span><span class="s1">ancho</span><span class="s2">);</span>
+        <span class="s1">destino</span><span class="s2">.</span><span class="s1">setFitHeight</span><span class="s2">(</span><span class="s1">alto</span><span class="s2">);</span>
+        <span class="s1">destino</span><span class="s2">.</span><span class="s1">setPreserveRatio</span><span class="s2">(</span><span class="s0">false</span><span class="s2">);</span>
+
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">setPrefWidth</span><span class="s2">(</span><span class="s1">prefWOriginal</span><span class="s2">);</span>
+        <span class="s1">chart</span><span class="s2">.</span><span class="s1">setPrefHeight</span><span class="s2">(</span><span class="s1">prefHOriginal</span><span class="s2">);</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">chart</span><span class="s2">.</span><span class="s1">getParent</span><span class="s2">() != </span><span class="s0">null</span><span class="s2">) {</span>
+            <span class="s1">chart</span><span class="s2">.</span><span class="s1">getParent</span><span class="s2">().</span><span class="s1">requestLayout</span><span class="s2">();</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+
+    <span class="s6">/**</span>
+     <span class="s6">* Arma la tabla de impresión como un GridPane &quot;plano&quot; (puros</span>
+     <span class="s6">* Labels, sin virtualización) a partir de la porción de filas que</span>
+     <span class="s6">* le toca a esta página. Se usa esto -y no tablaDetalle</span>
+     <span class="s6">* directamente- porque un TableView es virtualizado: en pantalla</span>
+     <span class="s6">* solo crea/renderiza las filas que caben en su alto visible, y al</span>
+     <span class="s6">* imprimir ese nodo tal cual, muchas filas no llegaban a</span>
+     <span class="s6">* &quot;materializarse&quot; y la página de la tabla salía en blanco.</span>
+     <span class="s6">*</span>
+     <span class="s6">* </span><span class="s7">@param </span><span class="s6">filas          las filas a mostrar en ESTA página (puede</span>
+     <span class="s6">*                       ser una porción del total)</span>
+     <span class="s6">* </span><span class="s7">@param </span><span class="s6">numPagina      número de página (1-based) dentro de la</span>
+     <span class="s6">*                       tabla</span>
+     <span class="s6">* </span><span class="s7">@param </span><span class="s6">totalPaginas   total de páginas que ocupa la tabla</span>
+     <span class="s6">* </span><span class="s7">@param </span><span class="s6">paginaGlobal   número de página dentro de TODO el</span>
+     <span class="s6">*                       documento (portada + Top Productos +</span>
+     <span class="s6">*                       tabla), para el pie de página</span>
+     <span class="s6">* </span><span class="s7">@param </span><span class="s6">totalPaginasGlobal total de páginas de todo el documento</span>
+     <span class="s6">*/</span>
+    <span class="s0">private void </span><span class="s1">construirTablaImpresion</span><span class="s2">(</span><span class="s1">List</span><span class="s2">&lt;</span><span class="s1">FilaReporte</span><span class="s2">&gt; </span><span class="s1">filas</span><span class="s2">, </span><span class="s0">int </span><span class="s1">numPagina</span><span class="s2">, </span><span class="s0">int </span><span class="s1">totalPaginas</span><span class="s2">,</span>
+                                          <span class="s0">int </span><span class="s1">paginaGlobal</span><span class="s2">, </span><span class="s0">int </span><span class="s1">totalPaginasGlobal</span><span class="s2">) {</span>
+        <span class="s4">// Mismo bloque de emisión/usuario/tipo de reporte que la</span>
+        <span class="s4">// página 1, para que el encabezado de esta página se vea</span>
+        <span class="s4">// idéntico (misma identidad visual en todo el documento).</span>
+        <span class="s1">lblImpTablaEmision</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblImpEmision</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTablaGeneradoPor</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblImpGeneradoPor</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTablaTipoReporte</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblImpTipoReporte</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+
+        <span class="s1">lblImpTablaTitulo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblImpTitulo</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTablaPeriodo</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s1">lblImpPeriodo</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">());</span>
+        <span class="s1">lblImpTablaPagina</span><span class="s2">.</span><span class="s1">setText</span><span class="s2">(</span><span class="s3">&quot;Página &quot; </span><span class="s2">+ </span><span class="s1">paginaGlobal </span><span class="s2">+ </span><span class="s3">&quot; de &quot; </span><span class="s2">+ </span><span class="s1">totalPaginasGlobal</span><span class="s2">);</span>
+
+        <span class="s1">gridTablaImpresion</span><span class="s2">.</span><span class="s1">getChildren</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+        <span class="s1">gridTablaImpresion</span><span class="s2">.</span><span class="s1">getColumnConstraints</span><span class="s2">().</span><span class="s1">clear</span><span class="s2">();</span>
+
+        <span class="s1">String</span><span class="s2">[] </span><span class="s1">encabezados </span><span class="s2">= {</span>
+                <span class="s1">colFecha</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(), </span><span class="s1">colComprobante</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(), </span><span class="s1">colEntidad</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(),</span>
+                <span class="s1">colProducto</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(), </span><span class="s1">colCantidad</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(), </span><span class="s1">colPrecio</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">(),</span>
+                <span class="s1">colSubtotal</span><span class="s2">.</span><span class="s1">getText</span><span class="s2">()</span>
+        <span class="s2">};</span>
+        <span class="s0">double</span><span class="s2">[] </span><span class="s1">porcentajes </span><span class="s2">= {</span><span class="s5">11</span><span class="s2">, </span><span class="s5">14</span><span class="s2">, </span><span class="s5">19</span><span class="s2">, </span><span class="s5">22</span><span class="s2">, </span><span class="s5">10</span><span class="s2">, </span><span class="s5">12</span><span class="s2">, </span><span class="s5">12</span><span class="s2">};</span>
+        <span class="s0">for </span><span class="s2">(</span><span class="s0">double </span><span class="s1">porcentaje </span><span class="s2">: </span><span class="s1">porcentajes</span><span class="s2">) {</span>
+            <span class="s1">ColumnConstraints columna </span><span class="s2">= </span><span class="s0">new </span><span class="s1">ColumnConstraints</span><span class="s2">();</span>
+            <span class="s1">columna</span><span class="s2">.</span><span class="s1">setPercentWidth</span><span class="s2">(</span><span class="s1">porcentaje</span><span class="s2">);</span>
+            <span class="s1">gridTablaImpresion</span><span class="s2">.</span><span class="s1">getColumnConstraints</span><span class="s2">().</span><span class="s1">add</span><span class="s2">(</span><span class="s1">columna</span><span class="s2">);</span>
+        <span class="s2">}</span>
+
+        <span class="s0">for </span><span class="s2">(</span><span class="s0">int </span><span class="s1">col </span><span class="s2">= </span><span class="s5">0</span><span class="s2">; </span><span class="s1">col </span><span class="s2">&lt; </span><span class="s1">encabezados</span><span class="s2">.</span><span class="s1">length</span><span class="s2">; </span><span class="s1">col</span><span class="s2">++) {</span>
+            <span class="s1">Label etiqueta </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Label</span><span class="s2">(</span><span class="s1">encabezados</span><span class="s2">[</span><span class="s1">col</span><span class="s2">]);</span>
+            <span class="s1">etiqueta</span><span class="s2">.</span><span class="s1">setMaxWidth</span><span class="s2">(</span><span class="s1">Double</span><span class="s2">.</span><span class="s1">MAX_VALUE</span><span class="s2">);</span>
+            <span class="s1">etiqueta</span><span class="s2">.</span><span class="s1">setStyle</span><span class="s2">(</span><span class="s3">&quot;-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: white; &quot;</span>
+                    <span class="s2">+ </span><span class="s3">&quot;-fx-background-color: #315E9E; -fx-padding: 5 4;&quot;</span><span class="s2">);</span>
+            <span class="s1">gridTablaImpresion</span><span class="s2">.</span><span class="s1">add</span><span class="s2">(</span><span class="s1">etiqueta</span><span class="s2">, </span><span class="s1">col</span><span class="s2">, </span><span class="s5">0</span><span class="s2">);</span>
+        <span class="s2">}</span>
+
+        <span class="s0">for </span><span class="s2">(</span><span class="s0">int </span><span class="s1">fila </span><span class="s2">= </span><span class="s5">0</span><span class="s2">; </span><span class="s1">fila </span><span class="s2">&lt; </span><span class="s1">filas</span><span class="s2">.</span><span class="s1">size</span><span class="s2">(); </span><span class="s1">fila</span><span class="s2">++) {</span>
+            <span class="s1">FilaReporte f </span><span class="s2">= </span><span class="s1">filas</span><span class="s2">.</span><span class="s1">get</span><span class="s2">(</span><span class="s1">fila</span><span class="s2">);</span>
+            <span class="s1">String</span><span class="s2">[] </span><span class="s1">valores </span><span class="s2">= {</span>
+                    <span class="s1">f</span><span class="s2">.</span><span class="s1">fecha</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">comprobante</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">entidad</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">producto</span><span class="s2">,</span>
+                    <span class="s1">f</span><span class="s2">.</span><span class="s1">cantidad</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">precio</span><span class="s2">, </span><span class="s1">f</span><span class="s2">.</span><span class="s1">subtotal</span>
+            <span class="s2">};</span>
+            <span class="s1">String fondo </span><span class="s2">= (</span><span class="s1">fila </span><span class="s2">% </span><span class="s5">2 </span><span class="s2">== </span><span class="s5">0</span><span class="s2">) ? </span><span class="s3">&quot;white&quot; </span><span class="s2">: </span><span class="s3">&quot;#F8FAFC&quot;</span><span class="s2">;</span>
+            <span class="s0">for </span><span class="s2">(</span><span class="s0">int </span><span class="s1">col </span><span class="s2">= </span><span class="s5">0</span><span class="s2">; </span><span class="s1">col </span><span class="s2">&lt; </span><span class="s1">valores</span><span class="s2">.</span><span class="s1">length</span><span class="s2">; </span><span class="s1">col</span><span class="s2">++) {</span>
+                <span class="s1">Label celda </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Label</span><span class="s2">(</span><span class="s1">valores</span><span class="s2">[</span><span class="s1">col</span><span class="s2">]);</span>
+                <span class="s1">celda</span><span class="s2">.</span><span class="s1">setMaxWidth</span><span class="s2">(</span><span class="s1">Double</span><span class="s2">.</span><span class="s1">MAX_VALUE</span><span class="s2">);</span>
+                <span class="s1">celda</span><span class="s2">.</span><span class="s1">setStyle</span><span class="s2">(</span><span class="s3">&quot;-fx-font-size: 9px; -fx-text-fill: #1F2A44; &quot;</span>
+                        <span class="s2">+ </span><span class="s3">&quot;-fx-background-color: &quot; </span><span class="s2">+ </span><span class="s1">fondo </span><span class="s2">+ </span><span class="s3">&quot;; -fx-padding: 4;&quot;</span><span class="s2">);</span>
+                <span class="s1">gridTablaImpresion</span><span class="s2">.</span><span class="s1">add</span><span class="s2">(</span><span class="s1">celda</span><span class="s2">, </span><span class="s1">col</span><span class="s2">, </span><span class="s1">fila </span><span class="s2">+ </span><span class="s5">1</span><span class="s2">);</span>
+            <span class="s2">}</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+<span class="s2">}</span>
+</pre>
+</body>
+</html>

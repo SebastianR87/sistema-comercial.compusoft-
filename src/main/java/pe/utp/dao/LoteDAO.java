@@ -108,6 +108,24 @@ public class LoteDAO {
         ps.executeUpdate();
     }
 
+    /**
+     * Lista los lotes (id_lote, cantidad) que fueron consumidos por
+     * una línea de venta específica, según detalleventa_lote. Se usa
+     * al anular una venta para saber a qué lote(s) devolver stock.
+     */
+    public List<Consumo> listarLotesConsumidos(String idDetalleVenta) throws SQLException {
+        List<Consumo> consumos = new ArrayList<>();
+        String sql = "SELECT id_lote, cantidad FROM detalleventa_lote WHERE id_detalleventa = ?";
+        PreparedStatement ps = conexion.prepareStatement(sql);
+        ps.setString(1, idDetalleVenta);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            consumos.add(new Consumo(rs.getString("id_lote"), rs.getInt("cantidad"), 0));
+        }
+        rs.close();
+        return consumos;
+    }
+
     /** Anula todos los lotes creados por una compra específica. */
     public void anularLotesDeCompra(String idCompra) throws SQLException {
         String sql = "UPDATE lote_compra SET estado = 'ANULADO' " +

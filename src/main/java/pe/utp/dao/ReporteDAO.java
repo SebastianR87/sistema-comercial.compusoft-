@@ -8,12 +8,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Consultas para el módulo de Reportes: resúmenes y detalle de
- * Ventas y Compras por rango de fechas. Es una mirada "de negocio"
- * (totales, tendencias, top productos) -- distinta del Kárdex, que
- * es una mirada por producto individual con costeo FIFO.
- */
 public class ReporteDAO {
 
     private Connection conexion;
